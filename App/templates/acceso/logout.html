@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logout</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container d-flex vh-100">
+        <div class="row justify-content-center align-self-center w-100">
+            <div class="col-md-6 text-center">
+                <div class="card shadow-lg">
+                    <div class="card-body">
+                        <h1 class="display-4">Hasta pronto</h1>
+                        <p class="lead">Gracias por visitar el sistema. Esperamos verte pronto.</p>
+                        <a href="{% url 'login' %}" class="btn btn-primary">Iniciar sesión nuevamente</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

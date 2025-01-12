@@ -40,6 +40,10 @@ def login_view(request):
         form = UserLoginForm()
     return render(request, 'acceso/login.html', {'form': form})
 
+def logout_user(request):
+    logout(request)
+    return render(request, "acceso/logout.html")
+
 @login_required
 def admin_dashboard(request):
     return render(request, 'admin_dashboard.html')
@@ -58,6 +62,3 @@ def home(request):
 def homeEmpresa(request):
     return render(request,'empresa/home.html')
 
-def logout_user(request):
-    logout(request)
-    return render(request, "acceso/login.html")
