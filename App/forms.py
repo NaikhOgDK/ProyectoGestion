@@ -102,3 +102,17 @@ class DocumentoForm(forms.ModelForm):
     fecha_vencimiento_padron = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
 
     descripcion = forms.CharField(widget=forms.Textarea, required=False)
+
+class MantenimientoForm(forms.ModelForm):
+    vehiculo = forms.ModelChoiceField(
+        queryset=Vehiculo.objects.all(),
+        empty_label="Selecciona un vehículo",
+        widget=forms.Select(attrs={'class': 'vehiculo-select'})
+    )
+
+    class Meta:
+        model = Mantenimiento
+        fields = ['vehiculo', 'kilometraje_mtto', 'fecha_mtto', 'servicio_realizado', 'respaldo_mtto', 'proximo_mantenimiento_km', 'proximo_servicio']
+        widgets = {
+            'fecha_mtto': forms.DateInput(attrs={'type': 'date'}),
+        }

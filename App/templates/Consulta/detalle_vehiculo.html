@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalles del Vehículo{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">{{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo }}</h2>
+
+    <div class="card">
+        <div class="card-header">
+            <h4>Detalles del Vehículo</h4>
+        </div>
+        <div class="card-body">
+            <!-- Datos del vehículo -->
+            <p><strong>Año:</strong> {{ vehiculo.ano }}</p>
+            <p><strong>Tipo de Vehículo:</strong> {{ vehiculo.tipo_vehiculo }}</p>
+            <p><strong>Ubicación Física:</strong> {{ vehiculo.ubicacion_fisica }}</p>
+            <p><strong>Propietario:</strong> {{ vehiculo.propietario }}</p>
+
+            <!-- Documentos -->
+            <h5>Documentos</h5>
+            <ul>
+                {% for documento in documentos %}
+                    {% if documento.Mantencion_Preventiva %}
+                        <li>
+                            <strong>Mantención Preventiva</strong>
+                            - Fecha de vencimiento: {{ documento.fecha_vencimiento_mantencion }}
+                            - <a href="{{ documento.Mantencion_Preventiva.url }}" target="_blank">Ver Documento</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% if documento.Revision_Tecnica %}
+                        <li>
+                            <strong>Revisión Técnica</strong>
+                            - Fecha de vencimiento: {{ documento.fecha_vencimiento_revision }}
+                            - <a href="{{ documento.Revision_Tecnica.url }}" target="_blank">Ver Documento</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% if documento.Permiso_Circulacion %}
+                        <li>
+                            <strong>Permiso de Circulación</strong>
+                            - Fecha de vencimiento: {{ documento.fecha_vencimiento_permiso }}
+                            - <a href="{{ documento.Permiso_Circulacion.url }}" target="_blank">Ver Documento</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% if documento.SOAP %}
+                        <li>
+                            <strong>SOAP</strong>
+                            - Fecha de vencimiento: {{ documento.fecha_vencimiento_soap }}
+                            - <a href="{{ documento.SOAP.url }}" target="_blank">Ver Documento</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% if documento.Padron %}
+                        <li>
+                            <strong>Padrón</strong>
+                            - Fecha de vencimiento: {{ documento.fecha_vencimiento_padron }}
+                            - <a href="{{ documento.Padron.url }}" target="_blank">Ver Documento</a>
+                        </li>
+                    {% endif %}
+                {% empty %}
+                    <li>No hay documentos asociados.</li>
+                {% endfor %}
+            </ul>
+            
+            <!-- Hallazgos -->
+            <h5>Hallazgos</h5>
+            <ul>
+                {% for hallazgo in hallazgos %}
+                    <li>{{ hallazgo.hallazgo }} - Riesgo: {{ hallazgo.nivel_riesgo }} - Estado de Cierre: {{ hallazgo.estado_cierre }}</li>
+                {% empty %}
+                    <li>No hay hallazgos asociados.</li>
+                {% endfor %}
+            </ul>
+            
+            <!-- Mantenimientos -->
+            <h5>Mantenimientos</h5>
+            <ul>
+                {% for mantenimiento in mantenimientos %}
+                    <li>Fecha: {{ mantenimiento.fecha_mtto }} - Servicio: {{ mantenimiento.servicio_realizado }} - Kilometraje: {{ mantenimiento.kilometraje_mtto }}</li>
+                {% empty %}
+                    <li>No hay mantenimientos registrados.</li>
+                {% endfor %}
+            </ul>
+            
+            <!-- Reparaciones -->
+            <h5>Reparaciones</h5>
+            <ul>
+                {% for reparacion in reparaciones %}
+                    <li>Fecha: {{ reparacion.fecha_inicio }} - Costo: {{ reparacion.costo_total }} - Estado: {{ reparacion.estado }}</li>
+                {% empty %}
+                    <li>No hay reparaciones realizadas.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

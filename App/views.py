@@ -6,7 +6,7 @@ from .forms import *
 from .models import *
 import pandas as pd
 from django.http import HttpResponse
-
+from django.db.models import Q
 
 def register(request):
     if request.method == 'POST':
@@ -102,7 +102,39 @@ def homeDocumentacion(request):
 
 def homeTaller(request):
     return render(request, 'areas/taller/hometaller.html')
-#fin Admin
+#Fin Admin
+
+#Consulta
+def consulta_vehiculo(request):
+    query = request.GET.get('search', '')
+    
+    # Filtrar vehículos por patente, marca o modelo
+    vehiculos = Vehiculo.objects.filter(
+        Q(patente__icontains=query) | Q(marca__icontains=query) | Q(modelo__icontains=query)
+    )
+    
+    context = {
+        'vehiculos': vehiculos,
+        'search': query
+    }
+    return render(request, 'Consulta/consulta.html', context)
+
+def detalle_vehiculo(request, vehiculo_id):
+    vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
+    documentos = Documento.objects.filter(vehiculo=vehiculo)
+    hallazgos = Hallazgo.objects.filter(vehiculo=vehiculo)
+    mantenimientos = Mantenimiento.objects.filter(vehiculo=vehiculo)
+    reparaciones = Reparacion.objects.filter(vehiculo=vehiculo)
+    
+    context = {
+        'vehiculo': vehiculo,
+        'documentos': documentos,
+        'hallazgos': hallazgos,
+        'mantenimientos': mantenimientos,
+        'reparaciones': reparaciones
+    }
+    return render(request, 'Consulta/detalle_vehiculo.html', context)
+#Fin Consulta
 
 #Documentacion
 def Documentos(request): 
@@ -151,6 +183,48 @@ def cargar_documentos(request, id):
     return render(request, 'areas/documento/cargar_documentos.html', {
         'vehiculo': vehiculo,
         'form': form
+    })
+
+def crear_mantenimiento(request):
+    if request.method == 'POST':
+        form = MantenimientoForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('Documentos')  # Redirige a una lista de mantenimientos o cualquier otra vista
+    else:
+        search = request.GET.get('search', '')
+        form = MantenimientoForm()
+
+        if search:
+            form.fields['vehiculo'].queryset = Vehiculo.objects.filter(patente__icontains=search)
+    
+    return render(request, 'areas/documento/crear_mantenimiento.html', {'form': form})
+
+def listado_vehiculos(request):
+    # Obtener el término de búsqueda
+    search = request.GET.get('search', '')
+    
+    # Filtrar vehículos por patente si existe la búsqueda
+    if search:
+        vehiculos = Vehiculo.objects.filter(patente__icontains=search)
+    else:
+        vehiculos = Vehiculo.objects.all()
+
+    return render(request, 'areas/documento/lista_vehiculos.html', {
+        'vehiculos': vehiculos,
+        'search': search,
+    })
+
+def historial_vehiculo(request, vehiculo_id):
+    # Obtener el vehículo seleccionado
+    vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
+
+    # Obtener el historial de mantenimientos asociados a ese vehículo
+    historial = HistorialMantenimiento.objects.filter(mantenimiento__vehiculo=vehiculo).order_by('-fecha_registro')
+
+    return render(request, 'areas/documento/historial_vehiculo.html', {
+        'vehiculo': vehiculo,
+        'historial': historial,
     })
 
 #Fin Documentacion

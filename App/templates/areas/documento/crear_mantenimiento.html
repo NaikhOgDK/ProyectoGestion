@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Mantenimiento{% endblock %}
+
+{% block content %}
+    <h1>Crear Mantenimiento para Vehículo</h1>
+    
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}  <!-- Esto renderiza el formulario de manera sencilla -->
+        
+        <button type="submit">Crear Mantenimiento</button>
+    </form>
+
+    <br>
+    <a href="{% url 'Documentos' %}">Volver</a>
+{% endblock %}
