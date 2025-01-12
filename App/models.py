@@ -27,6 +27,14 @@ class User(AbstractUser):
 
 #Modelo Vehiculos
 class Vehiculo(models.Model):
+    TIPO_CHOICES = [
+        ('Operativo', 'Operativo'),
+        ('No Disponible', 'No Disponible'),
+        ('En Taller', 'En Taller'),
+        ('En Venta', 'En Venta'),
+        ('Fuera de Servicio', 'Fuera de Servicio'),
+    ]
+    
     patente = models.CharField(max_length=20)
     marca = models.CharField(max_length=50)
     modelo = models.CharField(max_length=50)
@@ -39,7 +47,7 @@ class Vehiculo(models.Model):
     seccion = models.CharField(max_length=50)
     ubicacion_fisica = models.CharField(max_length=100)
     propietario = models.CharField(max_length=100)
-    tipo = models.CharField(max_length=50)
+    tipo = models.CharField(max_length=50, choices=TIPO_CHOICES)  # Usando choices para limitar las opciones
     operacion = models.CharField(max_length=50)
     empresa = models.CharField(max_length=100)
     transportista = models.CharField(max_length=100)
@@ -47,6 +55,7 @@ class Vehiculo(models.Model):
 
     def __str__(self):
         return f"{self.patente} - {self.marca} {self.modelo}"
+
 
 #Modelo Documento
 class Documento(models.Model):
