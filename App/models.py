@@ -25,6 +25,25 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+#Procedimiento
+class Procedimiento(models.Model):
+    # Definimos las opciones para el campo 'area'
+    AREA_CHOICES = [
+        ('Documentacion', 'Documentación'),
+        ('GPS', 'GPS'),
+        ('Neumatico', 'Neumático'),
+        ('Taller', 'Taller'),
+    ]
+    
+    nombre = models.CharField(max_length=200)
+    descripcion = models.TextField()
+    archivo = models.FileField(upload_to='procedimientos/')  # Asegúrate de que la carpeta de carga esté configurada
+    fecha_subida = models.DateTimeField(auto_now_add=True)
+    area = models.CharField(max_length=50, choices=AREA_CHOICES)  # Agregado el campo 'area'
+
+    def __str__(self):
+        return self.nombre
+
 #Modelo Vehiculos
 class Vehiculo(models.Model):
     TIPO_CHOICES = [
