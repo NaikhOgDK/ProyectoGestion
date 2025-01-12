@@ -56,8 +56,22 @@ def visualizer_dashboard(request):
 def company_dashboard(request):
     return render(request, 'company_dashboard.html')
 
+#Seccion home Admin
 def home(request):
     return render(request,'home.html')
+
+def homeNeumatico(request):
+    return render(request, 'areas/neumatico/homeneu.html')
+
+def homeGPS(request):
+    return render(request, 'areas/gps/homegps.html')
+
+def homeDocumentacion(request):
+    return render(request, 'areas/documento/homedoc.html')
+
+def homeTaller(request):
+    return render(request, 'areas/taller/hometaller.html')
+#fin Admin
 
 def homeEmpresa(request):
     return render(request,'empresa/home.html')

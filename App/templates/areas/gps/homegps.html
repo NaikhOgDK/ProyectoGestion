@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestión de GPS{% endblock %}
+
+{% block content %}
+
+<h1 class="text-center mb-5">Vista de GPS</h1>
+
+<div class="row">
+    <!-- Visualización Estado GPS Card (ocupa todo el ancho) -->
+    <div class="col-md-12 mb-4">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column justify-content-between text-center">
+                <h4 class="card-title">Estado del GPS</h4>
+                <p class="card-text">Visualiza el estado del GPS de cada unidad (activo, inactivo, fuera de ruta).</p>
+                <a href="#" class="btn btn-primary btn-block mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                    Ver Estado GPS
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Ubicación de Unidades Card (mitad de la página) -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column justify-content-between text-center">
+                <h4 class="card-title">Ubicación de las Unidades</h4>
+                <p class="card-text">Visualiza la ubicación de las unidades mediante un link con la latitud y longitud.</p>
+                <a href="#" class="btn btn-secondary btn-block mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                    Ver Ubicación
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Odómetro y Datos Relevantes Card (mitad de la página) -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column justify-content-between text-center">
+                <h4 class="card-title">Odómetro y Datos</h4>
+                <p class="card-text">Visualiza el odómetro y otros datos relevantes de cada unidad.</p>
+                <a href="#" class="btn btn-secondary btn-block mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                    Ver Datos Relevantes
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Acceso a API GPS Card (ocupa todo el ancho) -->
+    <div class="col-md-12 mb-4">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column justify-content-between text-center">
+                <h4 class="card-title">Acceso a API GPS</h4>
+                <p class="card-text">Accede a los datos de las unidades mediante la API integrada con los dispositivos GPS.</p>
+                <a href="#" class="btn btn-primary btn-block mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                    Acceder a la API
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

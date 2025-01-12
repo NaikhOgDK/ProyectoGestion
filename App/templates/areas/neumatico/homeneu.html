@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestión de Neumáticos{% endblock %}
+
+{% block content %}
+
+<h1 class="text-center mb-5">Gestión de Neumáticos</h1>
+
+<div class="row">
+    <!-- Hallazgos Card (ocupa todo el ancho) -->
+    <div class="col-md-12 mb-4">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column justify-content-between text-center">
+                <h4 class="card-title">Hallazgos</h4>
+                <p class="card-text">Accede a la gestión de hallazgos y su resolución.</p>
+                <a href="#" class="btn btn-secondary btn-block mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                    Ver Hallazgos
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Presión y Surco Neumático Card (mitad de la página) -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column justify-content-between text-center">
+                <h4 class="card-title">Presión y Surco Neumático</h4>
+                <p class="card-text">Accede a la configuración de la presión y surco neumático.</p>
+                <a href="#" class="btn btn-primary btn-block mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                    Ver Detalles
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hallazgos Cerrados Card (mitad de la página) -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column justify-content-between text-center">
+                <h4 class="card-title">Hallazgos Cerrados</h4>
+                <p class="card-text">Accede a la gestión de hallazgos Cerrados.</p>
+                <a href="#" class="btn btn-secondary btn-block mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                    Ver Hallazgos
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
