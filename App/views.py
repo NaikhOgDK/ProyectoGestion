@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import UserRegisterForm, UserLoginForm
@@ -27,11 +27,11 @@ def login_view(request):
                 login(request, user)
                 # Redirect based on role
                 if user.role.name == 'Admin':
-                    return redirect('admin_dashboard')
+                    return redirect('home')
                 elif user.role.name == 'Visualizador':
-                    return redirect('visualizer_dashboard')
+                    return redirect('home')
                 elif user.role.name == 'Empresa':
-                    return redirect('company_dashboard')
+                    return redirect('homeEmpresa')
                 else:
                     messages.error(request, "Role not defined for this user.")
             else:
@@ -51,3 +51,13 @@ def visualizer_dashboard(request):
 @login_required
 def company_dashboard(request):
     return render(request, 'company_dashboard.html')
+
+def home(request):
+    return render(request,'home.html')
+
+def homeEmpresa(request):
+    return render(request,'empresa/home.html')
+
+def logout_user(request):
+    logout(request)
+    return render(request, "acceso/login.html")
