@@ -150,27 +150,15 @@ class Hallazgo(models.Model):
         ('Abierto', 'Abierto'),
         ('Cerrado', 'Cerrado'),
     ]
-    POSICION_NEUMATICO_CHOICES = [
-        ('P1', 'P1'),
-        ('P2', 'P2'),
-        ('P3', 'P3'),
-        ('P4', 'P4'),
-        ('P5', 'P5'),
-        ('P6', 'P6'),
-        ('P7', 'P7'),
-        ('P8', 'P8'),
-        ('P9', 'P9'),
-        ('P10', 'P10'),
-    ]
 
     hallazgo = models.CharField(max_length=255)
-    vehiculo = models.ForeignKey(Vehiculo, on_delete=models.SET_NULL, null=True, blank=True)  # Permite que el hallazgo se mantenga si el vehículo es eliminado
-    posicion_neumatico = models.CharField(max_length=3, choices=POSICION_NEUMATICO_CHOICES)  # Lista con la posición del neumático
+    vehiculo = models.ForeignKey(Vehiculo, on_delete=models.SET_NULL, null=True, blank=True)  # Relación con el vehículo (patente)
+    posicion_neumatico = models.CharField(max_length=50, choices=[(f'P{i}', f'P{i}') for i in range(1, 11)])  # P1, P2, ..., P10
     fecha_inspeccion = models.DateField()
     tipo_hallazgo = models.CharField(max_length=50, choices=TIPO_HALLAZGO_CHOICES)
     nivel_riesgo = models.CharField(max_length=10, choices=RIESGO_CHOICES)
-    responsable = models.ForeignKey(User, on_delete=models.CASCADE)
-    grupo = models.ForeignKey(Group, on_delete=models.CASCADE)  # Relación con el grupo (empresa)
+    responsable = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)  # Relación con el responsable
+    grupo = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True)  # Relación con el grupo (empresa)
     evidencia = models.FileField(upload_to='evidencias/', null=True, blank=True)  # Evidencia (foto o PDF)
 
     # Cierre
@@ -178,18 +166,55 @@ class Hallazgo(models.Model):
     responsable_cierre = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='responsable_cierre')
     descripcion_cierre = models.TextField(null=True, blank=True)  # Descripción del trabajo realizado
     evidencia_cierre = models.FileField(upload_to='cierres/', null=True, blank=True)  # Evidencia del cierre
-
-    # Documento de cierre (enviada por quien crea el hallazgo)
-    documento_cierre = models.FileField(upload_to='documentos_cierre/', null=True, blank=True)  # Documento asociado al cierre
-
-    # Nuevos campos de comunicación
-    mensaje_confirmacion_cierre = models.TextField(null=True, blank=True, help_text="Mensaje de confirmación cuando el cierre es aprobado")
-    mensaje_reenvio_datos = models.TextField(null=True, blank=True, help_text="Mensaje solicitando el reenvío de datos faltantes o no comprobables")
+    documento_cierre = models.FileField(upload_to='documentos_cierre/', null=True, blank=True)  # Documento de cierre
 
     def __str__(self):
-        # Verificamos si el vehículo existe antes de intentar acceder a la patente
-        if self.vehiculo:
-            return f"Hallazgo de {self.vehiculo.patente} ({self.tipo_hallazgo} - {self.estado_cierre})"
-        else:
-            return f"Hallazgo sin vehículo asociado ({self.tipo_hallazgo} - {self.estado_cierre})"
+        return f"{self.hallazgo} ({self.tipo_hallazgo} - {self.estado_cierre})"
+
+
+class ComunicacionHallazgo(models.Model):
+    hallazgo = models.ForeignKey(Hallazgo, on_delete=models.SET_NULL, null=True)  # Relación con el hallazgo
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)  # Usuario que envía la comunicación
+    mensaje = models.TextField()  # Mensaje del usuario sobre el hallazgo
+    fecha_envio = models.DateTimeField(auto_now_add=True)  # Fecha de envío del mensaje
+    estado = models.CharField(max_length=50, choices=[('Pendiente', 'Pendiente'), ('Respondido', 'Respondido')], default='Pendiente')  # Estado de la comunicación
+    evidencia_adicional = models.FileField(upload_to='comunicaciones_hallazgos/', null=True, blank=True)  # Evidencia adicional (foto, documento, etc.)
+
+    def __str__(self):
+        return f"Comunicacion del Hallazgo {self.hallazgo.id} por {self.usuario.username} - {self.estado}"
+
+#Taller
+class Taller(models.Model):
+    nombre = models.CharField(max_length=255)  # Nombre del taller
+    direccion = models.CharField(max_length=255, blank=True, null=True)  # Dirección del taller
+    telefono = models.CharField(max_length=20, blank=True, null=True)  # Teléfono del taller
+    encargado = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)  # Usuario encargado del taller
+    usuarios = models.ManyToManyField(User, related_name='talleres', blank=True)  # Relación Many-to-Many con los usuarios
+
+    def __str__(self):
+        return f"Taller: {self.nombre}"
+
+class Reparacion(models.Model):
+    vehiculo = models.ForeignKey(Vehiculo, on_delete=models.SET_NULL, null=True, blank=True)  # Relación con el vehículo
+    taller = models.ForeignKey(Taller, on_delete=models.SET_NULL, null=True, blank=True)  # Relación con el taller
+    kilometraje = models.IntegerField()  # Kilometraje al momento de la reparación
+    fecha_inicio = models.DateField()  # Fecha de inicio de la reparación
+    fecha_termino = models.DateField()  # Fecha de término de la reparación
+    registro = models.FileField(upload_to='reparaciones/', blank=True, null=True)  # Registro de la reparación (documento)
+    costo_total = models.DecimalField(max_digits=10, decimal_places=2)  # Costo total de la reparación
+    estado = models.CharField(max_length=50, choices=[('Pendiente', 'Pendiente'), ('En Proceso', 'En Proceso'), ('Reparada', 'Reparada')])  # Estado de la reparación
+
+    def __str__(self):
+        return f"Reparación de {self.vehiculo.patente if self.vehiculo else 'Sin vehículo'} - Taller: {self.taller.nombre if self.taller else 'Sin taller'}"
+
+class ComunicacionReparacion(models.Model):
+    reparacion = models.ForeignKey(Reparacion, on_delete=models.SET_NULL, null=True, blank=True)  # Relación con la reparación
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)  # Usuario que envía la comunicación
+    mensaje = models.TextField()  # Mensaje del usuario sobre la reparación
+    fecha_envio = models.DateTimeField(auto_now_add=True)  # Fecha de envío del mensaje
+    estado = models.CharField(max_length=50, choices=[('Pendiente', 'Pendiente'), ('Respondido', 'Respondido')], default='Pendiente')  # Estado de la comunicación
+    evidencia_adicional = models.FileField(upload_to='comunicaciones_reparaciones/', null=True, blank=True)  # Evidencia adicional (foto, documento, etc.)
+
+    def __str__(self):
+        return f"Comunicacion de Reparación {self.reparacion.id} por {self.usuario.username} - {self.estado}"
 
