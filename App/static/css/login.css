@@ -1,62 +1,31 @@
-* {
-    padding: 0;
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f8f9fa;
     margin: 0;
 }
 
-
-form {
-    padding-top: 5px;
+.login-container {
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    width: 100%;
+    max-width: 400px;
 }
-
-
-.container {
-    border-radius: 12px;
-    padding-top: 20px;
-    padding-bottom: 50px;
-}
-
-
-body {
-    background: #ffffff; 
-
-}
-
-
-.container {
-    background: #ffffff;  /* fallback for old browsers */
-    background: -webkit-linear-gradient(to right, #D7DDE8, #757F9A);  /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(to right, #D7DDE8, #757F9A); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-    max-width: 350px;
-}
-
-
-.form-group {
-    max-height: 400px;
-
-}
-
-.text-center {
-    padding-top: 30px;
-    padding-bottom: 40px;
-}
-
-button {
-    text-align: center;
-    justify-content: center;
-}
-
-
-a {
-    text-align: center;
-}
-
 
 h1 {
-    color: white;
-    font-family:Georgia, 'Times New Roman', Times, serif
+    text-align: center;
+    margin-bottom: 1.5rem;
 }
 
-label i { 
+.btn-primary {
+    width: 100%;
+}
 
-    align-items: center;  
+.register-link {
+    text-align: center;
+    margin-top: 1rem;
 }
