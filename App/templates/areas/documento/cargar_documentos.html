@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Cargar Documentos{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Cargar Documentos para el Vehículo: {{ vehiculo.patente }}</h1>
+    <p><strong>Marca:</strong> {{ vehiculo.marca }}</p>
+    <p><strong>Modelo:</strong> {{ vehiculo.modelo }}</p>
+    <p><strong>Año:</strong> {{ vehiculo.ano }}</p>
+    <p><strong>Propietario:</strong> {{ vehiculo.propietario }}</p>
+
+    <!-- Formulario de carga -->
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label for="Mantencion_Preventiva" class="form-label">Subir Mantención Preventiva</label>
+            {{ form.Mantencion_Preventiva }}
+            <label for="fecha_vencimiento_mantencion" class="form-label">Fecha de Vencimiento Mantención</label>
+            {{ form.fecha_vencimiento_mantencion }}
+        </div>
+        
+        <div class="mb-3">
+            <label for="Revision_Tecnica" class="form-label">Subir Revisión Técnica</label>
+            {{ form.Revision_Tecnica }}
+            <label for="fecha_vencimiento_revision" class="form-label">Fecha de Vencimiento Revisión</label>
+            {{ form.fecha_vencimiento_revision }}
+        </div>
+        
+        <div class="mb-3">
+            <label for="Permiso_Circulacion" class="form-label">Subir Permiso de Circulación</label>
+            {{ form.Permiso_Circulacion }}
+            <label for="fecha_vencimiento_permiso" class="form-label">Fecha de Vencimiento Permiso</label>
+            {{ form.fecha_vencimiento_permiso }}
+        </div>
+        
+        <div class="mb-3">
+            <label for="SOAP" class="form-label">Subir SOAP</label>
+            {{ form.SOAP }}
+            <label for="fecha_vencimiento_soap" class="form-label">Fecha de Vencimiento SOAP</label>
+            {{ form.fecha_vencimiento_soap }}
+        </div>
+        
+        <div class="mb-3">
+            <label for="Padron" class="form-label">Subir Padrón</label>
+            {{ form.Padron }}
+            <label for="fecha_vencimiento_padron" class="form-label">Fecha de Vencimiento Padrón</label>
+            {{ form.fecha_vencimiento_padron }}
+        </div>
+
+        <div class="mb-3">
+            <label for="descripcion" class="form-label">Descripción</label>
+            {{ form.descripcion }}
+        </div>
+
+        <button type="submit" class="btn btn-success">Cargar Documentos</button>
+        <a href="{% url 'Documentos' %}" class="btn btn-secondary">Volver</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import User
+from .models import *
 import re
 
 class UserRegisterForm(UserCreationForm):
@@ -72,3 +72,33 @@ class UserLoginForm(AuthenticationForm):
     class Meta:
         model = User
         fields = ['username', 'password']
+
+
+class DocumentoForm(forms.ModelForm):
+    class Meta:
+        model = Documento
+        fields = [
+            'Mantencion_Preventiva', 'fecha_vencimiento_mantencion',
+            'Revision_Tecnica', 'fecha_vencimiento_revision',
+            'Permiso_Circulacion', 'fecha_vencimiento_permiso',
+            'SOAP', 'fecha_vencimiento_soap',
+            'Padron', 'fecha_vencimiento_padron',
+            'descripcion'
+        ]
+
+    Mantencion_Preventiva = forms.FileField(required=False)
+    fecha_vencimiento_mantencion = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+
+    Revision_Tecnica = forms.FileField(required=False)
+    fecha_vencimiento_revision = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+
+    Permiso_Circulacion = forms.FileField(required=False)
+    fecha_vencimiento_permiso = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+
+    SOAP = forms.FileField(required=False)
+    fecha_vencimiento_soap = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+
+    Padron = forms.FileField(required=False)
+    fecha_vencimiento_padron = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+
+    descripcion = forms.CharField(widget=forms.Textarea, required=False)

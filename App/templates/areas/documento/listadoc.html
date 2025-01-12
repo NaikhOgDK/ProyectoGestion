@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Vehículos{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Lista de Vehículos</h1>
+
+    <!-- Formulario de búsqueda y filtro -->
+    <form method="get" action="{% url 'Documentos' %}" class="mb-4">
+        <div class="row g-2">
+            <div class="col-md-6">
+                <input type="text" name="search" class="form-control" placeholder="Buscar por patente" value="{{ search }}">
+            </div>
+            <div class="col-md-4">
+                <select name="tipo" class="form-select">
+                    <option value="">Filtrar por tipo</option>
+                    {% for value, display in tipos %}
+                    <option value="{{ value }}" {% if tipo_filtro == value %}selected{% endif %}>{{ display }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Aplicar</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Tabla de vehículos -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Patente</th>
+                    <th>Marca</th>
+                    <th>Modelo</th>
+                    <th>Año</th>
+                    <th>Tipo</th>
+                    <th>Propietario</th>
+                    <th>Opciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vehiculo in vehiculos %}
+                <tr>
+                    <td>{{ vehiculo.patente }}</td>
+                    <td>{{ vehiculo.marca }}</td>
+                    <td>{{ vehiculo.modelo }}</td>
+                    <td>{{ vehiculo.ano }}</td>
+                    <td>{{ vehiculo.tipo }}</td>
+                    <td>{{ vehiculo.propietario }}</td>
+                    <td>
+                        <!-- Botón para cargar documentos -->
+                        <a href="{% url 'cargar_documentos' vehiculo.id %}" class="btn btn-sm btn-secondary">
+                            Cargar Documentos
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center">No se encontraron vehículos.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
