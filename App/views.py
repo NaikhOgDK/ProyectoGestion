@@ -44,18 +44,6 @@ def logout_user(request):
     logout(request)
     return render(request, "acceso/logout.html")
 
-@login_required
-def admin_dashboard(request):
-    return render(request, 'admin_dashboard.html')
-
-@login_required
-def visualizer_dashboard(request):
-    return render(request, 'visualizer_dashboard.html')
-
-@login_required
-def company_dashboard(request):
-    return render(request, 'company_dashboard.html')
-
 #Seccion home Admin
 def home(request):
     return render(request,'home.html')
