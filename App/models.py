@@ -73,7 +73,7 @@ class Documento(models.Model):
     def __str__(self):
         return self.vehiculo.patente if self.vehiculo else 'Documento sin vehículo'
 
-#Modelo Mnatenimiento
+#Modelo Mantenimiento
 class Mantenimiento(models.Model):
     SERVICIOS_CHOICES = [
         ('SM1', 'SM1'),
@@ -134,4 +134,62 @@ def crear_historial_mantenimiento(sender, instance, created, **kwargs):
             proximo_mantenimiento_km=instance.proximo_mantenimiento_km,
             proximo_servicio=instance.proximo_servicio,
         )
+
+#Modelo Hallazgo
+class Hallazgo(models.Model):
+    TIPO_HALLAZGO_CHOICES = [
+        ('Neumático', 'Neumático'),
+        ('Surco', 'Surco'),
+    ]
+    RIESGO_CHOICES = [
+        ('Alto', 'Alto'),
+        ('Medio', 'Medio'),
+        ('Bajo', 'Bajo'),
+    ]
+    CIERRE_CHOICES = [
+        ('Abierto', 'Abierto'),
+        ('Cerrado', 'Cerrado'),
+    ]
+    POSICION_NEUMATICO_CHOICES = [
+        ('P1', 'P1'),
+        ('P2', 'P2'),
+        ('P3', 'P3'),
+        ('P4', 'P4'),
+        ('P5', 'P5'),
+        ('P6', 'P6'),
+        ('P7', 'P7'),
+        ('P8', 'P8'),
+        ('P9', 'P9'),
+        ('P10', 'P10'),
+    ]
+
+    hallazgo = models.CharField(max_length=255)
+    vehiculo = models.ForeignKey(Vehiculo, on_delete=models.SET_NULL, null=True, blank=True)  # Permite que el hallazgo se mantenga si el vehículo es eliminado
+    posicion_neumatico = models.CharField(max_length=3, choices=POSICION_NEUMATICO_CHOICES)  # Lista con la posición del neumático
+    fecha_inspeccion = models.DateField()
+    tipo_hallazgo = models.CharField(max_length=50, choices=TIPO_HALLAZGO_CHOICES)
+    nivel_riesgo = models.CharField(max_length=10, choices=RIESGO_CHOICES)
+    responsable = models.ForeignKey(User, on_delete=models.CASCADE)
+    grupo = models.ForeignKey(Group, on_delete=models.CASCADE)  # Relación con el grupo (empresa)
+    evidencia = models.FileField(upload_to='evidencias/', null=True, blank=True)  # Evidencia (foto o PDF)
+
+    # Cierre
+    estado_cierre = models.CharField(max_length=10, choices=CIERRE_CHOICES, default='Abierto')
+    responsable_cierre = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='responsable_cierre')
+    descripcion_cierre = models.TextField(null=True, blank=True)  # Descripción del trabajo realizado
+    evidencia_cierre = models.FileField(upload_to='cierres/', null=True, blank=True)  # Evidencia del cierre
+
+    # Documento de cierre (enviada por quien crea el hallazgo)
+    documento_cierre = models.FileField(upload_to='documentos_cierre/', null=True, blank=True)  # Documento asociado al cierre
+
+    # Nuevos campos de comunicación
+    mensaje_confirmacion_cierre = models.TextField(null=True, blank=True, help_text="Mensaje de confirmación cuando el cierre es aprobado")
+    mensaje_reenvio_datos = models.TextField(null=True, blank=True, help_text="Mensaje solicitando el reenvío de datos faltantes o no comprobables")
+
+    def __str__(self):
+        # Verificamos si el vehículo existe antes de intentar acceder a la patente
+        if self.vehiculo:
+            return f"Hallazgo de {self.vehiculo.patente} ({self.tipo_hallazgo} - {self.estado_cierre})"
+        else:
+            return f"Hallazgo sin vehículo asociado ({self.tipo_hallazgo} - {self.estado_cierre})"
 
