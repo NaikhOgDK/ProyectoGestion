@@ -7,7 +7,7 @@ from .models import *
 import pandas as pd
 from django.http import HttpResponse
 from django.db.models import Q
-
+from django.core.paginator import Paginator
 
 def register(request):
     if request.method == 'POST':
@@ -305,6 +305,29 @@ def add_comunicacion(request, hallazgo_pk):
 
 #Fin Neumatico
 
+#Empresa Hallazgo
+
+@login_required
+def empresa_hallazgos(request):
+    # Obtener el grupo del usuario autenticado
+    grupo_usuario = request.user.group  # Suponiendo que el usuario pertenece a un único grupo
+    if not grupo_usuario:
+        return render(request, 'empresa/hallazgos_list.html', {'hallazgos': [], 'grupo': None})
+    
+    # Filtrar los hallazgos del grupo del usuario
+    hallazgos = Hallazgo.objects.filter(grupo__name=grupo_usuario.name).order_by('-fecha_inspeccion')
+    
+    # Paginación (10 hallazgos por página)
+    paginator = Paginator(hallazgos, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'empresa/hallazgos_list.html', {
+        'hallazgos': page_obj,
+        'grupo': grupo_usuario
+    })
+
+#Fin Empresa Hallazgo
 def homeEmpresa(request):
     return render(request,'empresa/home.html')
 

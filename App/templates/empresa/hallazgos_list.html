@@ -1,0 +1,56 @@
+{% extends 'home.html' %}
+{% block content %}
+<h1>Hallazgos de {{ grupo.name }}</h1>
+
+{% if hallazgos %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Hallazgo</th>
+            <th>Fecha Inspección</th>
+            <th>Tipo</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for hallazgo in hallazgos %}
+        <tr>
+            <td>{{ hallazgo.hallazgo }}</td>
+            <td>{{ hallazgo.fecha_inspeccion }}</td>
+            <td>{{ hallazgo.tipo_hallazgo }}</td>
+            <td>{{ hallazgo.estado_cierre }}</td>
+            <td>
+                <a href="{% url 'hallazgo_detail' hallazgo.pk %}" class="btn btn-info btn-sm">Ver</a>
+                {% if hallazgo.estado_cierre == 'Abierto' %}
+                <a href="{% url 'hallazgo_close' hallazgo.pk %}" class="btn btn-success btn-sm">Cerrar</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="pagination">
+    <span class="step-links">
+        {% if hallazgos.has_previous %}
+            <a href="?page=1">&laquo; Primera</a>
+            <a href="?page={{ hallazgos.previous_page_number }}">Anterior</a>
+        {% endif %}
+
+        <span class="current">
+            Página {{ hallazgos.number }} de {{ hallazgos.paginator.num_pages }}
+        </span>
+
+        {% if hallazgos.has_next %}
+            <a href="?page={{ hallazgos.next_page_number }}">Siguiente</a>
+            <a href="?page={{ hallazgos.paginator.num_pages }}">Última &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+
+{% else %}
+<p>No hay hallazgos asociados a tu empresa.</p>
+{% endif %}
+
+{% endblock %}

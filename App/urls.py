@@ -43,5 +43,9 @@ urlpatterns = [
     path("hallazgo/<int:pk>/close/", views.hallazgo_close_or_reopen, name="hallazgo_close"),
     path("hallazgo/<int:hallazgo_pk>/comunicacion/new/", views.add_comunicacion, name="add_comunicacion"),
     # Fin URLS Nuematicos
+
+    #Empresa Hallazgo
+    path('empresa/hallazgos/', views.empresa_hallazgos, name='empresa_hallazgos'),
+    #Fin Empresa Hallazgo
     path('homeEmpresa/', views.homeEmpresa, name="homeEmpresa"),
 ]   + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
