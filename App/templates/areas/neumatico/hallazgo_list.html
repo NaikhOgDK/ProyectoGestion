@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Hallazgos</h1>
+<a href="{% url 'hallazgo_create' %}">Crear Hallazgo</a>
+<ul>
+    {% for hallazgo in hallazgos %}
+    <li>
+        <a href="{% url 'hallazgo_detail' hallazgo.pk %}">{{ hallazgo }}</a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

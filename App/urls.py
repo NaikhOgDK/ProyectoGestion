@@ -35,5 +35,13 @@ urlpatterns = [
     path('vehiculos/historial/<int:vehiculo_id>/', views.historial_vehiculo, name='historial_mantenimiento'),
     # Fin Urls Documentos
 
+    # URLS Neumaticos
+    path("Hallazgolist", views.hallazgo_list, name="hallazgo_list"),
+    path("hallazgo/new/", views.hallazgo_create_or_edit, name="hallazgo_create"),
+    path("hallazgo/<int:pk>/edit/", views.hallazgo_create_or_edit, name="hallazgo_edit"),
+    path("hallazgo/<int:pk>/", views.hallazgo_detail, name="hallazgo_detail"),
+    path("hallazgo/<int:pk>/close/", views.hallazgo_close_or_reopen, name="hallazgo_close"),
+    path("hallazgo/<int:hallazgo_pk>/comunicacion/new/", views.add_comunicacion, name="add_comunicacion"),
+    # Fin URLS Nuematicos
     path('homeEmpresa/', views.homeEmpresa, name="homeEmpresa"),
 ]   + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

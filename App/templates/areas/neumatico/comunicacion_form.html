@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Agregar Comunicación al Hallazgo</h1>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Enviar Comunicación</button>
+</form>
+<a href="{% url 'hallazgo_detail' hallazgo.pk %}" class="btn btn-secondary">Volver al Hallazgo</a>
+{% endblock %}

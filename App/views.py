@@ -1,12 +1,13 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from .forms import *
 from .models import *
 import pandas as pd
 from django.http import HttpResponse
 from django.db.models import Q
+
 
 def register(request):
     if request.method == 'POST':
@@ -228,6 +229,82 @@ def historial_vehiculo(request, vehiculo_id):
     })
 
 #Fin Documentacion
+
+#Inicio Neumatico
+
+# Verificar si el usuario es analista (Admin)
+def is_analyst(user):
+    return user.role and user.role.name == "Admin"
+
+# Verificar si el usuario es parte de una empresa
+def is_company(user):
+    return user.role and user.role.name == "Empresa"
+
+# Lista de hallazgos
+@login_required
+def hallazgo_list(request):
+    if is_analyst(request.user):
+        hallazgos = Hallazgo.objects.all()  # Analistas ven todos los hallazgos
+    elif is_company(request.user):
+        hallazgos = Hallazgo.objects.filter(grupo=request.user.group)  # Empresas ven solo los de su grupo
+    else:
+        hallazgos = Hallazgo.objects.none()
+    return render(request, "areas/neumatico/hallazgo_list.html", {"hallazgos": hallazgos})
+
+# Crear o editar hallazgo (solo analistas)
+@login_required
+@user_passes_test(is_analyst)
+def hallazgo_create_or_edit(request, pk=None):
+    hallazgo = get_object_or_404(Hallazgo, pk=pk) if pk else None
+    if request.method == "POST":
+        form = HallazgoForm(request.POST, request.FILES, instance=hallazgo)
+        if form.is_valid():
+            form.save()
+            return redirect("hallazgo_list")
+    else:
+        form = HallazgoForm(instance=hallazgo)
+    return render(request, "areas/neumatico/hallazgo_form.html", {"form": form, "hallazgo": hallazgo})
+
+# Cerrar/Reabrir hallazgo (Empresas y analistas)
+@login_required
+def hallazgo_close_or_reopen(request, pk):
+    hallazgo = get_object_or_404(Hallazgo, pk=pk)
+    if is_company(request.user) and hallazgo.grupo != request.user.group:
+        return redirect("hallazgo_list")  # Empresas solo pueden cerrar los suyos
+    if request.method == "POST":
+        if hallazgo.estado_cierre == "Abierto":
+            hallazgo.estado_cierre = "Cerrado"
+        else:
+            hallazgo.estado_cierre = "Abierto"
+        hallazgo.save()
+        return redirect("hallazgo_detail", pk=pk)
+    return render(request, "areas/neumatico/hallazgo_close.html", {"hallazgo": hallazgo})
+
+# Ver detalles del hallazgo
+@login_required
+def hallazgo_detail(request, pk):
+    hallazgo = get_object_or_404(Hallazgo, pk=pk)
+    comunicaciones = hallazgo.comunicacionhallazgo_set.all()
+    return render(request, "areas/neumatico/hallazgo_detail.html", {"hallazgo": hallazgo, "comunicaciones": comunicaciones})
+
+# Agregar comunicación
+@login_required
+def add_comunicacion(request, hallazgo_pk):
+    hallazgo = get_object_or_404(Hallazgo, pk=hallazgo_pk)
+    if request.method == "POST":
+        form = ComunicacionForm(request.POST, request.FILES)
+        if form.is_valid():
+            comunicacion = form.save(commit=False)
+            comunicacion.hallazgo = hallazgo
+            comunicacion.usuario = request.user
+            comunicacion.save()
+            return redirect("hallazgo_detail", pk=hallazgo.pk)
+    else:
+        form = ComunicacionForm()
+    return render(request, "areas/neumatico/comunicacion_form.html", {"form": form, "hallazgo": hallazgo})
+
+#Fin Neumatico
+
 def homeEmpresa(request):
     return render(request,'empresa/home.html')
 

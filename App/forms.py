@@ -116,3 +116,28 @@ class MantenimientoForm(forms.ModelForm):
         widgets = {
             'fecha_mtto': forms.DateInput(attrs={'type': 'date'}),
         }
+
+class HallazgoForm(forms.ModelForm):
+    class Meta:
+        model = Hallazgo
+        fields = [
+            'hallazgo', 'vehiculo', 'posicion_neumatico', 'fecha_inspeccion', 'tipo_hallazgo',
+            'nivel_riesgo', 'responsable', 'grupo', 'evidencia','documento_cierre',
+        ]
+        widgets = {
+            'fecha_inspeccion': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'hallazgo': forms.TextInput(attrs={'class': 'form-control'}),
+            'vehiculo': forms.Select(attrs={'class': 'form-control'}),
+            'posicion_neumatico': forms.Select(attrs={'class': 'form-control'}),
+            'tipo_hallazgo': forms.Select(attrs={'class': 'form-control'}),
+            'nivel_riesgo': forms.Select(attrs={'class': 'form-control'}),
+            'responsable': forms.Select(attrs={'class': 'form-control'}),
+            'grupo': forms.Select(attrs={'class': 'form-control'}),
+            'evidencia': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'documento_cierre': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+        }
+
+class ComunicacionForm(forms.ModelForm):
+    class Meta:
+        model = ComunicacionHallazgo
+        fields = ["mensaje", "evidencia_adicional"]
