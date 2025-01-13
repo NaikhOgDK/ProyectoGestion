@@ -1,0 +1,18 @@
+{% extends 'empresa/baseempresa.html' %}
+
+{% block title %}Cerrar Hallazgo{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Cerrar Hallazgo</h1>
+    <p><strong>Descripción:</strong> {{ hallazgo.hallazgo }}</p>
+    <p><strong>Fecha de Inspección:</strong> {{ hallazgo.fecha_inspeccion }}</p>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Cerrar Hallazgo</button>
+        <a href="{% url 'empresa_hallazgos' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

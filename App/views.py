@@ -327,6 +327,26 @@ def empresa_hallazgos(request):
         'grupo': grupo_usuario
     })
 
+@login_required
+def cerrar_hallazgo(request, pk):
+    hallazgo = get_object_or_404(Hallazgo, pk=pk)
+
+    if request.method == 'POST':
+        form = HallazgoCierreForm(request.POST, request.FILES, instance=hallazgo)
+        if form.is_valid():
+            hallazgo.estado_cierre = 'Cerrado'
+            form.save()
+            messages.success(request, "El hallazgo ha sido cerrado exitosamente.")
+            return redirect('empresa_hallazgos')
+    else:
+        form = HallazgoCierreForm(instance=hallazgo)
+
+    return render(request, 'empresa/cerrar_hallazgo.html', {'form': form, 'hallazgo': hallazgo})
+
+def detalle_hallazgo(request, pk):
+    hallazgo = get_object_or_404(Hallazgo, pk=pk)
+    return render(request, 'empresa/detalle_hallazgo.html', {'hallazgo': hallazgo})
+
 #Fin Empresa Hallazgo
 def homeEmpresa(request):
     return render(request,'empresa/home.html')

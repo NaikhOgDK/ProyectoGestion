@@ -137,6 +137,16 @@ class HallazgoForm(forms.ModelForm):
             'documento_cierre': forms.ClearableFileInput(attrs={'class': 'form-control'}),
         }
 
+class HallazgoCierreForm(forms.ModelForm):
+    class Meta:
+        model = Hallazgo
+        fields = ['estado_cierre', 'descripcion_cierre', 'evidencia_cierre']
+        widgets = {
+            'estado_cierre': forms.Select(attrs={'class': 'form-control'}),
+            'descripcion_cierre': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'evidencia_cierre': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+        }
+
 class ComunicacionForm(forms.ModelForm):
     class Meta:
         model = ComunicacionHallazgo

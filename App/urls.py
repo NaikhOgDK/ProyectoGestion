@@ -46,6 +46,8 @@ urlpatterns = [
 
     #Empresa Hallazgo
     path('empresa/hallazgos/', views.empresa_hallazgos, name='empresa_hallazgos'),
+    path('cerrar-hallazgo/<int:pk>/', views.cerrar_hallazgo, name='cerrar_hallazgo'),
+    path('hallazgos/<int:pk>/', views.detalle_hallazgo, name='detalle_hallazgo'),
     #Fin Empresa Hallazgo
     path('homeEmpresa/', views.homeEmpresa, name="homeEmpresa"),
 ]   + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

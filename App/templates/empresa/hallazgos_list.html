@@ -1,4 +1,4 @@
-{% extends 'home.html' %}
+{% extends 'empresa/baseempresa.html' %}
 {% block content %}
 <h1>Hallazgos de {{ grupo.name }}</h1>
 
@@ -21,9 +21,9 @@
             <td>{{ hallazgo.tipo_hallazgo }}</td>
             <td>{{ hallazgo.estado_cierre }}</td>
             <td>
-                <a href="{% url 'hallazgo_detail' hallazgo.pk %}" class="btn btn-info btn-sm">Ver</a>
+                <a href="{% url 'detalle_hallazgo' hallazgo.pk %}" class="btn btn-info btn-sm">Ver</a>
                 {% if hallazgo.estado_cierre == 'Abierto' %}
-                <a href="{% url 'hallazgo_close' hallazgo.pk %}" class="btn btn-success btn-sm">Cerrar</a>
+                <a href="{% url 'cerrar_hallazgo' hallazgo.pk %}" class="btn btn-success btn-sm">Cerrar</a>
                 {% endif %}
             </td>
         </tr>

@@ -1,0 +1,60 @@
+{% extends 'empresa/baseempresa.html' %}
+
+{% block title %}Detalles del Hallazgo{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Detalles del Hallazgo</h1>
+    <table class="table table-bordered">
+        <tr>
+            <th>Descripción del Hallazgo</th>
+            <td>{{ hallazgo.hallazgo }}</td>
+        </tr>
+        <tr>
+            <th>Fecha de Inspección</th>
+            <td>{{ hallazgo.fecha_inspeccion }}</td>
+        </tr>
+        <tr>
+            <th>Tipo de Hallazgo</th>
+            <td>{{ hallazgo.tipo_hallazgo }}</td>
+        </tr>
+        <tr>
+            <th>Riesgo</th>
+            <td>{{ hallazgo.nivel_riesgo }}</td>
+        </tr>
+        <tr>
+            <th>Estado de Cierre</th>
+            <td>{{ hallazgo.estado_cierre }}</td>
+        </tr>
+        {% if hallazgo.descripcion_cierre %}
+        <tr>
+            <th>Descripción del Cierre</th>
+            <td>{{ hallazgo.descripcion_cierre }}</td>
+        </tr>
+        {% endif %}
+        {% if hallazgo.responsable_cierre %}
+        <tr>
+            <th>Responsable del Cierre</th>
+            <td>{{ hallazgo.responsable_cierre }}</td>
+        </tr>
+        {% endif %}
+        {% if hallazgo.evidencia_cierre %}
+        <tr>
+            <th>Evidencia del Cierre</th>
+            <td>
+                <a href="{{ hallazgo.evidencia_cierre.url }}" target="_blank" class="btn btn-link">Ver Evidencia</a>
+            </td>
+        </tr>
+        {% endif %}
+        {% if hallazgo.documento_cierre %}
+        <tr>
+            <th>Documento de Cierre</th>
+            <td>
+                <a href="{{ hallazgo.documento_cierre.url }}" target="_blank" class="btn btn-link">Ver Documento</a>
+            </td>
+        </tr>
+        {% endif %}
+    </table>
+    <a href="{% url 'empresa_hallazgos' %}" class="btn btn-secondary mt-3">Volver a la Lista</a>
+</div>
+{% endblock %}

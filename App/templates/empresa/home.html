@@ -1,53 +1,10 @@
-<!DOCTYPE html>
-{% load static %}
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
-    <link href="{% static 'css/home.css' %}" rel="stylesheet">
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+{% extends 'empresa/baseempresa.html' %}
 
-    <title>Home Empresa</title>
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <span><img src="{% static 'img/OCA.png' %}" alt="logo.png" width="100" height="60"></span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav me-auto mb-10 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'empresa_hallazgos' %}">Hallazgos de mi empresa</a>
-                    </li>
-                    
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fa-solid fa-circle-user fa-xl"></i>
-                        </a>
-                        <ul class="dropdown-menu">
-                            {% if user.is_authenticated %}
-                                <li><a class="dropdown-item">{{ request.user }}</a></li>
-                                <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
-                            {% else %}
-                                <li><a class="dropdown-item" href="{% url 'login' %}">Login</a></li>
-                            {% endif %}
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+{% block title %}Home Empresa{% endblock %}
 
-    <div class="container">
-        <h1>Bienvenido a la plataforma</h1>
-        <p>Selecciona la opción en el menú para gestionar los hallazgos de tu empresa.</p>
-    </div>
-
-    <script src="{% static 'bootstrap/js/bootstrap.bundle.js' %}"></script>
-</body>
-</html>
+{% block content %}
+<div class="container">
+    <h1>Bienvenido a la plataforma</h1>
+    <p>Selecciona la opción en el menú para gestionar los hallazgos de tu empresa.</p>
+</div>
+{% endblock %}
