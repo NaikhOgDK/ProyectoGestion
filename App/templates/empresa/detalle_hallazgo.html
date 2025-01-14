@@ -4,6 +4,11 @@
 
 {% block content %}
 <div class="container mt-4">
+    <!-- Botón Volver a la Lista alineado a la derecha -->
+    <div class="d-flex justify-content-end mb-3">
+        <a href="{% url 'empresa_hallazgos' %}" class="btn btn-secondary">Volver a la Lista</a>
+    </div>
+
     <h1 class="mb-4">Detalles del Hallazgo</h1>
     <table class="table table-bordered">
         <tr>
@@ -55,6 +60,46 @@
         </tr>
         {% endif %}
     </table>
-    <a href="{% url 'empresa_hallazgos' %}" class="btn btn-secondary mt-3">Volver a la Lista</a>
+
+    <!-- Comunicaciones -->
+    <h2 class="mt-4">Comunicaciones</h2>
+    <ul class="list-group">
+        {% for comunicacion in hallazgo.comunicacionhallazgo_set.all %}
+        <li class="list-group-item">
+            <strong>{{ comunicacion.usuario.username }}</strong> ({{ comunicacion.fecha_envio }}):
+            <p>{{ comunicacion.mensaje }}</p>
+            {% if comunicacion.evidencia_adicional %}
+            <a href="{{ comunicacion.evidencia_adicional.url }}" target="_blank" class="btn btn-link">Ver Evidencia</a>
+            {% endif %}
+        </li>
+        {% empty %}
+        <li class="list-group-item">No hay comunicaciones para este hallazgo.</li>
+        {% endfor %}
+    </ul>
+
+    <!-- Botón para abrir el modal -->
+    <button type="button" class="btn btn-primary mt-4" data-bs-toggle="modal" data-bs-target="#comunicacionModal">
+        Agregar Nueva Comunicación
+    </button>
+
+    <!-- Modal de comunicación -->
+    <div class="modal fade" id="comunicacionModal" tabindex="-1" aria-labelledby="comunicacionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="comunicacionModalLabel">Agregar Nueva Comunicación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-primary">Enviar Comunicación</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}

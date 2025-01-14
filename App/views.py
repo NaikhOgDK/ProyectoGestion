@@ -302,7 +302,6 @@ def add_comunicacion(request, hallazgo_pk):
     else:
         form = ComunicacionForm()
     return render(request, "areas/neumatico/comunicacion_form.html", {"form": form, "hallazgo": hallazgo})
-
 #Fin Neumatico
 
 #Empresa Hallazgo
@@ -345,7 +344,22 @@ def cerrar_hallazgo(request, pk):
 
 def detalle_hallazgo(request, pk):
     hallazgo = get_object_or_404(Hallazgo, pk=pk)
-    return render(request, 'empresa/detalle_hallazgo.html', {'hallazgo': hallazgo})
+
+    if request.method == "POST":
+        # Si se ha enviado el formulario de comunicación
+        form = ComunicacionForm(request.POST, request.FILES)
+        if form.is_valid():
+            comunicacion = form.save(commit=False)
+            comunicacion.hallazgo = hallazgo
+            comunicacion.usuario = request.user
+            comunicacion.save()
+            # Redirigir de nuevo al detalle del hallazgo para que se vea la nueva comunicación
+            return redirect('detalle_hallazgo', pk=hallazgo.pk)
+    else:
+        # Si es una petición GET, solo creamos el formulario vacío
+        form = ComunicacionForm()
+
+    return render(request, 'empresa/detalle_hallazgo.html', {'hallazgo': hallazgo, 'form': form})
 
 #Fin Empresa Hallazgo
 def homeEmpresa(request):

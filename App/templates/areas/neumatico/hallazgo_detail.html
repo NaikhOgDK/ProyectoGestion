@@ -1,44 +1,79 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<h1>{{ hallazgo }}</h1>
-<p>Fecha de inspección: {{ hallazgo.fecha_inspeccion }}</p>
-<p>Tipo: {{ hallazgo.tipo_hallazgo }}</p>
-<p>Estado: {{ hallazgo.estado_cierre }}</p>
+<div class="container mt-5">
+    <h1 class="mb-4">{{ hallazgo }}</h1>
 
-{% if hallazgo.estado_cierre == 'Abierto' %}
-<form method="post" action="{% url 'hallazgo_close' hallazgo.pk %}">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-primary">Cerrar Hallazgo</button>
-</form>
-{% else %}
-<h2>Información del Cierre</h2>
-<p><strong>Descripción del Cierre:</strong> {{ hallazgo.descripcion_cierre }}</p>
-{% if hallazgo.evidencia_cierre %}
-<p><strong>Evidencia del Cierre:</strong> <a href="{{ hallazgo.evidencia_cierre.url }}" target="_blank">Ver Evidencia</a></p>
-{% endif %}
-{% if hallazgo.documento_cierre %}
-<p><strong>Documento de Cierre:</strong> <a href="{{ hallazgo.documento_cierre.url }}" target="_blank">Ver Documento</a></p>
-{% endif %}
-<form method="post" action="{% url 'hallazgo_close' hallazgo.pk %}">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-warning">Reabrir Hallazgo</button>
-</form>
-{% endif %}
+    <!-- Información principal del hallazgo -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Detalles del Hallazgo</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>Fecha de Inspección:</strong> {{ hallazgo.fecha_inspeccion }}</p>
+            <p><strong>Tipo de Hallazgo:</strong> {{ hallazgo.tipo_hallazgo }}</p>
+            <p><strong>Estado:</strong> {{ hallazgo.estado_cierre }}</p>
+        </div>
+    </div>
 
-<h2>Comunicaciones</h2>
-<ul>
-    {% for comunicacion in hallazgo.comunicacionhallazgo_set.all %}
-    <li>
-        <strong>{{ comunicacion.usuario.username }}</strong> ({{ comunicacion.fecha_envio }}): 
-        {{ comunicacion.mensaje }}
-        {% if comunicacion.evidencia_adicional %}
-        <a href="{{ comunicacion.evidencia_adicional.url }}" target="_blank">Ver Evidencia</a>
-        {% endif %}
-    </li>
-    {% empty %}
-    <li>No hay comunicaciones para este hallazgo.</li>
-    {% endfor %}
-</ul>
+    <!-- Formulario para cerrar el hallazgo (si está abierto) -->
+    {% if hallazgo.estado_cierre == 'Abierto' %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="post" action="{% url 'hallazgo_close' hallazgo.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary btn-lg">Cerrar Hallazgo</button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">Información del Cierre</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>Descripción del Cierre:</strong> {{ hallazgo.descripcion_cierre }}</p>
 
-<a href="{% url 'add_comunicacion' hallazgo.pk %}" class="btn btn-secondary">Agregar Comunicación</a>
+            {% if hallazgo.evidencia_cierre %}
+            <p><strong>Evidencia del Cierre:</strong> <a href="{{ hallazgo.evidencia_cierre.url }}" target="_blank">Ver Evidencia</a></p>
+            {% endif %}
+
+            {% if hallazgo.documento_cierre %}
+            <p><strong>Documento de Cierre:</strong> <a href="{{ hallazgo.documento_cierre.url }}" target="_blank">Ver Documento</a></p>
+            {% endif %}
+
+            <form method="post" action="{% url 'hallazgo_close' hallazgo.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-warning btn-lg">Reabrir Hallazgo</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Sección de comunicaciones -->
+    <div class="card">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Comunicaciones</h5>
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                {% for comunicacion in hallazgo.comunicacionhallazgo_set.all %}
+                <li class="list-group-item">
+                    <strong>{{ comunicacion.usuario.username }}</strong> 
+                    <small class="text-muted">({{ comunicacion.fecha_envio }})</small>: 
+                    <p>{{ comunicacion.mensaje }}</p>
+
+                    {% if comunicacion.evidencia_adicional %}
+                    <p><a href="{{ comunicacion.evidencia_adicional.url }}" target="_blank">Ver Evidencia Adicional</a></p>
+                    {% endif %}
+                </li>
+                {% empty %}
+                <li class="list-group-item">No hay comunicaciones para este hallazgo.</li>
+                {% endfor %}
+            </ul>
+
+            <a href="{% url 'add_comunicacion' hallazgo.pk %}" class="btn btn-secondary btn-lg mt-3">Agregar Comunicación</a>
+        </div>
+    </div>
+</div>
 {% endblock %}
