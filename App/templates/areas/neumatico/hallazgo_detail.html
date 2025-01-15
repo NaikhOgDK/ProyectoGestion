@@ -2,11 +2,11 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h1 class="mb-4">{{ hallazgo }}</h1>
+    <h1 class="text-center mb-5">{{ hallazgo }}</h1>
 
     <!-- Información principal del hallazgo -->
     <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header div-outline-custom btn-lg text-center">
             <h5 class="mb-0">Detalles del Hallazgo</h5>
         </div>
         <div class="card-body">
@@ -19,16 +19,18 @@
     <!-- Formulario para cerrar el hallazgo (si está abierto) -->
     {% if hallazgo.estado_cierre == 'Abierto' %}
     <div class="card mb-4">
-        <div class="card-body">
+        <div class="card-body text-center">
             <form method="post" action="{% url 'hallazgo_close' hallazgo.pk %}">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-primary btn-lg">Cerrar Hallazgo</button>
+                <button type="submit" class="card-header btn btn-outline-custom btn-lg" style="width: 100%; height: 50px; display: flex; justify-content: center; align-items: center;">
+                    Cerrar Hallazgo
+                </button>
             </form>
         </div>
     </div>
     {% else %}
     <div class="card mb-4">
-        <div class="card-header bg-success text-white">
+        <div class="card-header div-outline-custom btn-lg text-center">
             <h5 class="mb-0">Información del Cierre</h5>
         </div>
         <div class="card-body">
@@ -44,7 +46,9 @@
 
             <form method="post" action="{% url 'hallazgo_close' hallazgo.pk %}">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-warning btn-lg">Reabrir Hallazgo</button>
+                <button type="submit" class="card-header btn btn-outline-custom btn-lg" style="width: 100%; height: 50px; display: flex; justify-content: center; align-items: center;">
+                    Reabrir Hallazgo
+                </button>
             </form>
         </div>
     </div>
@@ -52,7 +56,7 @@
 
     <!-- Sección de comunicaciones -->
     <div class="card">
-        <div class="card-header bg-info text-white">
+        <div class="card-header div-outline-custom btn-lg text-center">
             <h5 class="mb-0">Comunicaciones</h5>
         </div>
         <div class="card-body">
@@ -72,7 +76,9 @@
                 {% endfor %}
             </ul>
 
-            <a href="{% url 'add_comunicacion' hallazgo.pk %}" class="btn btn-secondary btn-lg mt-3">Agregar Comunicación</a>
+            <a href="{% url 'add_comunicacion' hallazgo.pk %}" class="card-header btn btn-outline-custom btn-lg" style="width: 100%; height: 50px; display: flex; justify-content: center; align-items: center;">
+                Agregar Comunicación
+            </a>
         </div>
     </div>
 </div>

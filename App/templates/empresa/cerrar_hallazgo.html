@@ -11,8 +11,8 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-success">Cerrar Hallazgo</button>
-        <a href="{% url 'empresa_hallazgos' %}" class="btn btn-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-outline-custom">Cerrar Hallazgo</button>
+        <a href="{% url 'empresa_hallazgos' %}" class="btn btn-outline-custom">Cancelar</a>
     </form>
 </div>
 {% endblock %}

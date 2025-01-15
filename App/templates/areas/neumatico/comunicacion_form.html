@@ -1,10 +1,31 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<h1>Agregar Comunicación al Hallazgo</h1>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Enviar Comunicación</button>
-</form>
-<a href="{% url 'hallazgo_detail' hallazgo.pk %}" class="btn btn-secondary">Volver al Hallazgo</a>
+<h1 class="display-4 font-weight-bold text-center" style="color: #0b3356 ;">Agregar Comunicación al Hallazgo</h1>
+
+<div class="container">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Mensaje -->
+        <div class="mb-4">
+            <label for="{{ form.mensaje.id_for_label }}" class="form-label">Escribe tu mensaje</label>
+            {{ form.mensaje }}
+        </div>
+
+        <!-- Subir archivo -->
+        <div class="row">
+            <div class="col-6 mb-4">
+                <label for="{{ form.evidencia_adicional.id_for_label }}" class="form-label">Subir Evidencia (Opcional)</label>
+                <div class="input-group">
+                    {{ form.evidencia_adicional }}
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-outline-custom">Enviar Comunicación</button>
+    </form>
+
+    <a href="{% url 'hallazgo_detail' hallazgo.pk %}" class="btn btn-outline-custom mt-3">Volver al Hallazgo</a>
+</div>
 {% endblock %}

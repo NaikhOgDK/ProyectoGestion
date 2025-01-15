@@ -202,3 +202,7 @@ class ComunicacionForm(forms.ModelForm):
     class Meta:
         model = ComunicacionHallazgo
         fields = ["mensaje", "evidencia_adicional"]
+        widgets = {
+            "mensaje": forms.Textarea(attrs={"class": "form-control", "rows": 4, "placeholder": "Escribe tu mensaje..."}),
+            "evidencia_adicional": forms.ClearableFileInput(attrs={"class": "form-control", "id": "Padron"}),
+        }

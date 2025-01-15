@@ -26,5 +26,26 @@ li a {
     color: #e9473f !important; /* Texto al pasar el mouse */
 }
 
+.div-outline-custom {
+    background-color: #0b3356 !important; /* Fondo transparente inicialmente */
+    border: 2px solid #0b3356 !important; /* Borde de color inicial */
+    color: #ffffff !important; /* Texto inicial */
+    align-items: center;
+    justify-content: center;
+}
+
+.dropdown-menu {
+    position: absolute; /* Asegura que el menú se posicione relativo al contenedor padre */
+    z-index: 1050; /* Prioriza el menú desplegable sobre otros elementos */
+    left: 0; /* Asegura que el menú se alinee correctamente */
+    top: 100%; /* Posiciona el menú justo debajo del botón de activación */
+    transform: translate(0, 0); /* Evita transformaciones innecesarias */
+    will-change: transform;
+}
+
+.nav-item.dropdown {
+    position: relative;
+}
+
 
 

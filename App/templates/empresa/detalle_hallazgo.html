@@ -6,7 +6,7 @@
 <div class="container mt-4">
     <!-- Botón Volver a la Lista alineado a la derecha -->
     <div class="d-flex justify-content-end mb-3">
-        <a href="{% url 'empresa_hallazgos' %}" class="btn btn-secondary">Volver a la Lista</a>
+        <a href="{% url 'empresa_hallazgos' %}" class="btn btn-outline-custom">Volver a la Lista</a>
     </div>
 
     <h1 class="mb-4">Detalles del Hallazgo</h1>
@@ -47,7 +47,7 @@
         <tr>
             <th>Evidencia del Cierre</th>
             <td>
-                <a href="{{ hallazgo.evidencia_cierre.url }}" target="_blank" class="btn btn-link">Ver Evidencia</a>
+                <a href="{{ hallazgo.evidencia_cierre.url }}" target="_blank" class="btn btn-outline-custom">Ver Evidencia</a>
             </td>
         </tr>
         {% endif %}
@@ -55,7 +55,7 @@
         <tr>
             <th>Documento de Cierre</th>
             <td>
-                <a href="{{ hallazgo.documento_cierre.url }}" target="_blank" class="btn btn-link">Ver Documento</a>
+                <a href="{{ hallazgo.documento_cierre.url }}" target="_blank" class="btn btn-outline-custom">Ver Documento</a>
             </td>
         </tr>
         {% endif %}
@@ -69,7 +69,7 @@
             <strong>{{ comunicacion.usuario.username }}</strong> ({{ comunicacion.fecha_envio }}):
             <p>{{ comunicacion.mensaje }}</p>
             {% if comunicacion.evidencia_adicional %}
-            <a href="{{ comunicacion.evidencia_adicional.url }}" target="_blank" class="btn btn-link">Ver Evidencia</a>
+            <a href="{{ comunicacion.evidencia_adicional.url }}" target="_blank" class="btn btn-outline-custom">Ver Evidencia</a>
             {% endif %}
         </li>
         {% empty %}
@@ -78,7 +78,7 @@
     </ul>
 
     <!-- Botón para abrir el modal -->
-    <button type="button" class="btn btn-primary mt-4" data-bs-toggle="modal" data-bs-target="#comunicacionModal">
+    <button type="button" class="btn btn-outline-custom mt-4" data-bs-toggle="modal" data-bs-target="#comunicacionModal">
         Agregar Nueva Comunicación
     </button>
 
@@ -94,7 +94,7 @@
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         {{ form.as_p }}
-                        <button type="submit" class="btn btn-primary">Enviar Comunicación</button>
+                        <button type="submit" class="btn btn-outline-custom">Enviar Comunicación</button>
                     </form>
                 </div>
             </div>

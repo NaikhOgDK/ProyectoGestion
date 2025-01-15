@@ -1,10 +1,27 @@
 {% extends 'empresa/baseempresa.html' %}
 
-{% block title %}Home Empresa{% endblock %}
+{% block title %}Gestión de Hallazgos{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1>Bienvenido a la plataforma</h1>
-    <p>Selecciona la opción en el menú para gestionar los hallazgos de tu empresa.</p>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h1 class="display-4 font-weight-bold" style="color: #0b3356;">Gestión de Hallazgos</h1>
+        </div>
+    </div>
+
+    <div class="row mt-5 justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h4 class="card-title">Hallazgos de Mi Empresa</h4>
+                    <p class="card-text">Accede a la gestión de los hallazgos de tu empresa y resuelve los pendientes.</p>
+                    <a href="{% url 'empresa_hallazgos' %}" class="btn btn-outline-custom mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                        Gestionar Hallazgos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
