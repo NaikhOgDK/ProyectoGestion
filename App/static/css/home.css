@@ -13,3 +13,18 @@ body {
 li a {
     margin-left: 30px;
 }
+
+.btn-outline-custom {
+    background-color: transparent !important; /* Fondo transparente inicialmente */
+    border: 2px solid #0b3356 !important; /* Borde de color inicial */
+    color: #0b3356 !important; /* Texto inicial */
+    transition: all 0.5s ease !important; /* Transición suave */
+}
+
+.btn-outline-custom:hover {
+    background-color: #0b3356 !important; /* Fondo al pasar el mouse */
+    color: #e9473f !important; /* Texto al pasar el mouse */
+}
+
+
+

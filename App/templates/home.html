@@ -6,7 +6,7 @@
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-12 text-center">
-            <h1 class="display-4">Bienvenido al Panel de Control</h1>
+            <h1 class="display-4 font-weight-bold" style="color: #0b3356 ;">Bienvenido al Panel de Control</h1>
             <p class="lead">Gestiona GPS, Neumáticos, Taller, Documentación y Visualización de manera eficiente.</p>
         </div>
     </div>
@@ -18,74 +18,76 @@
                 <div class="card-body">
                     <h4 class="card-title">Consulta</h4>
                     <p class="card-text">Consulta la información actualizada de cualquier unidad, incluyendo estado, documentación y hallazgos.</p>
-                    <a href="{% url 'consulta_vehiculo' %}" class="btn btn-primary">Consulta</a>
+                    <a href="{% url 'consulta_vehiculo' %}" class="btn btn-outline-custom">Consulta</a>
                 </div>
             </div>
         </div>
     </div>
+    
 
-    <div class="row mt-5">
-        <div class="col-md-4 text-center">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Gestión GPS</h5>
-                    <p class="card-text">Monitorea y gestiona los sistemas GPS de forma efectiva.</p>
-                    <a href="{% url 'homeGPS' %}" class="btn btn-outline-primary">Ver Detalles</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4 text-center">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Gestión de Neumáticos</h5>
-                    <p class="card-text">Rastrea y analiza el uso y las condiciones de los neumáticos.</p>
-                    <a href="{% url 'homeNeumatico' %}" class="btn btn-outline-primary">Ver Detalles</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4 text-center">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Taller</h5>
-                    <p class="card-text">Lleva el control de los camiones en reparación y listos para retirar.</p>
-                    <a href="{% url 'homeTaller' %}" class="btn btn-outline-primary">Ver Detalles</a>
-                </div>
+<div class="row mt-5">
+    <div class="col-md-4 text-center">
+        <div class="card shadow-sm h-100">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Gestión GPS</h5>
+                <p class="card-text">Monitorea y gestiona los sistemas GPS de forma efectiva.</p>
+                <a href="{% url 'homeGPS' %}" class="btn btn-outline-custom mt-auto">Ver Detalles</a>
             </div>
         </div>
     </div>
 
-    <div class="row mt-5">
-        <div class="col-md-4 text-center">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Documentación</h5>
-                    <p class="card-text">Sube y valida documentos importantes.</p>
-                    <a href="{% url 'homeDocumentacion' %}" class="btn btn-outline-primary">Ver Detalles</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4 text-center">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Visualización</h5>
-                    <p class="card-text">Analiza datos con visualizaciones poderosas.</p>
-                    <a href="#" class="btn btn-outline-primary">Ver Detalles</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4 text-center">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Plataforma ODIS</h5>
-                    <p class="card-text">Accede a la plataforma ODIS para herramientas avanzadas.</p>
-                    <a href="https://odisdkp.com/" target="_blank" class="btn btn-outline-primary">Visitar ODIS</a>
-                </div>
+    <div class="col-md-4 text-center">
+        <div class="card shadow-sm h-100">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Gestión de Neumáticos</h5>
+                <p class="card-text">Rastrea y analiza el uso y las condiciones de los neumáticos.</p>
+                <a href="{% url 'homeNeumatico' %}" class="btn btn-outline-custom mt-auto">Ver Detalles</a>
             </div>
         </div>
     </div>
+
+    <div class="col-md-4 text-center">
+        <div class="card shadow-sm h-100">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Taller</h5>
+                <p class="card-text">Lleva el control de los camiones en reparación y listos para retirar.</p>
+                <a href="{% url 'homeTaller' %}" class="btn btn-outline-custom mt-auto">Ver Detalles</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4 text-center">
+        <div class="card shadow-sm h-100">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Documentación</h5>
+                <p class="card-text">Sube y valida documentos importantes.</p>
+                <a href="{% url 'homeDocumentacion' %}" class="btn btn-outline-custom mt-auto">Ver Detalles</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 text-center">
+        <div class="card shadow-sm h-100">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Visualización</h5>
+                <p class="card-text">Analiza datos con visualizaciones poderosas.</p>
+                <a href="#" class="btn btn-outline-custom mt-auto">Ver Detalles</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 text-center">
+        <div class="card shadow-sm h-100">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Plataforma ODIS</h5>
+                <p class="card-text">Accede a la plataforma ODIS para herramientas avanzadas.</p>
+                <a href="https://odisdkp.com/" target="_blank" class="btn btn-outline-custom mt-auto">Visitar ODIS</a>
+            </div>
+        </div>
+    </div>
+</div>
+
 </div>
 {% endblock %}
