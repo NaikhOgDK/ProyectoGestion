@@ -150,6 +150,8 @@ def Documentos(request):
     if tipo_filtro:
         vehiculos = vehiculos.filter(tipo=tipo_filtro)
 
+    for vehiculo in vehiculos:
+        vehiculo.documentos_count = vehiculo.documento_set.count()
     # Opciones de tipo para el filtro
     tipos = [
         ('Operativo', 'Operativo'),
@@ -185,6 +187,32 @@ def cargar_documentos(request, id):
         'vehiculo': vehiculo,
         'form': form
     })
+
+def editar_documentos(request, id):
+    # Obtén el vehículo específico por su ID
+    vehiculo = get_object_or_404(Vehiculo, id=id)
+
+    # Obtén los documentos asociados al vehículo
+    documentos = Documento.objects.filter(vehiculo=vehiculo)
+
+    # Si no existe ningún documento, redirigir o mostrar un mensaje
+    if not documentos:
+        return redirect('cargar_documentos', id=id)  # Redirigir a cargar documentos
+
+    # Si el formulario se ha enviado
+    if request.method == 'POST':
+        for documento in documentos:
+            form = DocumentoForm(request.POST, request.FILES, instance=documento)
+            if form.is_valid():
+                form.save()  # Guarda los cambios del documento
+        return redirect('Documentos')  # Redirige a la lista de vehículos (ajusta la ruta según tu proyecto)
+
+    # Si no se ha enviado el formulario, mostrar el formulario de edición
+    context = {
+        'vehiculo': vehiculo,
+        'documentos': documentos,
+    }
+    return render(request, 'areas/documento/editar_documentos.html', context)
 
 def crear_mantenimiento(request):
     if request.method == 'POST':

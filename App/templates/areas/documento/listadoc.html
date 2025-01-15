@@ -50,10 +50,17 @@
                     <td>{{ vehiculo.tipo }}</td>
                     <td>{{ vehiculo.propietario }}</td>
                     <td>
-                        <!-- Botón para cargar documentos -->
-                        <a href="{% url 'cargar_documentos' vehiculo.id %}" class="btn btn-outline-custom btn-sm">
-                            Cargar Documentos
-                        </a>
+                        {% if vehiculo.documentos_count > 0 %}
+                            <!-- Botón para editar documentos si ya existen -->
+                            <a href="{% url 'editar_documentos' vehiculo.id %}" class="btn btn-outline-custom btn-sm">
+                                Editar Documentos
+                            </a>
+                        {% else %}
+                            <!-- Botón para cargar documentos si no hay ninguno -->
+                            <a href="{% url 'cargar_documentos' vehiculo.id %}" class="btn btn-outline-custom btn-sm">
+                                Cargar Documentos
+                            </a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% empty %}

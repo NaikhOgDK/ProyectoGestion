@@ -30,6 +30,7 @@ urlpatterns = [
     # URLS Documentos
     path('Documentos/', views.Documentos, name='Documentos'),
     path('documentos/cargar/<int:id>/', views.cargar_documentos, name='cargar_documentos'),
+    path('editar_documentos/<int:id>/', views.editar_documentos, name='editar_documentos'),
     path('crear_mantenimiento/', views.crear_mantenimiento, name='crear_mantenimiento'),
     path('listado_vehiculos/', views.listado_vehiculos, name='listado_vehiculos'),
     path('vehiculos/historial/<int:vehiculo_id>/', views.historial_vehiculo, name='historial_mantenimiento'),

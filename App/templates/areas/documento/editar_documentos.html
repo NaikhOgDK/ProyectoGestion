@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Documentos{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="display-4 font-weight-bold text-center" style="color: #0b3356;">Editar Documentos - Vehículo: {{ vehiculo.patente }}</h1>
+
+    <!-- Información del Vehículo (no editable) -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="info-box">
+                <h5>Marca</h5>
+                <p>{{ vehiculo.marca }}</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="info-box">
+                <h5>Modelo</h5>
+                <p>{{ vehiculo.modelo }}</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="info-box">
+                <h5>Año</h5>
+                <p>{{ vehiculo.ano }}</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="info-box">
+                <h5>Propietario</h5>
+                <p>{{ vehiculo.propietario }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de edición de documentos -->
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Mantención Preventiva</h5>
+                        <div class="form-group">
+                            <label for="Mantencion_Preventiva">Nuevo archivo:</label>
+                            <input type="file" name="Mantencion_Preventiva" class="form-control" id="Mantencion_Preventiva">
+                        </div>
+                        <div class="form-group">
+                            <label for="fecha_vencimiento_mantencion">Fecha de vencimiento:</label>
+                            <input type="date" name="fecha_vencimiento_mantencion" class="form-control" id="fecha_vencimiento_mantencion" value="{{ documento.fecha_vencimiento_mantencion }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Revisión Técnica</h5>
+                        <div class="form-group">
+                            <label for="Revision_Tecnica">Nuevo archivo:</label>
+                            <input type="file" name="Revision_Tecnica" class="form-control" id="Revision_Tecnica">
+                        </div>
+                        <div class="form-group">
+                            <label for="fecha_vencimiento_revision">Fecha de vencimiento:</label>
+                            <input type="date" name="fecha_vencimiento_revision" class="form-control" id="fecha_vencimiento_revision" value="{{ documento.fecha_vencimiento_revision }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Permiso de Circulación</h5>
+                        <div class="form-group">
+                            <label for="Permiso_Circulacion">Nuevo archivo:</label>
+                            <input type="file" name="Permiso_Circulacion" class="form-control" id="Permiso_Circulacion">
+                        </div>
+                        <div class="form-group">
+                            <label for="fecha_vencimiento_permiso">Fecha de vencimiento:</label>
+                            <input type="date" name="fecha_vencimiento_permiso" class="form-control" id="fecha_vencimiento_permiso" value="{{ documento.fecha_vencimiento_permiso }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">SOAP</h5>
+                        <div class="form-group">
+                            <label for="SOAP">Nuevo archivo:</label>
+                            <input type="file" name="SOAP" class="form-control" id="SOAP">
+                        </div>
+                        <div class="form-group">
+                            <label for="fecha_vencimiento_soap">Fecha de vencimiento:</label>
+                            <input type="date" name="fecha_vencimiento_soap" class="form-control" id="fecha_vencimiento_soap" value="{{ documento.fecha_vencimiento_soap }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Padrón</h5>
+                        <div class="form-group">
+                            <label for="Padron">Nuevo archivo:</label>
+                            <input type="file" name="Padron" class="form-control" id="Padron">
+                        </div>
+                        <div class="form-group">
+                            <label for="fecha_vencimiento_padron">Fecha de vencimiento:</label>
+                            <input type="date" name="fecha_vencimiento_padron" class="form-control" id="fecha_vencimiento_padron" value="{{ documento.fecha_vencimiento_padron }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Campo de descripción general -->
+        <div class="form-group">
+            <label for="descripcion">Descripción:</label>
+            <textarea name="descripcion" class="form-control" id="descripcion">{{ documento.descripcion }}</textarea>
+        </div>
+
+        <!-- Botón de guardar cambios -->
+        <button type="submit" class="btn btn-outline-custom">Guardar cambios</button>
+    </form>
+</div>
+
+<!-- Estilos personalizados -->
+<style>
+    /* Cuadro de información */
+    .info-box {
+        background-color: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        height: 120px; /* Tamaño fijo */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .info-box h5 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .info-box p {
+        font-size: 14px;
+        margin: 0;
+        color: #555;
+    }
+
+    /* Estilo para los botones */
+    .btn-outline-custom {
+        border: 2px solid #0b3356;
+        color: #0b3356;
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: white;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .btn-outline-custom:hover {
+        background-color: #0b3356;
+        color: white;
+    }
+</style>
+{% endblock %}
