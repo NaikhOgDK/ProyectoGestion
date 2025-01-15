@@ -86,36 +86,87 @@ class DocumentoForm(forms.ModelForm):
             'descripcion'
         ]
 
-    Mantencion_Preventiva = forms.FileField(required=False)
-    fecha_vencimiento_mantencion = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+    Mantencion_Preventiva = forms.FileField(
+        required=False,
+        widget=forms.ClearableFileInput(attrs={'class': 'form-control-file'})
+    )
+    fecha_vencimiento_mantencion = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
 
-    Revision_Tecnica = forms.FileField(required=False)
-    fecha_vencimiento_revision = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+    Revision_Tecnica = forms.FileField(
+        required=False,
+        widget=forms.ClearableFileInput(attrs={'class': 'form-control-file'})
+    )
+    fecha_vencimiento_revision = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
 
-    Permiso_Circulacion = forms.FileField(required=False)
-    fecha_vencimiento_permiso = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+    Permiso_Circulacion = forms.FileField(
+        required=False,
+        widget=forms.ClearableFileInput(attrs={'class': 'form-control-file'})
+    )
+    fecha_vencimiento_permiso = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
 
-    SOAP = forms.FileField(required=False)
-    fecha_vencimiento_soap = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+    SOAP = forms.FileField(
+        required=False,
+        widget=forms.ClearableFileInput(attrs={'class': 'form-control-file'})
+    )
+    fecha_vencimiento_soap = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
 
-    Padron = forms.FileField(required=False)
-    fecha_vencimiento_padron = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+    Padron = forms.FileField(
+        required=False,
+        widget=forms.ClearableFileInput(attrs={'class': 'form-control-file'})
+    )
+    fecha_vencimiento_padron = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
 
-    descripcion = forms.CharField(widget=forms.Textarea, required=False)
+    descripcion = forms.CharField(
+        widget=forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Descripción adicional'}),
+        required=False
+    )
+
 
 class MantenimientoForm(forms.ModelForm):
     vehiculo = forms.ModelChoiceField(
         queryset=Vehiculo.objects.all(),
         empty_label="Selecciona un vehículo",
-        widget=forms.Select(attrs={'class': 'vehiculo-select'})
+        widget=forms.Select(attrs={'class': 'form-control vehiculo-select'})
+    )
+    kilometraje_mtto = forms.IntegerField(
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Kilometraje'})
+    )
+    fecha_mtto = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
+    servicio_realizado = forms.ChoiceField(
+        choices=Mantenimiento.SERVICIOS_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    respaldo_mtto = forms.FileField(
+        widget=forms.ClearableFileInput(attrs={'class': 'form-control-file'})
+    )
+    proximo_mantenimiento_km = forms.IntegerField(
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Kilometraje próximo mantenimiento'})
+    )
+    proximo_servicio = forms.ChoiceField(
+        choices=Mantenimiento.PROXIMO_SERVICIO_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
 
     class Meta:
         model = Mantenimiento
         fields = ['vehiculo', 'kilometraje_mtto', 'fecha_mtto', 'servicio_realizado', 'respaldo_mtto', 'proximo_mantenimiento_km', 'proximo_servicio']
-        widgets = {
-            'fecha_mtto': forms.DateInput(attrs={'type': 'date'}),
-        }
 
 class HallazgoForm(forms.ModelForm):
     class Meta:

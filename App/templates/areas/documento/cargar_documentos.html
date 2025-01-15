@@ -5,48 +5,102 @@
 {% block content %}
 <div class="container mt-5">
     <h1 class="mb-4">Cargar Documentos para el Vehículo: {{ vehiculo.patente }}</h1>
-    <p><strong>Marca:</strong> {{ vehiculo.marca }}</p>
-    <p><strong>Modelo:</strong> {{ vehiculo.modelo }}</p>
-    <p><strong>Año:</strong> {{ vehiculo.ano }}</p>
-    <p><strong>Propietario:</strong> {{ vehiculo.propietario }}</p>
+
+    <!-- Cuadrados de información -->
+    <div class="row mb-4">
+        <div class="col-3">
+            <div class="info-box">
+                <h5>Marca</h5>
+                <p>{{ vehiculo.marca }}</p>
+            </div>
+        </div>
+        <div class="col-3">
+            <div class="info-box">
+                <h5>Modelo</h5>
+                <p>{{ vehiculo.modelo }}</p>
+            </div>
+        </div>
+        <div class="col-3">
+            <div class="info-box">
+                <h5>Año</h5>
+                <p>{{ vehiculo.ano }}</p>
+            </div>
+        </div>
+        <div class="col-3">
+            <div class="info-box">
+                <h5>Propietario</h5>
+                <p>{{ vehiculo.propietario }}</p>
+            </div>
+        </div>
+    </div>
 
     <!-- Formulario de carga -->
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         
-        <div class="mb-3">
-            <label for="Mantencion_Preventiva" class="form-label">Subir Mantención Preventiva</label>
-            {{ form.Mantencion_Preventiva }}
-            <label for="fecha_vencimiento_mantencion" class="form-label">Fecha de Vencimiento Mantención</label>
-            {{ form.fecha_vencimiento_mantencion }}
+        <div class="mb-3 row">
+            <div class="col-6">
+                <label for="Mantencion_Preventiva" class="form-label">Subir Mantención Preventiva</label>
+                <div class="input-group">
+                    <input type="file" class="form-control" id="Mantencion_Preventiva" name="Mantencion_Preventiva">
+                </div>
+            </div>
+            <div class="col-6">
+                <label for="fecha_vencimiento_mantencion" class="form-label">Fecha de Vencimiento Mantención</label>
+                {{ form.fecha_vencimiento_mantencion }}
+            </div>
         </div>
         
-        <div class="mb-3">
-            <label for="Revision_Tecnica" class="form-label">Subir Revisión Técnica</label>
-            {{ form.Revision_Tecnica }}
-            <label for="fecha_vencimiento_revision" class="form-label">Fecha de Vencimiento Revisión</label>
-            {{ form.fecha_vencimiento_revision }}
+        <div class="mb-3 row">
+            <div class="col-6">
+                <label for="Revision_Tecnica" class="form-label">Subir Revisión Técnica</label>
+                <div class="input-group">
+                    <input type="file" class="form-control" id="Revision_Tecnica" name="Revision_Tecnica">
+                </div>
+            </div>
+            <div class="col-6">
+                <label for="fecha_vencimiento_revision" class="form-label">Fecha de Vencimiento Revisión</label>
+                {{ form.fecha_vencimiento_revision }}
+            </div>
         </div>
         
-        <div class="mb-3">
-            <label for="Permiso_Circulacion" class="form-label">Subir Permiso de Circulación</label>
-            {{ form.Permiso_Circulacion }}
-            <label for="fecha_vencimiento_permiso" class="form-label">Fecha de Vencimiento Permiso</label>
-            {{ form.fecha_vencimiento_permiso }}
+        <div class="mb-3 row">
+            <div class="col-6">
+                <label for="Permiso_Circulacion" class="form-label">Subir Permiso de Circulación</label>
+                <div class="input-group">
+                    <input type="file" class="form-control" id="Permiso_Circulacion" name="Permiso_Circulacion">
+                </div>
+            </div>
+            <div class="col-6">
+                <label for="fecha_vencimiento_permiso" class="form-label">Fecha de Vencimiento Permiso</label>
+                {{ form.fecha_vencimiento_permiso }}
+            </div>
         </div>
-        
-        <div class="mb-3">
-            <label for="SOAP" class="form-label">Subir SOAP</label>
-            {{ form.SOAP }}
-            <label for="fecha_vencimiento_soap" class="form-label">Fecha de Vencimiento SOAP</label>
-            {{ form.fecha_vencimiento_soap }}
+
+        <div class="mb-3 row">
+            <div class="col-6">
+                <label for="SOAP" class="form-label">Subir SOAP</label>
+                <div class="input-group">
+                    <input type="file" class="form-control" id="SOAP" name="SOAP">
+                </div>
+            </div>
+            <div class="col-6">
+                <label for="fecha_vencimiento_soap" class="form-label">Fecha de Vencimiento SOAP</label>
+                {{ form.fecha_vencimiento_soap }}
+            </div>
         </div>
-        
-        <div class="mb-3">
-            <label for="Padron" class="form-label">Subir Padrón</label>
-            {{ form.Padron }}
-            <label for="fecha_vencimiento_padron" class="form-label">Fecha de Vencimiento Padrón</label>
-            {{ form.fecha_vencimiento_padron }}
+
+        <div class="mb-3 row">
+            <div class="col-6">
+                <label for="Padron" class="form-label">Subir Padrón</label>
+                <div class="input-group">
+                    <input type="file" class="form-control" id="Padron" name="Padron">
+                </div>
+            </div>
+            <div class="col-6">
+                <label for="fecha_vencimiento_padron" class="form-label">Fecha de Vencimiento Padrón</label>
+                {{ form.fecha_vencimiento_padron }}
+            </div>
         </div>
 
         <div class="mb-3">
@@ -54,8 +108,66 @@
             {{ form.descripcion }}
         </div>
 
-        <button type="submit" class="btn btn-success">Cargar Documentos</button>
+        <button type="submit" class="btn btn-primary">Cargar Documentos</button>
         <a href="{% url 'Documentos' %}" class="btn btn-secondary">Volver</a>
     </form>
 </div>
+
+<!-- Estilos personalizados -->
+<style>
+    /* Cuadro de información */
+    .info-box {
+        background-color: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        height: 120px; /* Tamaño fijo */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .info-box h5 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .info-box p {
+        font-size: 14px;
+        margin: 0;
+        color: #555;
+    }
+
+    /* Estilo para los botones */
+    .btn-primary {
+        background-color: #0b3356;
+        border-color: #0b3356;
+        padding: 10px 20px;
+        font-size: 16px;
+        color: white; 
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #0a2c47;
+        border-color: #0a2c47;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        padding: 10px 20px;
+        font-size: 16px;
+        color: white;
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a636a;
+        border-color: #5a636a;
+    }
+</style>
 {% endblock %}

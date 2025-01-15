@@ -3,12 +3,13 @@
 {% block title %}Lista de Vehículos{% endblock %}
 
 {% block content %}
-    <h1 class="text-center my-4">Lista de Vehículos</h1>
+<div class="container mt-5">
+    <h1 class="display-4 font-weight-bold text-center" style="color: #0b3356;">Lista de Vehículos</h1>
 
     <!-- Formulario de búsqueda -->
     <form method="GET" class="mb-4 d-flex justify-content-center">
         <input type="text" name="search" class="form-control w-50" placeholder="Buscar patente..." value="{{ search }}" />
-        <button type="submit" class="btn btn-primary ms-2">Buscar</button>
+        <button type="submit" class="btn btn-outline-custom ms-2">Buscar</button>
     </form>
 
     <!-- Lista de vehículos -->
@@ -19,6 +20,8 @@
                     <th>Patente</th>
                     <th>Marca</th>
                     <th>Modelo</th>
+                    <th>Propietario</th>
+                    <th>Empresa</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -28,8 +31,10 @@
                         <td>{{ vehiculo.patente }}</td>
                         <td>{{ vehiculo.marca }}</td>
                         <td>{{ vehiculo.modelo }}</td>
+                        <td>{{ vehiculo.propietario }}</td>
+                        <td>{{ vehiculo.empresa }}</td>
                         <td>
-                            <a href="{% url 'historial_mantenimiento' vehiculo.id %}" class="btn btn-info btn-sm">Ver Historial</a>
+                            <a href="{% url 'historial_mantenimiento' vehiculo.id %}" class="btn btn-outline-custom btn-sm">Ver Historial</a>
                         </td>
                     </tr>
                 {% endfor %}
@@ -38,7 +43,7 @@
     {% else %}
         <p class="text-center">No se encontraron vehículos.</p>
     {% endif %}
-
+</div>
 {% endblock %}
 
 {% block styles %}

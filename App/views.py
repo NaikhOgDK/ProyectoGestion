@@ -191,7 +191,7 @@ def crear_mantenimiento(request):
         form = MantenimientoForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            return redirect('Documentos')  # Redirige a una lista de mantenimientos o cualquier otra vista
+            return redirect('homeDocumentacion')  # Redirige a una lista de mantenimientos o cualquier otra vista
     else:
         search = request.GET.get('search', '')
         form = MantenimientoForm()

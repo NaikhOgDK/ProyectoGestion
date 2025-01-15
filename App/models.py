@@ -101,6 +101,8 @@ class Documento(models.Model):
     def __str__(self):
         return self.vehiculo.patente if self.vehiculo else 'Documento sin vehículo'
 
+
+
 #Modelo Mantenimiento
 class Mantenimiento(models.Model):
     SERVICIOS_CHOICES = [
