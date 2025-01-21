@@ -1,0 +1,53 @@
+{% extends 'taller/basetaller.html' %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h1 class="display-4 font-weight-bold" style="color: #0b3356 ;">Bienvenido al Panel de Control</h1>
+            <p class="lead">Gestiona GPS, Neumáticos, Taller, Documentación y Visualización de manera eficiente.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Card de consulta que ocupa toda la fila -->
+        <div class="col-md-12 text-center mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="card-title">Consulta Tus Unidades Asignadas</h4>
+                    <p class="card-text">e</p>
+                    <a href="{% url 'gestionar_asignaciones' %}" class="btn btn-outline-custom">Consulta</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+<div class="row mt-5">
+    <div class="col-md-4 text-center">
+        <div class="card shadow-sm h-100">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Lista Asignaciones</h5>
+                <p class="card-text"></p>
+                <a href="{% url 'listar_asignaciones' %}" class="btn btn-outline-custom mt-auto">Ver Detalles</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 text-center">
+        <div class="card shadow-sm h-100">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Gestión de Neumáticos</h5>
+                <p class="card-text">Rastrea y analiza el uso y las condiciones de los neumáticos.</p>
+                <a href="#" class="btn btn-outline-custom mt-auto">Ver Detalles</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+{% endblock %}

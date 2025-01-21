@@ -247,3 +247,17 @@ class ComunicacionReparacion(models.Model):
     def __str__(self):
         return f"Comunicacion de Reparación {self.reparacion.id} por {self.usuario.username} - {self.estado}"
 
+class AsignacionVehiculo(models.Model):
+    vehiculo = models.ForeignKey(Vehiculo, on_delete=models.CASCADE)  # Relación con vehículo
+    empresa = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='asignaciones')  # Empresa que asigna
+    fecha_asignacion = models.DateField(auto_now_add=True)  # Fecha de asignación
+    estado = models.CharField(
+        max_length=50,
+        choices=[('Pendiente', 'Pendiente'), ('Aceptada', 'Aceptada'), ('Rechazada', 'Rechazada')],
+        default='Pendiente'
+    )  # Estado de asignación
+    comentario_rechazo = models.TextField(blank=True, null=True)  # Comentario en caso de rechazo
+
+    def __str__(self):
+        return f"{self.vehiculo.patente} - {self.taller.nombre} - {self.estado}"
+

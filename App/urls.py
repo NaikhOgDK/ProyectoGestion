@@ -16,6 +16,8 @@ urlpatterns = [
     path('GPS', views.homeGPS, name="homeGPS"),
     path('Documento', views.homeDocumentacion, name="homeDocumentacion"),
     path('Taller', views.homeTaller, name="homeTaller"),
+    path('visual', views.visual, name="visual"),
+    path('homeVisual', views.homeVisual, name="homeVisual"),
     #Fin Admin
 
     #Consulta
@@ -50,5 +52,20 @@ urlpatterns = [
     path('cerrar-hallazgo/<int:pk>/', views.cerrar_hallazgo, name='cerrar_hallazgo'),
     path('hallazgos/<int:pk>/', views.detalle_hallazgo, name='detalle_hallazgo'),
     #Fin Empresa Hallazgo
+
+    #Inicio Empresa
     path('homeEmpresa/', views.homeEmpresa, name="homeEmpresa"),
+    #Fin Empresa
+
+    #Taller Admin
+    path('asignar_vehiculos/', views.asignar_vehiculos, name='asignar_vehiculos'),
+    #Fin Taller Admin
+
+    #Taller Usuario
+    path('homeTallerUsuario', views.homeTallerUsuario, name="homeTallerUsuario"),
+    path('listar_asignaciones/', views.listar_asignaciones, name='listar_asignaciones'),
+    path('actualizar_estado/<int:asignacion_id>/', views.actualizar_estado, name='actualizar_estado'),
+    path('gestionar_asignaciones/', views.gestionar_asignaciones, name='gestionar_asignaciones'),
+
+    #Fin Taller Usuario
 ]   + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

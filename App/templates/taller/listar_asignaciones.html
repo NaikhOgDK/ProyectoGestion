@@ -1,0 +1,28 @@
+{% extends 'taller/basetaller.html' %}
+{% block content %}
+<h2>Unidades Asignadas</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Vehículo</th>
+            <th>Empresa</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for asignacion in asignaciones %}
+        <tr>
+            <td>{{ asignacion.vehiculo.patente }}</td>
+            <td>{{ asignacion.empresa.name }}</td>
+            <td>{{ asignacion.fecha_asignacion }}</td>
+            <td>{{ asignacion.estado }}</td>
+            <td>
+                <a href="{% url 'actualizar_estado' asignacion.id %}" class="btn btn-info">Actualizar Estado</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

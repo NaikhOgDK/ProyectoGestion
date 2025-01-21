@@ -1,0 +1,30 @@
+{% extends 'visualizador/basehomevi.html' %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h1 class="display-4 font-weight-bold" style="color: #0b3356 ;">Bienvenido al Panel de Control</h1>
+            <p class="lead">Vista Visualizador</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Card de consulta que ocupa toda la fila -->
+        <div class="col-md-12 text-center mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="card-title">Consulta</h4>
+                    <p class="card-text">Consulta la información actualizada de cualquier unidad, incluyendo estado, documentación y hallazgos.</p>
+                    <a href="{% url 'consulta_vehiculo' %}" class="btn btn-outline-custom">Consulta</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+</div>
+{% endblock %}

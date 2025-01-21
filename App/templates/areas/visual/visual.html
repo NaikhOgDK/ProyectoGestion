@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+<style>
+  /* Asegura que el iframe se ajuste al tamaño de la pantalla, dejando espacio para el menú */
+  iframe {
+    width: 100%;
+    height: calc(100vh - 75px); /* Ajusta 50px (o el tamaño estimado del menú) */
+    border: none;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+  }
+</style>
+
+<iframe 
+  title="bi coca" 
+  src="https://app.powerbi.com/view?r=eyJrIjoiYjZjMzI5MmItMWUxMy00NzIyLTk3NTUtYjczOWVkYWM3NmU4IiwidCI6IjhlNDVlYmUzLTE2NjgtNDA3Ni04NTRiLTYyNjM3ZjkzMDYyNCJ9" 
+  allowFullScreen="true">
+</iframe>
+
+{% endblock %}

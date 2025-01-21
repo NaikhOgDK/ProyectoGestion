@@ -16,12 +16,14 @@
         <form method="post" class="needs-validation" novalidate>
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">Login</button>
+            <button type="submit" class="btn btn-primary">Entrar</button>
         </form>
+        <!--
         <div class="register-link">
             <p>¿No tienes una cuenta?</p>
             <a href="{% url 'register' %}" class="btn btn-link">Regístrate</a>
         </div>
+        -->
     </div>
 
     <!-- Bootstrap Bundle with Popper -->

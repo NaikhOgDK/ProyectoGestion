@@ -1,0 +1,65 @@
+{% extends 'taller/hometaller.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Gestión de Asignaciones</h2>
+
+    {% if messages %}
+        <div class="alert alert-success">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="card shadow">
+        <div class="card-body">
+            <h5 class="card-title">Vehículos Asignados</h5>
+            <form method="post">
+                {% csrf_token %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Patente</th>
+                            <th>Marca</th>
+                            <th>Modelo</th>
+                            <th>Empresa</th>
+                            <th>Fecha de Asignación</th>
+                            <th>Estado</th>
+                            <th>Motivo (en caso de rechazo)</th>
+                            <th>Seleccionar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for asignacion in asignaciones %}
+                        <tr>
+                            <td>{{ asignacion.vehiculo.patente }}</td>
+                            <td>{{ asignacion.vehiculo.marca }}</td>
+                            <td>{{ asignacion.vehiculo.modelo }}</td>
+                            <td>{{ asignacion.empresa.name }}</td>
+                            <td>{{ asignacion.fecha_asignacion|date:"d/m/Y" }}</td>
+                            <td>
+                                <select name="estado_{{ asignacion.id }}" class="form-select">
+                                    <option value="Pendiente" {% if asignacion.estado == "Pendiente" %}selected{% endif %}>Pendiente</option>
+                                    <option value="Aceptada" {% if asignacion.estado == "Aceptada" %}selected{% endif %}>Aceptada</option>
+                                    <option value="Rechazada" {% if asignacion.estado == "Rechazada" %}selected{% endif %}>Rechazada</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" name="motivo_{{ asignacion.id }}" class="form-control" placeholder="Motivo (opcional)" value="{{ asignacion.comentario_rechazo }}">
+                            </td>
+                            <td>
+                                <input type="checkbox" name="asignaciones_seleccionadas[]" value="{{ asignacion.id }}">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary">Actualizar Asignaciones</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

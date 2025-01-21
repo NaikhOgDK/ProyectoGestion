@@ -41,13 +41,6 @@ class UserRegisterForm(UserCreationForm):
         }
     )
 
-    # Validación para el campo email
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if User.objects.filter(email=email).exists():
-            raise ValidationError("Este correo electrónico ya está registrado.")
-        return email
-
     # Validación para password1
     def clean_password1(self):
         password = self.cleaned_data.get("password1")
@@ -206,3 +199,22 @@ class ComunicacionForm(forms.ModelForm):
             "mensaje": forms.Textarea(attrs={"class": "form-control", "rows": 4, "placeholder": "Escribe tu mensaje..."}),
             "evidencia_adicional": forms.ClearableFileInput(attrs={"class": "form-control", "id": "Padron"}),
         }
+
+class AsignacionVehiculoForm(forms.ModelForm):
+    class Meta:
+        model = AsignacionVehiculo
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Filtrar los usuarios con el rol de "Taller"
+        rol_taller = Role.objects.filter(name="Taller").first()
+        if rol_taller:
+            self.fields['taller'].queryset = User.objects.filter(role=rol_taller)
+        else:
+            self.fields['taller'].queryset = User.objects.none()
+
+class ActualizarEstadoForm(forms.ModelForm):
+    class Meta:
+        model = AsignacionVehiculo
+        fields = ['estado', 'comentario_rechazo']

@@ -33,9 +33,11 @@ def login_view(request):
                 if user.role.name == 'Admin':
                     return redirect('home')
                 elif user.role.name == 'Visualizador':
-                    return redirect('home')
+                    return redirect('homeVisual')
                 elif user.role.name == 'Empresa':
                     return redirect('homeEmpresa')
+                elif user.role.name == 'Taller':
+                    return redirect('homeTallerUsuario')
                 else:
                     messages.error(request, "Role not defined for this user.")
             else:
@@ -103,6 +105,9 @@ def homeDocumentacion(request):
 
 def homeTaller(request):
     return render(request, 'areas/taller/hometaller.html')
+
+def visual(request):
+    return render(request, 'areas/visual/visual.html')
 #Fin Admin
 
 #Consulta
@@ -390,6 +395,78 @@ def detalle_hallazgo(request, pk):
     return render(request, 'empresa/detalle_hallazgo.html', {'hallazgo': hallazgo, 'form': form})
 
 #Fin Empresa Hallazgo
+
+#Inicio Taller Admin
+
+def asignar_vehiculos(request):
+    if request.method == "POST":
+        form = AsignacionVehiculoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('homeTaller')
+    else:
+        form = AsignacionVehiculoForm()
+    return render(request, 'areas/taller/asignar_vehiculos.html', {'form': form})
+
+#Fin Taller Admin
+
+#Inicio Taller usuario
+
+def listar_asignaciones(request):
+    taller = request.user.group  # El taller del usuario
+    asignaciones = AsignacionVehiculo.objects.filter(taller=taller)
+    return render(request, 'taller/listar_asignaciones.html', {'asignaciones': asignaciones})
+
+def actualizar_estado(request, asignacion_id):
+    asignacion = AsignacionVehiculo.objects.get(id=asignacion_id)
+    if request.method == "POST":
+        form = ActualizarEstadoForm(request.POST, instance=asignacion)
+        if form.is_valid():
+            form.save()
+            return redirect('listar_asignaciones')
+    else:
+        form = ActualizarEstadoForm(instance=asignacion)
+    return render(request, 'taller/actualizar_estado.html', {'form': form, 'asignacion': asignacion})
+
+def gestionar_asignaciones(request):
+    # Filtrar asignaciones relacionadas con el taller del usuario
+    asignaciones = AsignacionVehiculo.objects.filter(taller=request.user.group)
+
+    if request.method == 'POST':
+        # Procesar la actualización de las asignaciones
+        asignaciones_ids = request.POST.getlist('asignaciones_seleccionadas[]')  # IDs seleccionadas
+        for asignacion_id in asignaciones_ids:
+            try:
+                asignacion = AsignacionVehiculo.objects.get(id=asignacion_id)
+                nuevo_estado = request.POST.get(f'estado_{asignacion_id}')
+                motivo = request.POST.get(f'motivo_{asignacion_id}', '')
+
+                # Actualizar campos
+                asignacion.estado = nuevo_estado
+                asignacion.comentario_rechazo = motivo if nuevo_estado == 'Rechazada' else ''
+                asignacion.save()
+            except AsignacionVehiculo.DoesNotExist:
+                continue
+
+        messages.success(request, "Asignaciones actualizadas correctamente.")
+        return redirect('gestionar_asignaciones')  # Vuelve a la misma vista
+
+    # Renderizar la plantilla con las asignaciones
+    return render(request, 'taller/gestionar_asignaciones.html', {'asignaciones': asignaciones})
+
+#Fin Taller Usuario
+
+#Vista Empresa
 def homeEmpresa(request):
     return render(request,'empresa/home.html')
+#Fin Vista Empresa
 
+#Vista Visualizador
+def homeVisual(request):
+    return render(request, 'visualizador/homevi.html')
+#Fin Vista Visualizador
+
+#Vista Taller
+def homeTallerUsuario(request):
+    return render(request, 'taller/hometaller.html')
+#Fin Vista Taller

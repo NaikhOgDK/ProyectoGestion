@@ -8,7 +8,7 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="{% static 'css/home.css' %}" rel="stylesheet">
 
-    <title>{% block title %}Page Title{% endblock %}</title>
+    <title>{% block title %}Home Taller{% endblock %}</title>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #0b3356;">
@@ -27,35 +27,25 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link text-white" href="{% url 'home' %}">Home</a>
+                            <a class="nav-link text-white" href="#">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white" href="#">GPS</a>
+                            <a class="nav-link text-white" href="#">Unidades Asignadas</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white" href="{% url 'homeNeumatico' %}">Neumaticos</a>
+                            <a class="nav-link text-white" href="#">Unidades en Espera</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white" href="{% url 'homeTaller' %}">Taller</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-white" href="{% url 'homeDocumentacion' %}">Documentacion</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-white" href="{% url 'visual' %}">Visualizacion</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-white" href="https://odisdkp.com/" target="_blank" rel="noopener noreferrer">Plataforma ODIS</a>
+                            <a class="nav-link text-white" href="#">Unidades en Taller</a>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="fa-solid fa-circle-user fa-xl"></i>
                             </a>
                             <ul class="dropdown-menu">
-                                <!-- Si el usuario está autenticado -->
                                 {% if user.is_authenticated %}
-                                    <li><a class="dropdown-item">{{ request.user }}</a></li> <!-- Mostrar el nombre del usuario -->
-                                    <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li> <!-- Opción de cerrar sesión -->
+                                    <li><a class="dropdown-item">{{ request.user }}</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
                                 {% endif %}
                             </ul>
                         </li>
@@ -64,7 +54,7 @@
             </div>
         </div>
     </nav>
-    
+
     <div class="container">
         {% block content %}{% endblock %}
     </div>
