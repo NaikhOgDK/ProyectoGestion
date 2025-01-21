@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from django.db.models import Q
 from django.core.paginator import Paginator
 
+@login_required
 def register(request):
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
@@ -30,7 +31,7 @@ def login_view(request):
             if user is not None:
                 login(request, user)
                 # Redirect based on role
-                if user.role.name == 'Admin':
+                if user.role.name == 'Administrador':
                     return redirect('home')
                 elif user.role.name == 'Visualizador':
                     return redirect('homeVisual')
