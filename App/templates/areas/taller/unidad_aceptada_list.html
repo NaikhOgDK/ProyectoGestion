@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Unidades Aceptadas{% endblock %}
+
+{% block content %}
+    <h2>Lista de Unidades Aceptadas</h2>
+
+    {% if unidades %}
+        <table class="table table-striped table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Patente</th>
+                    <th>Taller</th>
+                    <th>Fecha de Respuesta</th>
+                    <th>Estado</th>
+                    <th>Fecha de Retiro</th>
+                    <th>Kilometraje</th>
+                    <th>Costo Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for unidad in unidades %}
+                    <tr>
+                        <td>{{ unidad.patente }}</td>
+                        <td>{{ unidad.taller.name }}</td>
+                        <td>{{ unidad.fecha_respuesta }}</td>
+                        <td>{{ unidad.estado }}</td>
+                        <td>{{ unidad.fecha_retiro }}</td>
+                        <td>{{ unidad.kilometraje }}</td>
+                        <td>{{ unidad.costo_total }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hay unidades aceptadas disponibles.</p>
+    {% endif %}
+{% endblock %}

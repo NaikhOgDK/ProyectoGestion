@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
+from .views import *
 
 urlpatterns = [
     #Seccion acceso
@@ -59,6 +60,7 @@ urlpatterns = [
 
     #Taller Admin
     path('crear_asignacion/', views.crear_asignacion, name='crear_asignacion'),
+    path('unidades-aceptadas/', UnidadAceptadaListView.as_view(), name='unidad_aceptada_list'),
     #Fin Taller Admin
 
     #Taller Usuario
@@ -66,6 +68,8 @@ urlpatterns = [
     path('listar_asignaciones/', views.listar_asignaciones, name='listar_asignaciones'),
     path('actualizar_estado/<int:asignacion_id>/', views.actualizar_estado, name='actualizar_estado'),
     path('gestionar_asignaciones/', views.gestionar_asignaciones, name='gestionar_asignaciones'),
+    path('lista-unidades/', views.lista_unidades_aceptadas, name='lista_unidades_aceptadas'),
+    path('editar-unidad/<int:unidad_id>/', views.editar_unidad_aceptada, name='editar_unidad'),
 
     #Fin Taller Usuario
 ]   + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

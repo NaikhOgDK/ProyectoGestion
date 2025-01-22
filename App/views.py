@@ -8,6 +8,7 @@ import pandas as pd
 from django.http import HttpResponse
 from django.db.models import Q
 from django.core.paginator import Paginator
+from django.views.generic import ListView
 
 @login_required
 def register(request):
@@ -409,6 +410,16 @@ def crear_asignacion(request):
         form = AsignacionVehiculoForm()
     return render(request, 'areas/taller/crear_asignacion.html', {'form': form})
 
+class UnidadAceptadaListView(ListView):
+    model = UnidadAceptada
+    template_name = 'areas/taller/unidad_aceptada_list.html'  # Archivo de plantilla para la lista
+    context_object_name = 'unidades'  # Nombre de la variable en el contexto
+    
+    def get_queryset(self):
+        # Si deseas filtrar las unidades aceptadas por el taller del usuario, puedes hacerlo aquí
+        if self.request.user.group:
+            return UnidadAceptada.objects.filter(taller=self.request.user.group)
+        return UnidadAceptada.objects.all()
 #Fin Taller Admin
 
 #Inicio Taller usuario
@@ -432,14 +443,11 @@ def actualizar_estado(request, asignacion_id):
     return render(request, 'taller/actualizar_estado.html', {'form': form, 'asignacion': asignacion})
 
 def gestionar_asignaciones(request):
-    # Obtener el grupo (taller) del usuario actual
     grupo_usuario = request.user.group
-    
-    # Filtrar las asignaciones por el grupo asignado al usuario
+
     if grupo_usuario:
         asignaciones = Asignacion_taller.objects.filter(taller=grupo_usuario)
     else:
-        # Si el usuario no pertenece a ningún grupo, no se devuelven asignaciones
         asignaciones = Asignacion_taller.objects.none()
 
     if request.method == 'POST':
@@ -449,43 +457,80 @@ def gestionar_asignaciones(request):
         fecha_retiro = request.POST.get('fecha_retiro', '')
         comentario = request.POST.get('comentario', '')
 
-        # Buscar la asignación
-        try:
-            asignacion = Asignacion_taller.objects.get(id=asignacion_id)
-        except Asignacion_taller.DoesNotExist:
-            messages.error(request, "La asignación no existe.")
-            return redirect('gestionar_asignaciones')
+        asignacion = get_object_or_404(Asignacion_taller, id=asignacion_id)
 
-        # Validar estado "Rechazada"
-        if estado == 'Rechazada' and not comentario_rechazo:
-            messages.error(request, "Debe proporcionar un motivo si rechaza la asignación.")
-            return redirect('gestionar_asignaciones')
-
-        # Validar estado "Aceptada"
         if estado == 'Aceptada':
-            if not fecha_retiro:
-                messages.error(request, "Debe proporcionar una fecha de retiro cuando la asignación es aceptada.")
-                return redirect('gestionar_asignaciones')
-            if not comentario:
-                messages.error(request, "Debe proporcionar un comentario cuando la asignación es aceptada.")
+            if not fecha_retiro or not comentario:
+                messages.error(request, "Debe proporcionar todos los campos requeridos.")
                 return redirect('gestionar_asignaciones')
 
-        # Crear una nueva respuesta de asignación
-        RespuestaAsignacion_taller.objects.create(
-            asignacion=asignacion,
-            usuario=request.user,
-            estado=estado,
-            comentario_rechazo=comentario_rechazo if estado == 'Rechazada' else '',
-            fecha_retiro=fecha_retiro if estado == 'Aceptada' else None,
-            comentario=comentario if estado == 'Aceptada' else '',
-        )
+            # Crear respuesta de asignación
+            RespuestaAsignacion_taller.objects.create(
+                asignacion=asignacion,
+                usuario=request.user,
+                estado=estado,
+                comentario_rechazo='',
+                fecha_retiro=fecha_retiro,
+                comentario=comentario,
+            )
 
-        messages.success(request, "Respuesta registrada correctamente.")
+            # Crear registro en UnidadAceptada
+            UnidadAceptada.objects.create(
+                patente=asignacion.patente,
+                taller=asignacion.taller,
+                fecha_respuesta=asignacion.respuestas.last().fecha_respuesta,
+                fecha_retiro=fecha_retiro,
+            )
+
+            messages.success(request, "Asignación aceptada correctamente.")
+
+        elif estado == 'Rechazada':
+            if not comentario_rechazo:
+                messages.error(request, "Debe proporcionar un motivo para rechazar la asignación.")
+                return redirect('gestionar_asignaciones')
+
+            RespuestaAsignacion_taller.objects.create(
+                asignacion=asignacion,
+                usuario=request.user,
+                estado=estado,
+                comentario_rechazo=comentario_rechazo,
+            )
+            messages.success(request, "Asignación rechazada correctamente.")
+
         return redirect('gestionar_asignaciones')
 
     return render(request, 'taller/gestionar_asignaciones.html', {'asignaciones': asignaciones})
 
+def lista_unidades_aceptadas(request):
+    # Obtener el grupo (taller) del usuario actual
+    grupo_usuario = request.user.group
+    
+    # Filtrar las unidades aceptadas por el taller asignado al usuario
+    if grupo_usuario:
+        unidades_aceptadas = UnidadAceptada.objects.filter(taller=grupo_usuario)
+    else:
+        unidades_aceptadas = UnidadAceptada.objects.none()
 
+    return render(request, 'taller/lista_unidades.html', {'unidades_aceptadas': unidades_aceptadas})
+
+def editar_unidad_aceptada(request, unidad_id):
+    # Obtener la unidad aceptada específica
+    unidad = get_object_or_404(UnidadAceptada, id=unidad_id)
+
+    # Verificar que el usuario pertenece al taller (grupo) de la unidad
+    if request.user.group != unidad.taller:
+        return redirect('unauthorized_access')  # Redirigir si no pertenece al grupo
+
+    # Crear el formulario con los datos actuales de la unidad
+    if request.method == 'POST':
+        form = UnidadAceptadaForm(request.POST, request.FILES, instance=unidad)
+        if form.is_valid():
+            form.save()
+            return redirect('lista_unidades_aceptadas')  # Redirigir a la lista de unidades aceptadas
+    else:
+        form = UnidadAceptadaForm(instance=unidad)
+
+    return render(request, 'taller/editar_unidad.html', {'form': form, 'unidad': unidad})
 #Fin Taller Usuario
 
 #Vista Empresa

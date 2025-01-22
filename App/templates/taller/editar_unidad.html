@@ -1,0 +1,93 @@
+{% extends 'taller/basetaller.html' %}
+
+{% block title %}Editar Unidad Aceptada{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Editar Unidad Aceptada</h2>
+
+    <!-- Mostrar información de la unidad en un formato estilizado -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4>Información de la Unidad</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Patente:</strong> <span class="text-muted">{{ unidad.patente }}</span></p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Taller:</strong> <span class="text-muted">{{ unidad.taller.name }}</span></p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Fecha de Respuesta:</strong> <span class="text-muted">{{ unidad.fecha_respuesta }}</span></p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Estado:</strong> 
+                        <span class="badge 
+                            {% if unidad.estado == 'Pendiente' %}
+                                bg-warning
+                            {% elif unidad.estado == 'En Proceso' %}
+                                bg-info
+                            {% elif unidad.estado == 'Reparada' %}
+                                bg-success
+                            {% endif %}">
+                            {{ unidad.estado }}
+                        </span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Fecha de Retiro:</strong> <span class="text-muted">{{ unidad.fecha_retiro }}</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario para editar los campos de la unidad -->
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h5>Editar Información de Reparación</h5>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="id_estado">Estado:</label>
+                    <select class="form-control" name="estado" id="id_estado">
+                        <option value="Pendiente" {% if unidad.estado == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                        <option value="En Proceso" {% if unidad.estado == 'En Proceso' %}selected{% endif %}>En Proceso</option>
+                        <option value="Reparada" {% if unidad.estado == 'Reparada' %}selected{% endif %}>Reparada</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_fecha_inicio">Fecha de Inicio:</label>
+                    {{ form.fecha_inicio }}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_fecha_termino">Fecha de Término:</label>
+                    {{ form.fecha_termino }}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_kilometraje">Kilometraje:</label>
+                    {{ form.kilometraje }}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_registro">Documento OT de Reparación:</label>
+                    {{ form.registro }}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_costo_total">Costo Total:</label>
+                    {{ form.costo_total }}
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-3">Guardar Cambios</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

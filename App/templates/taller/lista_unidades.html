@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Unidades Aceptadas{% endblock %}
+
+{% block content %}
+    <h2>Unidades Aceptadas para el Taller {{ request.user.group.name }}</h2>
+
+    {% if unidades_aceptadas %}
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Patente</th>
+                    <th>Fecha Respuesta</th>
+                    <th>Estado</th>
+                    <th>Fecha Retiro</th>
+                    <th>Fecha Inicio</th>
+                    <th>Fecha Término</th>
+                    <th>Kilometraje</th>
+                    <th>Registro</th>
+                    <th>Costo Total</th>
+                    <th>Editar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for unidad in unidades_aceptadas %}
+                    <tr>
+                        <td>{{ unidad.patente }}</td>
+                        <td>{{ unidad.fecha_respuesta }}</td>
+                        <td>{{ unidad.estado }}</td>
+                        <td>{{ unidad.fecha_retiro }}</td>
+                        <td>{{ unidad.fecha_inicio }}</td>
+                        <td>{{ unidad.fecha_termino }}</td>
+                        <td>{{ unidad.kilometraje }}</td>
+                        <td>
+                            {% if unidad.registro %}
+                                <a href="{{ unidad.registro.url }}" target="_blank">Ver OT</a>
+                            {% else %}
+                                No disponible
+                            {% endif %}
+                        </td>
+                        <td>{{ unidad.costo_total }}</td>
+                        <td><a href="{% url 'editar_unidad' unidad.id %}" class="btn btn-outline-custom">Editar</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hay unidades aceptadas para tu taller.</p>
+    {% endif %}
+{% endblock %}

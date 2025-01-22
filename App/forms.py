@@ -247,3 +247,13 @@ class RespuestaAsignacionForm(forms.ModelForm):
                 raise forms.ValidationError("Debe proporcionar un comentario cuando la asignación es aceptada.")
         
         return cleaned_data
+
+class UnidadAceptadaForm(forms.ModelForm):
+    class Meta:
+        model = UnidadAceptada
+        fields = ['estado','fecha_inicio', 'fecha_termino', 'kilometraje', 'registro', 'costo_total']
+        widgets = {
+            'fecha_inicio': forms.DateInput(attrs={'type': 'date'}),
+            'fecha_termino': forms.DateInput(attrs={'type': 'date'}),
+            'registro': forms.ClearableFileInput(attrs={'multiple': False}),
+        }

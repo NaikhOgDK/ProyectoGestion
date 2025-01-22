@@ -265,3 +265,26 @@ class RespuestaAsignacion_taller(models.Model):
 
     def __str__(self):
         return f"{self.usuario.username} - {self.estado} - {self.asignacion}"
+
+class UnidadAceptada(models.Model):
+    patente = models.ForeignKey('Vehiculo', on_delete=models.SET_NULL, null=True, blank=True)  # Vehículo
+    taller = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True)  # Taller
+    fecha_respuesta = models.DateTimeField()  # Fecha en que se aceptó la asignación
+    estado = models.CharField(
+        max_length=20,
+        choices=[('Pendiente', 'Pendiente'), ('En Proceso', 'En Proceso'), ('Reparada', 'Reparada')],
+        default='Pendiente'
+    )  # Estado del proceso
+    fecha_retiro = models.DateField()  # Fecha de retiro proporcionada al aceptar la asignación
+    fecha_inicio = models.DateField(blank=True, null=True)  # Fecha de inicio de reparación
+    fecha_termino = models.DateField(blank=True, null=True)  # Fecha de término de reparación
+    kilometraje = models.PositiveIntegerField(blank=True, null=True)  # Kilometraje del vehículo
+    registro = models.FileField(upload_to='ot_reparacion/', blank=True, null=True)  # Documento OT de reparación
+    costo_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)  # Costo total
+
+    class Meta:
+        verbose_name_plural = "Unidades Aceptadas"
+        ordering = ['fecha_respuesta']
+
+    def __str__(self):
+        return f"{self.patente} - {self.taller.name} - {self.estado}"
