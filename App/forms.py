@@ -202,35 +202,48 @@ class ComunicacionForm(forms.ModelForm):
 
 class AsignacionVehiculoForm(forms.ModelForm):
     class Meta:
-        model = Asignacion
-        fields = ['patente', 'taller', 'fecha_retiro']
+        model = Asignacion_taller
+        fields = ['patente', 'taller', 'motivo']
         widgets = {
             'fecha_retiro': forms.DateInput(attrs={'type': 'date'}),  # Campo de fecha con selector
         }
         labels = {
             'patente': 'Vehículo',
             'taller': 'Taller',
-            'fecha_retiro': 'Fecha de Retiro',
+            'motivo': 'Motivo',
         }
 
 class RespuestaAsignacionForm(forms.ModelForm):
     class Meta:
-        model = RespuestaAsignacion
-        fields = ['estado', 'comentario_rechazo']
+        model = RespuestaAsignacion_taller
+        fields = ['estado', 'comentario_rechazo', 'fecha_retiro', 'comentario']
         widgets = {
             'estado': forms.Select(attrs={'class': 'form-select'}),  # Menú desplegable estilizado
             'comentario_rechazo': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Explique el motivo del rechazo si aplica'}),
+            'comentario': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Ingrese el comentario si la asignación es aceptada'}),
+            'fecha_retiro': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
         }
         labels = {
             'estado': 'Estado de la Respuesta',
             'comentario_rechazo': 'Motivo del Rechazo',
+            'fecha_retiro': 'Fecha de Retiro',
+            'comentario': 'Comentario de Aceptación',
         }
 
     def clean(self):
         cleaned_data = super().clean()
         estado = cleaned_data.get('estado')
         comentario_rechazo = cleaned_data.get('comentario_rechazo')
+        fecha_retiro = cleaned_data.get('fecha_retiro')
+        comentario = cleaned_data.get('comentario')
 
         if estado == 'Rechazada' and not comentario_rechazo:
             raise forms.ValidationError("Debe proporcionar un motivo si rechaza la asignación.")
-        return cleaned_data  
+        
+        if estado == 'Aceptada':
+            if not fecha_retiro:
+                raise forms.ValidationError("Debe proporcionar una fecha de retiro cuando la asignación es aceptada.")
+            if not comentario:
+                raise forms.ValidationError("Debe proporcionar un comentario cuando la asignación es aceptada.")
+        
+        return cleaned_data

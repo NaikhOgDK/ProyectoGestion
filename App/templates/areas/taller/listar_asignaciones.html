@@ -12,7 +12,7 @@
                 <th>Vehículo</th>
                 <th>Taller</th>
                 <th>Fecha Asignación</th>
-                <th>Fecha Retiro</th>
+                <th>Comentario</th>
                 <th>Estado</th>
                 <th>Fecha Respuesta</th>
                 <th>Comentario Rechazo</th>
@@ -24,7 +24,7 @@
                     <td>{{ asignacion.patente }}</td>
                     <td>{{ asignacion.taller.name }}</td>
                     <td>{{ asignacion.fecha_asignacion }}</td>
-                    <td>{{ asignacion.fecha_retiro }}</td>
+                    <td>{{ asignacion.motivo }}</td>
 
                     {% with asignacion.respuestas.last as respuesta %}
                         {% if respuesta %}

@@ -268,7 +268,7 @@ def historial_vehiculo(request, vehiculo_id):
 
 # Verificar si el usuario es analista (Admin)
 def is_analyst(user):
-    return user.role and user.role.name == "Admin"
+    return user.role and user.role.name == "Administrador"
 
 # Verificar si el usuario es parte de una empresa
 def is_company(user):
@@ -415,7 +415,7 @@ def crear_asignacion(request):
 
 def listar_asignaciones(request):
     # Obtener todas las asignaciones sin aplicar filtros
-    asignaciones = Asignacion.objects.all()
+    asignaciones = Asignacion_taller.objects.all()
 
     return render(request, 'areas/taller/listar_asignaciones.html', {'asignaciones': asignaciones})
 
@@ -437,29 +437,54 @@ def gestionar_asignaciones(request):
     
     # Filtrar las asignaciones por el grupo asignado al usuario
     if grupo_usuario:
-        asignaciones = Asignacion.objects.filter(taller=grupo_usuario)
+        asignaciones = Asignacion_taller.objects.filter(taller=grupo_usuario)
     else:
         # Si el usuario no pertenece a ningún grupo, no se devuelven asignaciones
-        asignaciones = Asignacion.objects.none()
+        asignaciones = Asignacion_taller.objects.none()
 
     if request.method == 'POST':
         asignacion_id = request.POST.get('asignacion_id')
         estado = request.POST.get('estado')
         comentario_rechazo = request.POST.get('comentario_rechazo', '')
-        
+        fecha_retiro = request.POST.get('fecha_retiro', '')
+        comentario = request.POST.get('comentario', '')
+
         # Buscar la asignación
-        asignacion = Asignacion.objects.get(id=asignacion_id)
+        try:
+            asignacion = Asignacion_taller.objects.get(id=asignacion_id)
+        except Asignacion_taller.DoesNotExist:
+            messages.error(request, "La asignación no existe.")
+            return redirect('gestionar_asignaciones')
+
+        # Validar estado "Rechazada"
+        if estado == 'Rechazada' and not comentario_rechazo:
+            messages.error(request, "Debe proporcionar un motivo si rechaza la asignación.")
+            return redirect('gestionar_asignaciones')
+
+        # Validar estado "Aceptada"
+        if estado == 'Aceptada':
+            if not fecha_retiro:
+                messages.error(request, "Debe proporcionar una fecha de retiro cuando la asignación es aceptada.")
+                return redirect('gestionar_asignaciones')
+            if not comentario:
+                messages.error(request, "Debe proporcionar un comentario cuando la asignación es aceptada.")
+                return redirect('gestionar_asignaciones')
 
         # Crear una nueva respuesta de asignación
-        RespuestaAsignacion.objects.create(
+        RespuestaAsignacion_taller.objects.create(
             asignacion=asignacion,
             usuario=request.user,
             estado=estado,
             comentario_rechazo=comentario_rechazo if estado == 'Rechazada' else '',
+            fecha_retiro=fecha_retiro if estado == 'Aceptada' else None,
+            comentario=comentario if estado == 'Aceptada' else '',
         )
+
+        messages.success(request, "Respuesta registrada correctamente.")
         return redirect('gestionar_asignaciones')
 
     return render(request, 'taller/gestionar_asignaciones.html', {'asignaciones': asignaciones})
+
 
 #Fin Taller Usuario
 

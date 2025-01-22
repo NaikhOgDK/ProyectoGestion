@@ -238,26 +238,30 @@ class ComunicacionReparacion(models.Model):
     def __str__(self):
         return f"Comunicacion de Reparación {self.reparacion.id} por {self.usuario.username} - {self.estado}"
 
-class Asignacion(models.Model):
+class Asignacion_taller(models.Model):
     patente = models.ForeignKey('Vehiculo', on_delete=models.SET_NULL, null=True, blank=True)  # Vehículo asignado
     taller = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True)  # Grupo (taller) asignado
     fecha_asignacion = models.DateTimeField(auto_now_add=True)  # Fecha de asignación
-    fecha_retiro = models.DateField()  # Fecha estimada de retiro
+    motivo = models.TextField()
 
     def __str__(self):
         return f"{self.patente} asignado a {self.taller.name}"
 
 
-class RespuestaAsignacion(models.Model):
-    asignacion = models.ForeignKey(Asignacion, on_delete=models.CASCADE, related_name='respuestas')  # Relación con la asignación
+class RespuestaAsignacion_taller(models.Model):
+    asignacion = models.ForeignKey(Asignacion_taller, on_delete=models.CASCADE, related_name='respuestas')  # Relación con la asignación
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)  # Usuario que responde (miembro del grupo)
     estado = models.CharField(
         max_length=10,
         choices=[('Aceptada', 'Aceptada'), ('Rechazada', 'Rechazada')],
-    )  # Estado de la respuesta
+    )  
+    # Estado de la respuesta
     comentario_rechazo = models.TextField(blank=True, null=True)  # Motivo en caso de rechazo
     fecha_respuesta = models.DateTimeField(auto_now_add=True)  # Fecha de la respuesta
 
+    #Comentario accepta
+    fecha_retiro = models.DateField(blank=True, null=True)
+    comentario = models.TextField()
+
     def __str__(self):
         return f"{self.usuario.username} - {self.estado} - {self.asignacion}"
-

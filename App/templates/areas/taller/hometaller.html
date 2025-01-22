@@ -4,91 +4,67 @@
 
 {% block content %}
 
-<h1 class="text-center mb-5">Vista para Taller</h1>
-
-<div class="row">
-    <!-- Unidades Necesitan Reparación Card (ocupa todo el ancho) -->
-    <div class="col-md-12 mb-4">
-        <div class="card h-100">
-            <div class="card-body d-flex flex-column justify-content-between text-center">
-                <h4 class="card-title">Asignar Unidades Taller</h4>
-                <p class="card-text">Asigna Unidades para una reparacion.</p>
-                <a href="{% url 'crear_asignacion' %}" class="btn btn-primary btn-block mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
-                    Ver Unidades
-                </a>
-            </div>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h1 class="display-4 font-weight-bold" style="color: #0b3356;">Gestión de Taller</h1>
         </div>
     </div>
-</div>
 
-<div class="row">
-    <!-- Unidades en Taller Card (mitad de la página) -->
-    <div class="col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-body d-flex flex-column justify-content-between text-center">
-                <h4 class="card-title">Ver Asignaciones</h4>
-                <p class="card-text">Visualiza las unidades actualmente en reparación.</p>
-                <a href="{% url 'listar_asignaciones' %}" class="btn btn-secondary btn-block mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
-                    Ver Unidades en Taller
-                </a>
+    <div class="row mt-5">
+        <!-- Asignar Unidades Taller Card (ocupa todo el ancho) -->
+        <div class="col-md-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-between text-center">
+                    <h4 class="card-title">Asignar Unidades Taller</h4>
+                    <p class="card-text">Asigna unidades para una reparación.</p>
+                    <a href="{% url 'crear_asignacion' %}" class="btn btn-outline-custom mt-auto" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                        Ver Unidades
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Unidades Pendientes a Repuesto Card (mitad de la página) -->
-    <div class="col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-body d-flex flex-column justify-content-between text-center">
-                <h4 class="card-title">Unidades Pendientes a Repuesto</h4>
-                <p class="card-text">Visualiza las unidades pendientes a repuesto.</p>
-                <a href="#" class="btn btn-secondary btn-block mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
-                    Ver Pendientes
-                </a>
+    <div class="row mt-5">
+        <!-- Ver Asignaciones Card (mitad de la página) -->
+        <div class="col-md-6 text-center mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex flex-column justify-content-between text-center">
+                    <h4 class="card-title">Ver Asignaciones</h4>
+                    <p class="card-text">Visualiza las unidades actualmente en reparación.</p>
+                    <a href="{% url 'listar_asignaciones' %}" class="btn btn-outline-custom mt-auto" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                        Ver Unidades en Taller
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unidades Pendientes a Repuesto Card (mitad de la página) -->
+        <div class="col-md-6 text-center mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex flex-column justify-content-between text-center">
+                    <h4 class="card-title">Unidades Pendientes a Repuesto</h4>
+                    <p class="card-text">Visualiza las unidades pendientes a repuesto.</p>
+                    <a href="#" class="btn btn-outline-custom mt-auto" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                        Ver Pendientes
+                    </a>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="row">
-    <!-- Panel de Gestión Card (ocupa todo el ancho) -->
-    <div class="col-md-12 mb-4">
-        <div class="card h-100">
-            <div class="card-body d-flex flex-column justify-content-between text-center">
-                <h4 class="card-title">Panel de Gestión</h4>
-                <p class="card-text">Accede al panel donde los talleres podrán agregar unidades a reparación.</p>
-                <a href="#" class="btn btn-primary btn-block mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
-                    Acceder al Panel
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <!-- Actualización de Estado Card (ocupa todo el ancho) -->
-    <div class="col-md-12 mb-4">
-        <div class="card h-100">
-            <div class="card-body d-flex flex-column justify-content-between text-center">
-                <h4 class="card-title">Actualización de Estado</h4>
-                <p class="card-text">Actualiza el estado de las unidades (pendientes, reparadas, etc.).</p>
-                <a href="#" class="btn btn-primary btn-block mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
-                    Actualizar Estado
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <!-- Comunicación con Administrador Card (ocupa todo el ancho) -->
-    <div class="col-md-12 mb-4">
-        <div class="card h-100">
-            <div class="card-body d-flex flex-column justify-content-between text-center">
-                <h4 class="card-title">Comunicación con Administrador</h4>
-                <p class="card-text">Accede a la comunicación con el administrador del taller.</p>
-                <a href="#" class="btn btn-primary btn-block mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
-                    Contactar Administrador
-                </a>
+    <div class="row mt-5">
+        <!-- Comunicación con Administrador Card (ocupa todo el ancho) -->
+        <div class="col-md-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-between text-center">
+                    <h4 class="card-title">Comunicación con Administrador</h4>
+                    <p class="card-text">Accede a la comunicación con el administrador del taller.</p>
+                    <a href="#" class="btn btn-outline-custom mt-auto" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                        Contactar Administrador
+                    </a>
+                </div>
             </div>
         </div>
     </div>
