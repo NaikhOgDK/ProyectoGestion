@@ -1,4 +1,4 @@
-{% extends 'taller/basetaller.html' %}
+{% extends 'base.html' %}
 
 {% block title %}Inicio{% endblock %}
 
@@ -25,10 +25,27 @@
                     <td>{{ asignacion.taller.name }}</td>
                     <td>{{ asignacion.fecha_asignacion }}</td>
                     <td>{{ asignacion.fecha_retiro }}</td>
+
                     {% with asignacion.respuestas.last as respuesta %}
-                        <td>{% if respuesta %}{{ respuesta.estado }}{% else %}Pendiente{% endif %}</td>
-                        <td>{% if respuesta %}{{ respuesta.fecha_respuesta }}{% else %}N/A{% endif %}</td>
-                        <td>{% if respuesta and respuesta.comentario_rechazo %}{{ respuesta.comentario_rechazo }}{% else %}-{% endif %}</td>
+                        {% if respuesta %}
+                            {% if respuesta.estado == 'Aceptada' %}
+                                <td style="color:green;">{{ respuesta.estado }}</td>
+                                <td>N/A</td>
+                                <td>N/A</td>
+                            {% elif respuesta.estado == 'Rechazada' %}
+                                <td style="color:red;">{{ respuesta.estado }}</td>
+                                <td>{{ respuesta.fecha_respuesta }}</td>
+                                <td>{{ respuesta.comentario_rechazo }}</td>
+                            {% else %}
+                                <td>{{ respuesta.estado }}</td>
+                                <td>{{ respuesta.fecha_respuesta }}</td>
+                                <td>{{ respuesta.comentario_rechazo }}</td>
+                            {% endif %}
+                        {% else %}
+                            <td>Pendiente</td>
+                            <td>N/A</td>
+                            <td>-</td>
+                        {% endif %}
                     {% endwith %}
                 </tr>
             {% endfor %}

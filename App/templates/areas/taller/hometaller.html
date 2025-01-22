@@ -13,7 +13,7 @@
             <div class="card-body d-flex flex-column justify-content-between text-center">
                 <h4 class="card-title">Asignar Unidades Taller</h4>
                 <p class="card-text">Asigna Unidades para una reparacion.</p>
-                <a href="{% url 'asignar_vehiculos' %}" class="btn btn-primary btn-block mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                <a href="{% url 'crear_asignacion' %}" class="btn btn-primary btn-block mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
                     Ver Unidades
                 </a>
             </div>
@@ -26,9 +26,9 @@
     <div class="col-md-6 mb-4">
         <div class="card h-100">
             <div class="card-body d-flex flex-column justify-content-between text-center">
-                <h4 class="card-title">Unidades en Taller</h4>
+                <h4 class="card-title">Ver Asignaciones</h4>
                 <p class="card-text">Visualiza las unidades actualmente en reparación.</p>
-                <a href="#" class="btn btn-secondary btn-block mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                <a href="{% url 'listar_asignaciones' %}" class="btn btn-secondary btn-block mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
                     Ver Unidades en Taller
                 </a>
             </div>

@@ -202,19 +202,35 @@ class ComunicacionForm(forms.ModelForm):
 
 class AsignacionVehiculoForm(forms.ModelForm):
     class Meta:
-        model = AsignacionVehiculo
-        fields = '__all__'
+        model = Asignacion
+        fields = ['patente', 'taller', 'fecha_retiro']
+        widgets = {
+            'fecha_retiro': forms.DateInput(attrs={'type': 'date'}),  # Campo de fecha con selector
+        }
+        labels = {
+            'patente': 'Vehículo',
+            'taller': 'Taller',
+            'fecha_retiro': 'Fecha de Retiro',
+        }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Filtrar los usuarios con el rol de "Taller"
-        rol_taller = Role.objects.filter(name="Taller").first()
-        if rol_taller:
-            self.fields['taller'].queryset = User.objects.filter(role=rol_taller)
-        else:
-            self.fields['taller'].queryset = User.objects.none()
-
-class ActualizarEstadoForm(forms.ModelForm):
+class RespuestaAsignacionForm(forms.ModelForm):
     class Meta:
-        model = AsignacionVehiculo
+        model = RespuestaAsignacion
         fields = ['estado', 'comentario_rechazo']
+        widgets = {
+            'estado': forms.Select(attrs={'class': 'form-select'}),  # Menú desplegable estilizado
+            'comentario_rechazo': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Explique el motivo del rechazo si aplica'}),
+        }
+        labels = {
+            'estado': 'Estado de la Respuesta',
+            'comentario_rechazo': 'Motivo del Rechazo',
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        estado = cleaned_data.get('estado')
+        comentario_rechazo = cleaned_data.get('comentario_rechazo')
+
+        if estado == 'Rechazada' and not comentario_rechazo:
+            raise forms.ValidationError("Debe proporcionar un motivo si rechaza la asignación.")
+        return cleaned_data  

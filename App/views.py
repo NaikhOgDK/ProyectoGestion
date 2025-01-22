@@ -399,24 +399,26 @@ def detalle_hallazgo(request, pk):
 
 #Inicio Taller Admin
 
-def asignar_vehiculos(request):
-    if request.method == "POST":
+def crear_asignacion(request):
+    if request.method == 'POST':
         form = AsignacionVehiculoForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('homeTaller')
+            return redirect('homeTaller')  # Cambia por tu vista de redirección
     else:
         form = AsignacionVehiculoForm()
-    return render(request, 'areas/taller/asignar_vehiculos.html', {'form': form})
+    return render(request, 'areas/taller/crear_asignacion.html', {'form': form})
 
 #Fin Taller Admin
 
 #Inicio Taller usuario
 
 def listar_asignaciones(request):
-    taller = request.user.group  # El taller del usuario
-    asignaciones = AsignacionVehiculo.objects.filter(taller=taller)
-    return render(request, 'taller/listar_asignaciones.html', {'asignaciones': asignaciones})
+    # Obtener todas las asignaciones sin aplicar filtros
+    asignaciones = Asignacion.objects.all()
+
+    return render(request, 'areas/taller/listar_asignaciones.html', {'asignaciones': asignaciones})
+
 
 def actualizar_estado(request, asignacion_id):
     asignacion = AsignacionVehiculo.objects.get(id=asignacion_id)
@@ -430,29 +432,33 @@ def actualizar_estado(request, asignacion_id):
     return render(request, 'taller/actualizar_estado.html', {'form': form, 'asignacion': asignacion})
 
 def gestionar_asignaciones(request):
-    # Filtrar asignaciones relacionadas con el taller del usuario
-    asignaciones = AsignacionVehiculo.objects.filter(taller=request.user.group)
+    # Obtener el grupo (taller) del usuario actual
+    grupo_usuario = request.user.group
+    
+    # Filtrar las asignaciones por el grupo asignado al usuario
+    if grupo_usuario:
+        asignaciones = Asignacion.objects.filter(taller=grupo_usuario)
+    else:
+        # Si el usuario no pertenece a ningún grupo, no se devuelven asignaciones
+        asignaciones = Asignacion.objects.none()
 
     if request.method == 'POST':
-        # Procesar la actualización de las asignaciones
-        asignaciones_ids = request.POST.getlist('asignaciones_seleccionadas[]')  # IDs seleccionadas
-        for asignacion_id in asignaciones_ids:
-            try:
-                asignacion = AsignacionVehiculo.objects.get(id=asignacion_id)
-                nuevo_estado = request.POST.get(f'estado_{asignacion_id}')
-                motivo = request.POST.get(f'motivo_{asignacion_id}', '')
+        asignacion_id = request.POST.get('asignacion_id')
+        estado = request.POST.get('estado')
+        comentario_rechazo = request.POST.get('comentario_rechazo', '')
+        
+        # Buscar la asignación
+        asignacion = Asignacion.objects.get(id=asignacion_id)
 
-                # Actualizar campos
-                asignacion.estado = nuevo_estado
-                asignacion.comentario_rechazo = motivo if nuevo_estado == 'Rechazada' else ''
-                asignacion.save()
-            except AsignacionVehiculo.DoesNotExist:
-                continue
+        # Crear una nueva respuesta de asignación
+        RespuestaAsignacion.objects.create(
+            asignacion=asignacion,
+            usuario=request.user,
+            estado=estado,
+            comentario_rechazo=comentario_rechazo if estado == 'Rechazada' else '',
+        )
+        return redirect('gestionar_asignaciones')
 
-        messages.success(request, "Asignaciones actualizadas correctamente.")
-        return redirect('gestionar_asignaciones')  # Vuelve a la misma vista
-
-    # Renderizar la plantilla con las asignaciones
     return render(request, 'taller/gestionar_asignaciones.html', {'asignaciones': asignaciones})
 
 #Fin Taller Usuario

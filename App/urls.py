@@ -58,7 +58,7 @@ urlpatterns = [
     #Fin Empresa
 
     #Taller Admin
-    path('asignar_vehiculos/', views.asignar_vehiculos, name='asignar_vehiculos'),
+    path('crear_asignacion/', views.crear_asignacion, name='crear_asignacion'),
     #Fin Taller Admin
 
     #Taller Usuario
