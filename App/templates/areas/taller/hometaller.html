@@ -52,7 +52,47 @@
                 </div>
             </div>
         </div>
-        
+    </div>
+
+    <div class="row mt-5">
+        <!-- Unidades En Proceso Card -->
+        <div class="col-md-4 text-center mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex flex-column justify-content-between text-center">
+                    <h4 class="card-title">Unidades en Proceso</h4>
+                    <p class="card-text">Consulta las unidades que están actualmente en proceso de reparación.</p>
+                    <a href="{% url 'unidades_en_proceso' %}" class="btn btn-outline-custom mt-auto" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                        Ver En Proceso
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unidades Reparadas Card -->
+        <div class="col-md-4 text-center mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex flex-column justify-content-between text-center">
+                    <h4 class="card-title">Unidades Reparadas</h4>
+                    <p class="card-text">Accede a las unidades que ya han sido reparadas y están listas para retirar.</p>
+                    <a href="{% url 'unidades_reparadas' %}" class="btn btn-outline-custom mt-auto" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                        Ver Reparadas
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unidades Pendientes Card -->
+        <div class="col-md-4 text-center mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex flex-column justify-content-between text-center">
+                    <h4 class="card-title">Unidades Pendientes</h4>
+                    <p class="card-text">Consulta las unidades que están pendientes de reparación o revisión.</p>
+                    <a href="{% url 'unidades_pendientes' %}" class="btn btn-outline-custom mt-auto" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                        Ver Pendientes
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="row mt-5">

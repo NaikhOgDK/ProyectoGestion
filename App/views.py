@@ -420,6 +420,29 @@ class UnidadAceptadaListView(ListView):
         if self.request.user.group:
             return UnidadAceptada.objects.filter(taller=self.request.user.group)
         return UnidadAceptada.objects.all()
+
+def unidades_pendientes(request):
+    unidades = UnidadAceptada.objects.filter(estado='Pendiente')
+    return render(request, 'areas/taller/unidades_pendientes.html', {'unidades': unidades})
+
+def unidades_en_proceso(request):
+    unidades = UnidadAceptada.objects.filter(estado='En Proceso')
+    return render(request, 'areas/taller/unidades_en_proceso.html', {'unidades': unidades})
+
+def unidades_reparadas(request):
+    unidades = UnidadAceptada.objects.filter(estado='Reparada')
+    return render(request, 'areas/taller/unidades_reparadas.html', {'unidades': unidades})
+
+def marcar_como_reparada(request, unidad_id):
+    # Asegúrate de que la unidad existe
+    unidad = UnidadAceptada.objects.get(id=unidad_id)
+    
+    # Actualiza el estado de la unidad a "Reparada"
+    unidad.estado = 'Reparada'
+    unidad.save()
+    
+    # Redirige de vuelta a la página de unidades reparadas
+    return redirect('unidades_reparadas')
 #Fin Taller Admin
 
 #Inicio Taller usuario

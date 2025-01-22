@@ -61,6 +61,10 @@ urlpatterns = [
     #Taller Admin
     path('crear_asignacion/', views.crear_asignacion, name='crear_asignacion'),
     path('unidades-aceptadas/', UnidadAceptadaListView.as_view(), name='unidad_aceptada_list'),
+    path('unidades/pendientes/', views.unidades_pendientes, name='unidades_pendientes'),
+    path('unidades/en_proceso/', views.unidades_en_proceso, name='unidades_en_proceso'),
+    path('unidades/reparadas/', views.unidades_reparadas, name='unidades_reparadas'),
+    path('marcar-como-reparada/<int:unidad_id>/', views.marcar_como_reparada, name='marcar_como_reparada'),
     #Fin Taller Admin
 
     #Taller Usuario

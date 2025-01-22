@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Unidades Reparadas{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Unidades Reparadas</h2>
+
+    {% if unidades %}
+        <div class="list-group">
+            {% for unidad in unidades %}
+                <div class="list-group-item" id="unidad-{{ unidad.id }}">
+                    <h5>{{ unidad.patente }}</h5>
+                    <p>Taller: {{ unidad.taller.name }}</p>
+                    <p>Fecha Respuesta: {{ unidad.fecha_respuesta }}</p>
+                    <p>Fecha Retiro: {{ unidad.fecha_retiro }}</p>
+                    <p>Estado: <span class="badge bg-success">{{ unidad.estado }}</span></p>
+                    <form method="POST" action="{% url 'marcar_como_reparada' unidad.id %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success" id="btn-reparada-{{ unidad.id }}" onclick="ocultarUnidad({{ unidad.id }})">
+                            Marcar como Reparada
+                        </button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No hay unidades reparadas.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+<script>
+    function ocultarUnidad(id) {
+        // Oculta el div de la unidad cuando se marque como reparada
+        document.getElementById('unidad-' + id).style.display = 'none';
+    }
+</script>
