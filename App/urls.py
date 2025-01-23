@@ -30,6 +30,12 @@ urlpatterns = [
     path('cargar_datos_excel/', views.cargar_datos_excel, name='cargar_datos_excel'),
     #Fin Carga Datos
 
+    # GPS
+
+    path('vehiculos-seguimiento/', views.get_vehiculos_con_seguimiento, name='vehiculos_seguimiento'),
+
+    #Fin GPS
+
     # URLS Documentos
     path('Documentos/', views.Documentos, name='Documentos'),
     path('documentos/cargar/<int:id>/', views.cargar_documentos, name='cargar_documentos'),
@@ -88,4 +94,5 @@ urlpatterns = [
     path('api/make_post_request/', make_post_request, name='make_post_request'),
 
     #Fin API
+
 ]   + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

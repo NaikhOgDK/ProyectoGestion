@@ -810,3 +810,13 @@ def fetch_and_save_positions():
             )
     else:
         raise Exception(f"Error al consultar la API: {response.status_code} - {response.text}")
+
+def get_vehiculos_con_seguimiento(request):
+    # Obtener todas las placas de los vehículos registrados en el modelo Vehiculo
+    placas_vehiculos = Vehiculo.objects.values_list('patente', flat=True)
+    
+    # Filtrar los vehículos en VehiculoAPI que tengan una placa registrada en Vehiculo
+    vehiculos_con_seguimiento = VehiculoAPI.objects.filter(placa__in=placas_vehiculos)
+    
+    # Pasar los datos al template
+    return render(request, 'areas/gps/vehiculos_seguimiento.html', {'vehiculos': vehiculos_con_seguimiento})
