@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.views.generic import ListView
+from django.utils import timezone
 
 @login_required
 def register(request):
@@ -443,7 +444,74 @@ def marcar_como_reparada(request, unidad_id):
     
     # Redirige de vuelta a la página de unidades reparadas
     return redirect('unidades_reparadas')
+
+def chat_view(request):
+    groups = Group.objects.all()
+    selected_group_id = request.GET.get('group_id')
+    selected_group = Group.objects.get(id=selected_group_id) if selected_group_id else None
+    messages = Message.objects.filter(group=selected_group).order_by('timestamp') if selected_group else []
+
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        group_id = request.POST.get('group_id')
+        if content and group_id:
+            group = Group.objects.get(id=group_id)
+            Message.objects.create(
+                sender=request.user,
+                group=group,
+                content=content,
+                timestamp=timezone.now()
+            )
+            return redirect('chat')  # Redirigir para evitar reenvío de formulario
+
+    return render(request, 'chat/chat.html', {'groups': groups, 'messages': messages, 'selected_group': selected_group})
+
 #Fin Taller Admin
+
+#Chat
+
+def admin_chat_view(request):
+    if not request.user.role or request.user.role.name != 'Administrador':
+        return redirect('user_chat')  # Redirigir a la vista de usuario si no es admin
+
+    groups = Group.objects.all()
+    selected_group_id = request.GET.get('group_id')
+    selected_group = Group.objects.get(id=selected_group_id) if selected_group_id else None
+    messages = Message.objects.filter(group=selected_group).order_by('timestamp') if selected_group else []
+
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        group_id = request.POST.get('group_id')
+        if content and group_id:
+            group = Group.objects.get(id=group_id)
+            Message.objects.create(
+                sender=request.user,
+                group=group,
+                content=content,
+                timestamp=timezone.now()
+            )
+            return redirect('admin_chat')  # Redirigir para evitar reenvío de formulario
+
+    return render(request, 'chat/admin_chat.html', {'groups': groups, 'messages': messages, 'selected_group': selected_group})
+
+def user_chat_view(request):
+    user_group = request.user.group
+    messages = Message.objects.filter(group=user_group).order_by('timestamp') if user_group else []
+
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        if content and user_group:
+            Message.objects.create(
+                sender=request.user,
+                group=user_group,
+                content=content,
+                timestamp=timezone.now()
+            )
+            return redirect('user_chat')  # Redirigir para evitar reenvío de formulario
+
+    return render(request, 'chat/user_chat.html', {'messages': messages, 'user_group': user_group})
+
+#Fin Chat
 
 #Inicio Taller usuario
 

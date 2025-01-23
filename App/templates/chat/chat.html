@@ -1,0 +1,75 @@
+<!-- chat.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat de Comunicación</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .chat-container {
+            width: 50%;
+            margin: 0 auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        .messages {
+            height: 300px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .message {
+            margin-bottom: 10px;
+        }
+        .message .sender {
+            font-weight: bold;
+        }
+        .message .timestamp {
+            font-size: 0.8em;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        {% if user_role.name == 'Admin' %}
+            <form method="get">
+                <label for="group">Selecciona un grupo:</label>
+                <select name="group_id" id="group" onchange="this.form.submit()">
+                    <option value="">--Selecciona un grupo--</option>
+                    {% for group in groups %}
+                        <option value="{{ group.id }}" {% if selected_group and group.id == selected_group.id %}selected{% endif %}>{{ group.name }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        {% endif %}
+
+        <div class="messages">
+            {% if selected_group %}
+                {% for message in messages %}
+                    <div class="message">
+                        <div class="sender">{{ message.sender.username }}:</div>
+                        <div class="content">{{ message.content }}</div>
+                        <div class="timestamp">{{ message.timestamp }}</div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>Selecciona un grupo para ver los mensajes.</p>
+            {% endif %}
+        </div>
+
+        {% if selected_group %}
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="group_id" value="{{ selected_group.id }}">
+                <input type="text" name="content" placeholder="Escribe tu mensaje..." required>
+                <button type="submit">Enviar</button>
+            </form>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -58,6 +58,12 @@ urlpatterns = [
     path('homeEmpresa/', views.homeEmpresa, name="homeEmpresa"),
     #Fin Empresa
 
+    #Servicio Chat
+    path('chat/', views.chat_view, name='chat'),
+    path('admin_chat/', views.admin_chat_view, name='admin_chat'),
+    path('user_chat/', views.user_chat_view, name='user_chat'),
+    #Fin Chat
+
     #Taller Admin
     path('crear_asignacion/', views.crear_asignacion, name='crear_asignacion'),
     path('unidades-aceptadas/', UnidadAceptadaListView.as_view(), name='unidad_aceptada_list'),

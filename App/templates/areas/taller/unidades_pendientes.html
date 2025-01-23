@@ -15,6 +15,7 @@
                     <p>Fecha Respuesta: {{ unidad.fecha_respuesta }}</p>
                     <p>Fecha Retiro: {{ unidad.fecha_termino }}</p>
                     <p>Estado: <span class="badge bg-warning">{{ unidad.estado }}</span></p>
+                    <a href="{% url 'group_chat' UnidadAceptada.taller.id %}" class="btn btn-primary mt-2">Enviar Mensaje</a>
                 </div>
             {% endfor %}
         </div>
