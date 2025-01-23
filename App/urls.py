@@ -82,4 +82,10 @@ urlpatterns = [
     path('editar-unidad/<int:unidad_id>/', views.editar_unidad_aceptada, name='editar_unidad'),
 
     #Fin Taller Usuario
+
+    #API
+
+    path('api/make_post_request/', make_post_request, name='make_post_request'),
+
+    #Fin API
 ]   + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

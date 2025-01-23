@@ -10,6 +10,9 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from django.views.generic import ListView
 from django.utils import timezone
+import requests
+from decouple import config
+from django.http import JsonResponse
 
 @login_required
 def register(request):
@@ -32,17 +35,26 @@ def login_view(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
+                response = HttpResponse()
+                # Set token in cookies
+                token = user.role.name  # Aquí deberías obtener el token real
+                response.set_cookie('auth_token', token, httponly=True, secure=True)
+
                 # Redirect based on role
                 if user.role.name == 'Administrador':
-                    return redirect('home')
+                    response['Location'] = 'home'
                 elif user.role.name == 'Visualizador':
-                    return redirect('homeVisual')
+                    response['Location'] = 'homeVisual'
                 elif user.role.name == 'Empresa':
-                    return redirect('homeEmpresa')
+                    response['Location'] = 'homeEmpresa'
                 elif user.role.name == 'Taller':
-                    return redirect('homeTallerUsuario')
+                    response['Location'] = 'homeTallerUsuario'
                 else:
                     messages.error(request, "Role not defined for this user.")
+                    return render(request, 'acceso/login.html', {'form': form})
+
+                response.status_code = 302
+                return response
             else:
                 messages.error(request, "Invalid username or password.")
     else:
@@ -638,3 +650,29 @@ def homeVisual(request):
 def homeTallerUsuario(request):
     return render(request, 'taller/hometaller.html')
 #Fin Vista Taller
+
+#API
+
+def make_post_request(request):
+    token = request.COOKIES.get('auth_token')
+    if token == 'Administrador':
+        url = 'https://www.drivetech.pro/api/v1/get_vehicles_positions/'
+        tokengps = config('API_TOKEN')
+        headers = {
+            'Authorization': f'Token {tokengps}',
+            'Content-Type': 'application/json'
+        }
+        body = {
+            'client_id': 'coca-cola_andina'
+        }
+
+        response = requests.post(url, headers=headers, json=body)
+
+        if response.status_code == 200:
+            return JsonResponse({'status': 'success', 'data': response.json()})
+        else:
+            return JsonResponse({'status': 'error', 'message': response.text}, status=response.status_code)
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Usuario no Autenticado'}, status=404)
+
+#Fin API
