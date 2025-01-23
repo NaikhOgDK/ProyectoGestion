@@ -15,6 +15,9 @@ from decouple import config
 from django.http import JsonResponse
 from cryptography.fernet import Fernet
 import json
+from datetime import datetime, timedelta
+from dateutil import parser
+import pytz  # Para manejar zonas horarias
 
 @login_required
 def register(request):
@@ -697,10 +700,40 @@ def decrypt_message(encrypted_message):
 #API
 
 def make_post_request(request):
+    def normalize_plate(plate):
+        """
+        Normaliza las placas eliminando una "I" al final si está presente.
+        """
+        if plate and plate.endswith("I"):
+            return plate[:-1]
+        return plate
+
+    def get_vehicle_status(last_signal_time):
+        """
+        Determina el estado del vehículo (online o offline)
+        en base a la diferencia con la fecha actual.
+        """
+        if last_signal_time:
+            # Usa dateutil.parser para manejar el formato con la zona horaria
+            last_signal_datetime = parser.parse(last_signal_time)
+            
+            # Convertimos la fecha actual a UTC (zona horaria aware)
+            now_utc = datetime.now(pytz.utc)
+
+            # Calcula la diferencia con la fecha actual
+            time_diff = now_utc - last_signal_datetime
+
+            # Si la diferencia es mayor a 7 días, se considera offline
+            if time_diff > timedelta(days=7):
+                return 'offline'
+            else:
+                return 'online'
+        return 'offline'  # Si no hay fecha, se considera offline
+
     encrypted_token = request.COOKIES.get('auth_token')
     if encrypted_token:
         token = decrypt_message(encrypted_token.encode())
-        role_name = token['role_name']
+        role_name = token.get('role_name')
         if role_name == 'Administrador':
             url = 'https://www.drivetech.pro/api/v1/get_vehicles_positions/'
             tokengps = config('API_TOKEN')
@@ -711,16 +744,69 @@ def make_post_request(request):
             body = {
                 'client_id': 'coca-cola_andina'
             }
-            
+
             response = requests.post(url, headers=headers, json=body)
 
             if response.status_code == 200:
-                return JsonResponse({'status': 'success', 'data': response.json()})
+                data = response.json()
+                
+                # Guarda los datos en la base de datos
+                for position in data.get('positions', []):
+                    placa = position.get('plate', 'N/A')
+                    placa_normalizada = normalize_plate(placa)
+                    last_signal_time = position.get('datetime')
+
+                    # Determina el estado (online u offline)
+                    estado = get_vehicle_status(last_signal_time)
+
+                    # Guarda los datos en la base de datos
+                    VehiculoAPI.objects.update_or_create(
+                        placa=placa_normalizada,
+                        defaults={
+                            'identificador': position.get('id', 'N/A'),
+                            'latitud': position.get('latitude'),
+                            'longitud': position.get('longitude'),
+                            'fecha_hora': last_signal_time,
+                            'odometro': position.get('odometer'),
+                            'estado': estado,  # Establece el estado (online/offline)
+                        }
+                    )
+                
+                return JsonResponse({'status': 'success', 'message': 'Datos guardados correctamente.'})
             else:
                 return JsonResponse({'status': 'error', 'message': response.text}, status=response.status_code)
         else:
-            return JsonResponse({'status': 'error', 'message': 'Usuario no Autenticado'}, status=404)
+            return JsonResponse({'status': 'error', 'message': 'Usuario no Autenticado'}, status=403)
     else:
         return JsonResponse({'status': 'error', 'message': 'Token no encontrado en las cookies.'}, status=404)
 
+
 #Fin API
+
+def fetch_and_save_positions():
+    url = 'https://www.drivetech.pro/api/v1/get_vehicles_positions/'
+    tokengps = config('API_TOKEN')
+    headers = {
+        'Authorization': f'Token {tokengps}',
+        'Content-Type': 'application/json'
+    }
+    body = {
+        'client_id': 'coca-cola_andina'
+    }
+
+    response = requests.post(url, headers=headers, json=body)
+    if response.status_code == 200:
+        data = response.json()  # Suponiendo que la API devuelve un JSON
+        for position in data.get('positions', []):  # Ajusta la clave según la API
+            VehiculoAPI.objects.update_or_create(
+                identificador=position.get('id', 'N/A'),
+                defaults={
+                    'placa': position.get('plate', 'N/A'),
+                    'latitud': position.get('latitude'),
+                    'longitud': position.get('longitude'),
+                    'fecha_hora': position.get('datetime'),
+                    'odometro': position.get('odometer'),
+                }
+            )
+    else:
+        raise Exception(f"Error al consultar la API: {response.status_code} - {response.text}")

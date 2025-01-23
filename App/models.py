@@ -300,3 +300,15 @@ class Message(models.Model):
 
     def __str__(self):
         return f"{self.sender.username}: {self.content[:20]}"
+
+class VehiculoAPI(models.Model):
+    placa = models.CharField(max_length=100)
+    identificador = models.CharField(max_length=100, null=True, blank=True)
+    latitud = models.FloatField(null=True, blank=True)
+    longitud = models.FloatField(null=True, blank=True)
+    fecha_hora = models.DateTimeField(null=True, blank=True)
+    odometro = models.FloatField(null=True, blank=True)
+    estado = models.CharField(max_length=10, choices=[('online', 'Online'), ('offline', 'Offline')], default='offline')
+
+    def __str__(self):
+        return f"{self.placa} - {self.estado}"
