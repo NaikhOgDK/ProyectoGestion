@@ -13,6 +13,8 @@ from django.utils import timezone
 import requests
 from decouple import config
 from django.http import JsonResponse
+from cryptography.fernet import Fernet
+import json
 
 @login_required
 def register(request):
@@ -37,8 +39,8 @@ def login_view(request):
                 login(request, user)
                 response = HttpResponse()
                 # Set token in cookies
-                token = user.role.name  # Aquí deberías obtener el token real
-                response.set_cookie('auth_token', token, httponly=True, secure=True)
+                encrypted_token = encrypt(user)
+                response.set_cookie('auth_token', encrypted_token.decode(), httponly=True, secure=True)
 
                 # Redirect based on role
                 if user.role.name == 'Administrador':
@@ -651,28 +653,74 @@ def homeTallerUsuario(request):
     return render(request, 'taller/hometaller.html')
 #Fin Vista Taller
 
+#Encriptar
+
+# Encriptar un mensaje
+def encrypt(user):
+    key = Fernet.generate_key()
+    print(f"Generated Key: {key.decode()}")
+    # Convertir el objeto User a un diccionario
+    user_dict = {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "role_name": user.role.name,
+        "id_role": user.role.id
+        # Agrega otros campos que necesites
+    }
+    # Convertir el diccionario a una cadena JSON
+    user_json = json.dumps(user_dict)
+    # Convertir la cadena JSON a bytes
+    user_bytes = user_json.encode('utf-8')
+    # Obtener la clave secreta desde las configuraciones
+    key = config('SECRET_KEY_TOKEN')
+    f = Fernet(key)
+    # Encriptar los bytes
+    encrypted = f.encrypt(user_bytes)
+    return encrypted
+
+# Desencriptar un mensaje
+def decrypt_message(encrypted_message):
+    # Obtener la clave secreta desde las configuraciones
+    key = config('SECRET_KEY_TOKEN').encode()  # Convertir la clave a bytes
+    f = Fernet(key)
+    # Desencriptar el mensaje
+    decrypted_message = f.decrypt(encrypted_message).decode('utf-8')
+    # Convertir el string desencriptado a un objeto JSON
+    decrypted_json = json.loads(decrypted_message)
+    return decrypted_json
+
+# Generar y guardar la clave (solo una vez)
+
+#Fin Encriptar
+
 #API
 
 def make_post_request(request):
-    token = request.COOKIES.get('auth_token')
-    if token == 'Administrador':
-        url = 'https://www.drivetech.pro/api/v1/get_vehicles_positions/'
-        tokengps = config('API_TOKEN')
-        headers = {
-            'Authorization': f'Token {tokengps}',
-            'Content-Type': 'application/json'
-        }
-        body = {
-            'client_id': 'coca-cola_andina'
-        }
+    encrypted_token = request.COOKIES.get('auth_token')
+    if encrypted_token:
+        token = decrypt_message(encrypted_token.encode())
+        role_name = token['role_name']
+        if role_name == 'Administrador':
+            url = 'https://www.drivetech.pro/api/v1/get_vehicles_positions/'
+            tokengps = config('API_TOKEN')
+            headers = {
+                'Authorization': f'Token {tokengps}',
+                'Content-Type': 'application/json'
+            }
+            body = {
+                'client_id': 'coca-cola_andina'
+            }
+            
+            response = requests.post(url, headers=headers, json=body)
 
-        response = requests.post(url, headers=headers, json=body)
-
-        if response.status_code == 200:
-            return JsonResponse({'status': 'success', 'data': response.json()})
+            if response.status_code == 200:
+                return JsonResponse({'status': 'success', 'data': response.json()})
+            else:
+                return JsonResponse({'status': 'error', 'message': response.text}, status=response.status_code)
         else:
-            return JsonResponse({'status': 'error', 'message': response.text}, status=response.status_code)
+            return JsonResponse({'status': 'error', 'message': 'Usuario no Autenticado'}, status=404)
     else:
-        return JsonResponse({'status': 'error', 'message': 'Usuario no Autenticado'}, status=404)
+        return JsonResponse({'status': 'error', 'message': 'Token no encontrado en las cookies.'}, status=404)
 
 #Fin API
