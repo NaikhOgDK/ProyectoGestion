@@ -27,7 +27,7 @@ urlpatterns = [
     #Fin Consulta
 
     #Carga Datos
-    path('cargar_datos_excel/', views.cargar_datos_excel, name='cargar_datos_excel'),
+    path('cargar-datos/', cargar_datos_excel, name='cargar_datos_excel'),
     #Fin Carga Datos
 
     # GPS
@@ -96,7 +96,7 @@ urlpatterns = [
 
     #Desempeño
 
-    path('dashboard/', views.dashboard_desempeno, name='dashboard_desempeno'),
+    path('dashboard/', views.dashboard_view, name='dashboard'),
 
     #Fin Desempeño
 

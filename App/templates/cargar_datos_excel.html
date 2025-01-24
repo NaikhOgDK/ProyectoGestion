@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cargar Datos Excel</title>
+</head>
+<body>
+    <h1>Cargar Datos de Vehículos desde Excel</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="archivo_excel">Seleccione un archivo Excel:</label>
+        <input type="file" name="archivo_excel" id="archivo_excel" accept=".xlsx,.xls">
+        <button type="submit">Cargar</button>
+    </form>
+
+    {% if messages %}
+    <ul>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</body>
+</html>

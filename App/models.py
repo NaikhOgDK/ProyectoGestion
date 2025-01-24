@@ -4,6 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 
+
 class Group(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
@@ -26,6 +27,20 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+class UsuarioEmpresa(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    # Agregar los campos adicionales que necesites para los usuarios Empresa
+
+    def __str__(self):
+        return self.user.username
+
+class UsuarioTaller(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    # Agregar los campos adicionales que necesites para los usuarios Taller
+
+    def __str__(self):
+        return self.user.username
+
 #Procedimiento
 class Procedimiento(models.Model):
     # Definimos las opciones para el campo 'area'
@@ -46,35 +61,112 @@ class Procedimiento(models.Model):
         return self.nombre
 
 #Modelo Vehiculos
-class Vehiculo(models.Model):
-    TIPO_CHOICES = [
-        ('Operativo', 'Operativo'),
-        ('No Disponible', 'No Disponible'),
-        ('En Taller', 'En Taller'),
-        ('En Venta', 'En Venta'),
-        ('Fuera de Servicio', 'Fuera de Servicio'),
-    ]
-    
-    patente = models.CharField(max_length=20)
-    marca = models.CharField(max_length=50)
-    modelo = models.CharField(max_length=50)
-    ano = models.IntegerField()
-    nro_motor = models.CharField(max_length=50)
-    nro_chasis = models.CharField(max_length=50)
-    tipo_vehiculo = models.CharField(max_length=50)
-    nro_pallets = models.IntegerField()
-    tipo_carroceria = models.CharField(max_length=50)
-    seccion = models.CharField(max_length=50)
-    ubicacion_fisica = models.CharField(max_length=100)
-    propietario = models.CharField(max_length=100)
-    tipo = models.CharField(max_length=50, choices=TIPO_CHOICES)  # Usando choices para limitar las opciones
-    operacion = models.CharField(max_length=50)
-    empresa = models.CharField(max_length=100)
-    transportista = models.CharField(max_length=100)
-    observacion = models.TextField()
+class Tipo(models.Model):
+    nombre = models.CharField(max_length=50)
 
     def __str__(self):
-        return f"{self.patente} - {self.marca} {self.modelo}"
+        return self.nombre
+
+class Carroceria(models.Model):
+    nombre = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.nombre
+
+class Zona(models.Model):
+    zona = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.zona
+
+class Canal(models.Model):
+    canal = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.canal
+
+class ubicacion_fisica(models.Model):
+    nombre = models.CharField(max_length=50)
+    
+    def __str__(self):
+        return self.nombre
+
+class Seccion(models.Model):
+    nombre = models.CharField(max_length=50)
+    
+    def __str__(self):
+        return self.nombre
+
+class Propietario(models.Model):
+    tipo_propietario = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.tipo_propietario
+
+class Operacion(models.Model):
+    operacion = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.operacion
+
+class Empresa(models.Model):
+    nombre = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.nombre
+
+class Microempresa(models.Model):
+    nombre = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.nombre
+        
+class TipoVehiculo(models.Model):
+    tipo = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.tipo
+ 
+class Marca(models.Model):
+    nombre = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.nombre
+
+class Vehiculo(models.Model):
+    patente = models.CharField(max_length=10, unique=True)
+    marca = models.ForeignKey(Marca, on_delete=models.SET_NULL, null=True, blank=True)  # Nueva clave foránea a Marca
+    modelo = models.CharField(max_length=100)
+    ano = models.IntegerField()
+    num_motor = models.CharField(max_length=50)
+    num_chasis = models.CharField(max_length=50)
+    num_pallets = models.IntegerField()
+
+    # Relaciones
+    tipo_vehiculo = models.ForeignKey(TipoVehiculo, on_delete=models.SET_NULL, null=True, blank=True)
+    tipo = models.ForeignKey(Tipo, on_delete=models.SET_NULL, null=True, blank=True)
+    carroceria = models.ForeignKey(Carroceria, on_delete=models.SET_NULL, null=True, blank=True)
+    zona = models.ForeignKey(Zona, on_delete=models.SET_NULL, null=True, blank=True)
+    ubicacion_fisica = models.ForeignKey(ubicacion_fisica, on_delete=models.SET_NULL, null=True, blank=True)
+    seccion = models.ForeignKey(Seccion, on_delete=models.SET_NULL, null=True, blank=True)
+    propietario = models.ForeignKey(Propietario, on_delete=models.SET_NULL, null=True, blank=True)
+    empresa = models.ForeignKey(Empresa, on_delete=models.SET_NULL, null=True, blank=True)
+    operacion = models.ForeignKey(Operacion, on_delete=models.SET_NULL, null=True, blank=True)
+    canal = models.ForeignKey(Canal, on_delete=models.SET_NULL, null=True, blank=True)
+    microempresa = models.ForeignKey(Microempresa, on_delete=models.SET_NULL, null=True, blank=True)
+
+    # Campo booleano para saber si es microempresa
+    es_microempresa = models.BooleanField(default=False)
+
+    def clean(self):
+        # Validación para asegurar que solo se asocie una microempresa si es_microempresa es True
+        if self.es_microempresa and not self.microempresa:
+            raise ValidationError("Debe asociarse una microempresa si el vehículo pertenece a una microempresa.")
+        elif not self.es_microempresa and self.microempresa:
+            raise ValidationError("No debe asociarse una microempresa si el vehículo no pertenece a una microempresa.")
+
+    def __str__(self):
+        return f"{self.marca} {self.modelo} ({self.patente})"
 
 
 #Modelo Documento

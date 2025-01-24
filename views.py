@@ -74,84 +74,44 @@ def logout_user(request):
     return render(request, "acceso/logout.html")
 
 #Carga Informacion
-import pandas as pd
-from django.http import HttpResponse
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from App.models import (
-    Marca, TipoVehiculo, Carroceria, Canal, Zona, Seccion, ubicacion_fisica, 
-    Propietario, Operacion, Empresa, Microempresa, Vehiculo
-)
-
 def cargar_datos_excel(request):
-    if request.method == 'POST' and request.FILES.get('archivo_excel'):
-        archivo = request.FILES['archivo_excel']
+    # Ruta del archivo Excel
+    archivo = 'C:/Users/Nicolas Vilches/OneDrive - OCA ENSAYOS INSPECCIONES Y CERTIFICACIONES CHILE S.A/Proyecto Koandina/Koandina BBDD.xlsx'
 
-        try:
-            # Leer solo la hoja llamada 'Base'
-            df_base = pd.read_excel(archivo, sheet_name='Base')
+    # Leer solo la hoja llamada 'Base'
+    df_base = pd.read_excel(archivo, sheet_name='Base')
 
-            # Contador para llevar registro de los registros nuevos
-            registros_creados = 0
+    # Contador para llevar registro de los registros nuevos
+    registros_creados = 0
 
-            # Iterar sobre las filas del DataFrame
-            for _, row in df_base.iterrows():
-                # Verificar si ya existe un registro con la misma patente
-                if not Vehiculo.objects.filter(patente=row['Patente']).exists():
-                    try:
-                        # Crear o buscar objetos relacionados
-                        marca, _ = Marca.objects.get_or_create(nombre=row['Marca'])
-                        tipo_vehiculo, _ = TipoVehiculo.objects.get_or_create(tipo=row['Tipo Vehiculo'])
-                        carroceria, _ = Carroceria.objects.get_or_create(nombre=row['Tipo carrocería'])
-                        canal, _ = Canal.objects.get_or_create(canal=row['Canal'])
-                        zona, _ = Zona.objects.get_or_create(zona=row['Zona'])
-                        seccion, _ = Seccion.objects.get_or_create(nombre=row['Sección'])
-                        ubicacion, _ = ubicacion_fisica.objects.get_or_create(nombre=row['Ubicación fisica'])
-                        propietario, _ = Propietario.objects.get_or_create(tipo_propietario=row['Propietario'])
-                        operacion, _ = Operacion.objects.get_or_create(operacion=row['Operación'])
-                        empresa, _ = Empresa.objects.get_or_create(nombre=row['Empresa'])
-                        tipo, _ = Tipo.objects.get_or_create(nombre=row['Tipo'])
-                        
-                        # Si es una microempresa, crearla o buscarla
-                        es_microempresa = pd.notna(row["Transportista"]) and row["Transportista"] != "N/A"
-                        microempresa = None
-                        if es_microempresa:
-                            microempresa, _ = Microempresa.objects.get_or_create(nombre=row["Transportista"])
+    # Iterar sobre las filas del DataFrame
+    for _, row in df_base.iterrows():
+        # Verificar si ya existe un registro con la misma patente
+        if not Vehiculo.objects.filter(patente=row['Patente']).exists():
+            # Si no existe, crear el nuevo registro
+            Vehiculo.objects.create(
+                patente=row['Patente'],
+                marca=row['Marca'],
+                modelo=row['Modelo'],
+                ano=row['Año'],
+                nro_motor=row['N° de motor'],
+                nro_chasis=row['N° Chasis'],
+                tipo_vehiculo=row['Tipo Vehiculo'],
+                nro_pallets=row['N° de pallets'],
+                tipo_carroceria=row['Tipo carrocería'],
+                seccion=row['Sección'],
+                ubicacion_fisica=row['Ubicación fisica'],
+                propietario=row['Propietario'],
+                tipo=row['Tipo'],
+                operacion=row['Operación'],
+                empresa=row['Empresa'],
+                transportista=row['Transportista'],
+                observacion=row['Observacion']
+            )
+            registros_creados += 1
 
-                        # Crear el vehículo con todas las relaciones
-                        Vehiculo.objects.create(
-                            patente=row['Patente'],
-                            marca=marca,
-                            modelo=row['Modelo'],
-                            ano=row['Año'],
-                            num_motor=row['N° de motor'],
-                            num_chasis=row['N° Chasis'],
-                            num_pallets=row['N° de pallets'],
-                            tipo_vehiculo=tipo_vehiculo,
-                            carroceria=carroceria,
-                            canal=canal,
-                            zona=zona,
-                            seccion=seccion,
-                            ubicacion_fisica=ubicacion,
-                            propietario=propietario,
-                            operacion=operacion,
-                            empresa=empresa,
-                            es_microempresa=es_microempresa,
-                            microempresa=microempresa,
-                            tipo=tipo
-                        )
-                        registros_creados += 1
-                    except Exception as e:
-                        messages.error(request, f"Error al crear vehículo con patente {row['Patente']}: {e}")
-            
-            messages.success(request, f"Datos cargados correctamente. Nuevos registros creados: {registros_creados}")
-        except Exception as e:
-            messages.error(request, f"Error al procesar el archivo: {e}")
-
-        return redirect('cargar_datos_excel')  # Redirigir después de procesar
-
-    return render(request, 'cargar_datos_excel.html')
-
+    # Devolver una respuesta indicando el número de registros cargados
+    return HttpResponse(f"Datos cargados correctamente. Nuevos registros creados: {registros_creados}")
 
 #Seccion home Admin
 def home(request):

@@ -13,3 +13,8 @@ admin.site.register(HistorialMantenimiento)
 admin.site.register(Asignacion_taller)
 admin.site.register(UnidadAceptada)
 admin.site.register(VehiculoAPI)
+admin.site.register(UsuarioEmpresa)
+admin.site.register(UsuarioTaller)
+admin.site.register(Tipo)
+
+
