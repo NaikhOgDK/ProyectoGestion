@@ -6,7 +6,7 @@ from .forms import *
 from .models import *
 import pandas as pd
 from django.http import HttpResponse
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.core.paginator import Paginator
 from django.views.generic import ListView
 from django.utils import timezone
@@ -18,6 +18,7 @@ import json
 from datetime import datetime, timedelta
 from dateutil import parser
 import pytz  # Para manejar zonas horarias
+from datetime import date
 
 @login_required
 def register(request):
@@ -54,6 +55,8 @@ def login_view(request):
                     response['Location'] = 'homeEmpresa'
                 elif user.role.name == 'Taller':
                     response['Location'] = 'homeTallerUsuario'
+                #elif user.role.name == 'ACComercial':
+                #    response['Location'] = 'homeACComercial'
                 else:
                     messages.error(request, "Role not defined for this user.")
                     return render(request, 'acceso/login.html', {'form': form})
@@ -701,34 +704,20 @@ def decrypt_message(encrypted_message):
 
 def make_post_request(request):
     def normalize_plate(plate):
-        """
-        Normaliza las placas eliminando una "I" al final si está presente.
-        """
         if plate and plate.endswith("I"):
             return plate[:-1]
         return plate
 
     def get_vehicle_status(last_signal_time):
-        """
-        Determina el estado del vehículo (online o offline)
-        en base a la diferencia con la fecha actual.
-        """
         if last_signal_time:
-            # Usa dateutil.parser para manejar el formato con la zona horaria
             last_signal_datetime = parser.parse(last_signal_time)
-            
-            # Convertimos la fecha actual a UTC (zona horaria aware)
             now_utc = datetime.now(pytz.utc)
-
-            # Calcula la diferencia con la fecha actual
             time_diff = now_utc - last_signal_datetime
-
-            # Si la diferencia es mayor a 7 días, se considera offline
             if time_diff > timedelta(days=7):
                 return 'offline'
             else:
                 return 'online'
-        return 'offline'  # Si no hay fecha, se considera offline
+        return 'offline'
 
     encrypted_token = request.COOKIES.get('auth_token')
     if encrypted_token:
@@ -749,30 +738,39 @@ def make_post_request(request):
 
             if response.status_code == 200:
                 data = response.json()
-                
-                # Guarda los datos en la base de datos
+                results = []
+
                 for position in data.get('positions', []):
                     placa = position.get('plate', 'N/A')
                     placa_normalizada = normalize_plate(placa)
                     last_signal_time = position.get('datetime')
-
-                    # Determina el estado (online u offline)
                     estado = get_vehicle_status(last_signal_time)
+                    latitud = position.get('latitude')
+                    longitud = position.get('longitude')
 
-                    # Guarda los datos en la base de datos
+                    # Genera los enlaces
+                    google_maps_link = f"https://www.google.com/maps?q={latitud},{longitud}"
+
+                    # Guarda en la base de datos
                     VehiculoAPI.objects.update_or_create(
                         placa=placa_normalizada,
                         defaults={
-                            'identificador': position.get('id', 'N/A'),
-                            'latitud': position.get('latitude'),
-                            'longitud': position.get('longitude'),
+                            'latitud': latitud,
+                            'longitud': longitud,
                             'fecha_hora': last_signal_time,
                             'odometro': position.get('odometer'),
-                            'estado': estado,  # Establece el estado (online/offline)
+                            'estado': estado,
                         }
                     )
-                
-                return JsonResponse({'status': 'success', 'message': 'Datos guardados correctamente.'})
+
+                    # Agrega el resultado para la respuesta
+                    results.append({
+                        'placa': placa_normalizada,
+                        'estado': estado,
+                        'google_maps_link': google_maps_link,
+                    })
+
+                return JsonResponse({'status': 'success', 'message': 'Datos guardados correctamente.', 'results': results})
             else:
                 return JsonResponse({'status': 'error', 'message': response.text}, status=response.status_code)
         else:
@@ -780,36 +778,6 @@ def make_post_request(request):
     else:
         return JsonResponse({'status': 'error', 'message': 'Token no encontrado en las cookies.'}, status=404)
 
-
-#Fin API
-
-def fetch_and_save_positions():
-    url = 'https://www.drivetech.pro/api/v1/get_vehicles_positions/'
-    tokengps = config('API_TOKEN')
-    headers = {
-        'Authorization': f'Token {tokengps}',
-        'Content-Type': 'application/json'
-    }
-    body = {
-        'client_id': 'coca-cola_andina'
-    }
-
-    response = requests.post(url, headers=headers, json=body)
-    if response.status_code == 200:
-        data = response.json()  # Suponiendo que la API devuelve un JSON
-        for position in data.get('positions', []):  # Ajusta la clave según la API
-            VehiculoAPI.objects.update_or_create(
-                identificador=position.get('id', 'N/A'),
-                defaults={
-                    'placa': position.get('plate', 'N/A'),
-                    'latitud': position.get('latitude'),
-                    'longitud': position.get('longitude'),
-                    'fecha_hora': position.get('datetime'),
-                    'odometro': position.get('odometer'),
-                }
-            )
-    else:
-        raise Exception(f"Error al consultar la API: {response.status_code} - {response.text}")
 
 def get_vehiculos_con_seguimiento(request):
     # Obtener todas las placas de los vehículos registrados en el modelo Vehiculo
@@ -820,3 +788,46 @@ def get_vehiculos_con_seguimiento(request):
     
     # Pasar los datos al template
     return render(request, 'areas/gps/vehiculos_seguimiento.html', {'vehiculos': vehiculos_con_seguimiento})
+
+#Fin API
+
+#Desempeño
+
+def obtener_hallazgos_por_empresa():
+    return Hallazgo.objects.filter(grupo__isnull=False).values('grupo__name').annotate(
+        total_hallazgos=Count('id'),
+        hallazgos_abiertos=Count('id', filter=Q(estado_cierre='Abierto')),
+        hallazgos_cerrados=Count('id', filter=Q(estado_cierre='Cerrado')),
+        alto_riesgo=Count('id', filter=Q(nivel_riesgo='Alto')),
+        medio_riesgo=Count('id', filter=Q(nivel_riesgo='Medio')),
+        bajo_riesgo=Count('id', filter=Q(nivel_riesgo='Bajo'))
+    )
+
+# Obtener documentos vencidos por empresa
+def obtener_documentos_vencidos_por_empresa():
+    return Documento.objects.filter(
+        vehiculo__group__isnull=False  # Aseguramos que el vehículo tiene un grupo asignado
+    ).filter(
+        Q(fecha_vencimiento_mantencion__lt=date.today()) |
+        Q(fecha_vencimiento_revision__lt=date.today()) |
+        Q(fecha_vencimiento_permiso__lt=date.today()) |
+        Q(fecha_vencimiento_soap__lt=date.today()) |
+        Q(fecha_vencimiento_padron__lt=date.today())
+    ).values('vehiculo__group__name').annotate(
+        documentos_vencidos=Count('id')
+    )
+
+def dashboard_desempeno(request):
+    # Consultar hallazgos y documentos vencidos por empresa
+    hallazgos_empresa = obtener_hallazgos_por_empresa()
+    documentos_vencidos_empresa = obtener_documentos_vencidos_por_empresa()
+
+    context = {
+        'hallazgos_empresa': hallazgos_empresa,
+        'documentos_vencidos_empresa': documentos_vencidos_empresa
+    }
+    return render(request, 'desempeno/dashboard.html', context)
+
+#Fin Desempeño
+
+

@@ -1,44 +1,185 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vehículos en Seguimiento</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.2/css/bootstrap.min.css">
-</head>
-<body>
-    <div class="container mt-5">
-        <h1>Vehículos en Seguimiento</h1>
-        
-        <!-- Tabla de Vehículos -->
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Placa</th>
-                    <th>Identificador</th>
-                    <th>Latitud</th>
-                    <th>Longitud</th>
-                    <th>Fecha y Hora</th>
-                    <th>Odómetro</th>
-                    <th>Estado</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for vehiculo in vehiculos %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ vehiculo.placa }}</td>
-                        <td>{{ vehiculo.identificador }}</td>
-                        <td>{{ vehiculo.latitud }}</td>
-                        <td>{{ vehiculo.longitud }}</td>
-                        <td>{{ vehiculo.fecha_hora }}</td>
-                        <td>{{ vehiculo.odometro }}</td>
-                        <td>{{ vehiculo.estado }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+{% extends 'base.html' %}
+
+{% block title %}Gestión de GPS{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 text-center">
+        <h1 class="display-4 font-weight-bold" style="color: #0b3356;">Listado Vehiculos API</h1>
     </div>
-</body>
-</html>
+</div>
+
+<button id="updateDataButton" class="btn">Actualizar Datos</button>
+
+<!-- Barra de carga -->
+<div id="loading" class="loading-container">
+    <div id="progressBar" class="loading-bar"></div>
+    <p class="loading-text">Cargando datos, por favor espera...</p>
+</div>
+
+<table class="vehicle-table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Placa</th>
+            <th>Estado</th>
+            <th>Latitud</th>
+            <th>Longitud</th>
+            <th>Ubicación en Google Maps</th>
+            <th>Odómetro</th>
+            <th>Última Señal</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for vehiculo in vehiculos %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ vehiculo.placa }}</td>
+            <td>{{ vehiculo.estado }}</td>
+            <td>{{ vehiculo.latitud }}</td>
+            <td>{{ vehiculo.longitud }}</td>
+            <td>
+                {% if vehiculo.latitud != "No disponible" and vehiculo.longitud != "No disponible" %}
+                <a href="https://www.google.com/maps?q={{ vehiculo.latitud }},{{ vehiculo.longitud }}" target="_blank">Ver en Google Maps</a>
+                {% else %}
+                No disponible
+                {% endif %}
+            </td>
+            <td>{{ vehiculo.odometro }}</td>
+            <td>{{ vehiculo.fecha_hora }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    document.getElementById("updateDataButton").addEventListener("click", function() {
+        // Mostrar barra de carga
+        document.getElementById("loading").style.display = "block";
+        
+        // Variables de progreso
+        var progressBar = document.getElementById("progressBar");
+        var progress = 0;
+
+        // Función para simular el progreso
+        var interval = setInterval(function() {
+            if (progress >= 100) {
+                clearInterval(interval);
+            } else {
+                progress += 1;  // Aumentar el progreso
+                progressBar.style.width = progress + "%"; // Actualizar el ancho de la barra
+            }
+        }, 50); // Incrementar el progreso cada 50 ms
+
+        // Hacer solicitud AJAX para actualizar datos
+        fetch("{% url 'make_post_request' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Mostrar mensaje de éxito y recargar página
+            alert(data.message || "Datos actualizados correctamente.");
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Hubo un problema al actualizar los datos.");
+        })
+        .finally(() => {
+            // Ocultar barra de carga
+            document.getElementById("loading").style.display = "none";
+        });
+    });
+</script>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+    }
+
+    h1 {
+        text-align: center;
+        color: #333;
+        margin-top: 20px;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #0b3356;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 20px;
+    }
+
+    .btn:hover {
+        background-color: #0b3356;
+    }
+
+    /* Estilo para la barra de carga */
+    .loading-container {
+        display: none;
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    .loading-bar {
+        width: 0;
+        height: 10px;
+        background-color: #0b3356;
+        transition: width 0.2s ease-in-out;
+    }
+
+    .loading-text {
+        margin-top: 10px;
+        font-size: 18px;
+        color: #333;
+    }
+
+    table {
+        width: 90%;
+        margin: 20px auto;
+        border-collapse: collapse;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        background-color: white;
+    }
+
+    table th, table td {
+        padding: 12px;
+        text-align: center;
+        border: 1px solid #ddd;
+    }
+
+    table th {
+        background-color: #0b3356;
+        color: white;
+    }
+
+    table tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    table a {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    table a:hover {
+        text-decoration: underline;
+    }
+
+    table td, table th {
+        word-wrap: break-word;
+    }
+</style>
+
+{% endblock %}

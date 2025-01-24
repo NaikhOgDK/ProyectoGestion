@@ -86,7 +86,6 @@ urlpatterns = [
     path('gestionar_asignaciones/', views.gestionar_asignaciones, name='gestionar_asignaciones'),
     path('lista-unidades/', views.lista_unidades_aceptadas, name='lista_unidades_aceptadas'),
     path('editar-unidad/<int:unidad_id>/', views.editar_unidad_aceptada, name='editar_unidad'),
-
     #Fin Taller Usuario
 
     #API
@@ -94,5 +93,11 @@ urlpatterns = [
     path('api/make_post_request/', make_post_request, name='make_post_request'),
 
     #Fin API
+
+    #Desempeño
+
+    path('dashboard/', views.dashboard_desempeno, name='dashboard_desempeno'),
+
+    #Fin Desempeño
 
 ]   + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
