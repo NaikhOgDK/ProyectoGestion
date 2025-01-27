@@ -173,14 +173,12 @@ def visual(request):
     return render(request, 'areas/visual/visual.html')
 #Fin Admin
 
-#Consulta
+#Consulta (Arreglar)
 def consulta_vehiculo(request):
     query = request.GET.get('search', '')
     
     # Filtrar vehículos por patente, marca o modelo
-    vehiculos = Vehiculo.objects.filter(
-        Q(patente__icontains=query) | Q(marca__icontains=query) | Q(modelo__icontains=query)
-    )
+    vehiculos = Vehiculo.objects.filter
     
     context = {
         'vehiculos': vehiculos,

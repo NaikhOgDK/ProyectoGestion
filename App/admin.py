@@ -16,5 +16,6 @@ admin.site.register(VehiculoAPI)
 admin.site.register(UsuarioEmpresa)
 admin.site.register(UsuarioTaller)
 admin.site.register(Tipo)
-
-
+admin.site.register(tipo_usuario)
+admin.site.register(HistoricalVehiculo)
+admin.site.register(EstadoGPS)

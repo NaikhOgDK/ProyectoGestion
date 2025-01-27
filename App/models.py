@@ -3,7 +3,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
-
+from simple_history.models import HistoricalRecords
 
 class Group(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -18,6 +18,12 @@ class Role(models.Model):
 
     def __str__(self):
         return self.name
+
+class tipo_usuario(models.Model):
+    tipo = models.CharField(max_length=50)
+
+    def __str__(self):
+        return selp.nombre
 
 class User(AbstractUser):
     email = models.EmailField(unique=True)
@@ -157,6 +163,7 @@ class Vehiculo(models.Model):
 
     # Campo booleano para saber si es microempresa
     es_microempresa = models.BooleanField(default=False)
+    history = HistoricalRecords()  # Agregar historial
 
     def clean(self):
         # Validación para asegurar que solo se asocie una microempresa si es_microempresa es True
@@ -190,9 +197,14 @@ class Documento(models.Model):
     
     descripcion = models.TextField(blank=True, null=True)
     fecha_subida = models.DateTimeField(auto_now_add=True)
+    history = HistoricalRecords()  # Agregar historial
 
     def __str__(self):
         return self.vehiculo.patente if self.vehiculo else 'Documento sin vehículo'
+
+class imagenDocumentos(models.Model):
+    imagen = models.FileField(upload_to='ImagenesDoc', blank=True, null=True)
+        
 
 
 #Modelo Mantenimiento
@@ -289,6 +301,8 @@ class Hallazgo(models.Model):
     descripcion_cierre = models.TextField(null=True, blank=True)  # Descripción del trabajo realizado
     evidencia_cierre = models.FileField(upload_to='cierres/', null=True, blank=True)  # Evidencia del cierre
     documento_cierre = models.FileField(upload_to='documentos_cierre/', null=True, blank=True)  # Documento de cierre
+
+    history = HistoricalRecords()  # Agregar historial
 
     def __str__(self):
         return f"{self.hallazgo} ({self.tipo_hallazgo} - {self.estado_cierre})"
@@ -393,6 +407,8 @@ class Message(models.Model):
     def __str__(self):
         return f"{self.sender.username}: {self.content[:20]}"
 
+#GPS        
+
 class VehiculoAPI(models.Model):
     placa = models.CharField(max_length=100)
     identificador = models.CharField(max_length=100, null=True, blank=True)
@@ -404,3 +420,27 @@ class VehiculoAPI(models.Model):
 
     def __str__(self):
         return f"{self.placa} - {self.estado}"
+
+
+class EstadoGPS(models.Model):
+    ESTADO_CHOICES = [
+        ('Sin GPS', 'Sin GPS'),
+        ('Pendiente Instalación', 'Pendiente Instalación'),
+        ('Instalado', 'Instalado'),
+    ]
+
+    vehiculo = models.OneToOneField(Vehiculo, on_delete=models.CASCADE, related_name='estado_gps')
+    estado = models.CharField(max_length=30, choices=ESTADO_CHOICES, default='Sin GPS')
+    actualizado_en = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Vehículo {self.vehiculo.patente}: {self.estado}"
+    
+    history = HistoricalRecords()
+
+@receiver(post_save, sender=Vehiculo)
+def crear_estado_gps(sender, instance, created, **kwargs):
+    if created:
+        EstadoGPS.objects.create(vehiculo=instance)
+
+#Fin GPS
