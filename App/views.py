@@ -673,7 +673,33 @@ def editar_unidad_aceptada(request, unidad_id):
 
 #Vista Empresa
 def homeEmpresa(request):
-    return render(request,'empresa/home.html')
+    # Obtener el grupo (empresa) del usuario logueado
+    empresa = request.user.group  # Asumiendo que el usuario está asignado a un grupo
+    
+    # Obtener todos los hallazgos cerrados de esa empresa
+    hallazgos_cerrados = HallazgoEmpresa.objects.filter(grupo=empresa, estado='Cerrado')
+    
+    # Calcular el desempeño promedio
+    total_desempeno = 0
+    total_hallazgos = hallazgos_cerrados.count()
+    
+    if total_hallazgos > 0:
+        for hallazgo in hallazgos_cerrados:
+            if hallazgo.clasificacion_tiempo_cierre == 'Efectivo':
+                total_desempeno += 100
+            elif hallazgo.clasificacion_tiempo_cierre == 'Regular':
+                total_desempeno += 60
+            elif hallazgo.clasificacion_tiempo_cierre == 'Ineficiente':
+                total_desempeno += 0
+        
+        desempeño_promedio = total_desempeno / total_hallazgos
+    else:
+        desempeño_promedio = 0  # Si no hay hallazgos cerrados, el desempeño es 0
+    
+    # Pasar los datos a la plantilla
+    return render(request, 'empresa/home.html', {
+        'desempeño_promedio': desempeño_promedio,
+    })
 #Fin Vista Empresa
 
 #Vista Visualizador

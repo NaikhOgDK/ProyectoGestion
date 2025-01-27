@@ -14,6 +14,24 @@
         <div class="col-md-6">
             <div class="card shadow-sm">
                 <div class="card-body text-center">
+                    <h4 class="card-title">Desempeño Promedio de la Empresa</h4>
+                    <p class="card-text">Valoración del desempeño de los hallazgos cerrados:</p>
+                    <p class="card-text">
+                        {% if desempeño_promedio > 0 %}
+                            Desempeño promedio: {{ desempeño_promedio }}%
+                        {% else %}
+                            No hay hallazgos cerrados aún.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5 justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
                     <h4 class="card-title">Hallazgos de Mi Empresa</h4>
                     <p class="card-text">Accede a la gestión de los hallazgos de tu empresa y resuelve los pendientes.</p>
                     <a href="{% url 'listar_hallazgo' %}" class="btn btn-outline-custom mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
@@ -23,31 +41,8 @@
             </div>
         </div>
     </div>
-    <div class="row mt-5 justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-body text-center">
-                    <h4 class="card-title">Ver Mis Unidades</h4>
-                    <p class="card-text">Accede a tus unidades </p>
-                    <a href="#" class="btn btn-outline-custom mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
-                        Gestionar Unidades
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row mt-5 justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-body text-center">
-                    <h4 class="card-title">Unidades Taller</h4>
-                    <p class="card-text">Ve el estado de tus unidades en Taller</p>
-                    <a href="#" class="btn btn-outline-custom mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
-                        Gestionar Unidades
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+
+    <!-- ... tus otros bloques de contenido ... -->
+
 </div>
 {% endblock %}

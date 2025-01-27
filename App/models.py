@@ -4,6 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 from simple_history.models import HistoricalRecords
+from django.utils import timezone
 
 class Group(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -298,14 +299,36 @@ class HallazgoEmpresa(models.Model):
     grupo = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True)  # Relación con el grupo (empresa)
     evidencia = models.FileField(upload_to='evidencias/', null=True, blank=True)  # Evidencia (foto o PDF)
     estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='Pendiente')  # Estado del hallazgo
+    fecha_cierre = models.DateField(null=True, blank=True)  # Fecha de cierre del hallazgo
 
     # Historial
     history = HistoricalRecords()  # Si deseas mantener un historial de cambios
 
     def cerrar_hallazgo(self):
-        """Método para cerrar un hallazgo cambiando su estado a 'Cerrado'."""
+        """Método para cerrar un hallazgo cambiando su estado a 'Cerrado' y estableciendo la fecha de cierre."""
         self.estado = 'Cerrado'
-        self.save()  # Guarda el hallazgo con el nuevo estado
+        self.fecha_cierre = timezone.now().date()  # Establece la fecha de cierre como la fecha actual
+        self.save()  # Guarda el hallazgo con el nuevo estado y fecha de cierre
+
+    @property
+    def dias_para_cerrar(self):
+        """Método para calcular los días transcurridos entre la fecha de inspección y la fecha de cierre."""
+        if self.estado == 'Cerrado' and self.fecha_cierre:
+            return (self.fecha_cierre - self.fecha_inspeccion).days
+        return None  # Si no está cerrado o falta la fecha de cierre, retorna None
+
+    @property
+    def clasificacion_tiempo_cierre(self):
+        """Clasifica el tiempo de cierre del hallazgo como Efectivo, Regular o Ineficiente."""
+        dias = self.dias_para_cerrar
+        if dias is not None:
+            if dias <= 2:
+                return 'Efectivo'
+            elif 3 <= dias <= 5:
+                return 'Regular'
+            else:
+                return 'Ineficiente'
+        return 'No cerrado'  # Si el hallazgo no está cerrado aún
 
     def __str__(self):
         return f"{self.hallazgo} ({self.tipo_hallazgo} - {self.nivel_riesgo})"
@@ -319,7 +342,7 @@ class Cierre(models.Model):
     documento_cierre = models.FileField(upload_to='documentos_cierre/', null=True, blank=True)  # Documento de cierre
 
     def save(self, *args, **kwargs):
-        """Al guardar un cierre, cambia el estado del hallazgo relacionado a 'Cerrado'."""
+        """Al guardar un cierre, cambia el estado del hallazgo relacionado a 'Cerrado' y guarda la fecha de cierre."""
         super().save(*args, **kwargs)
         if self.hallazgo.estado != 'Cerrado':
             self.hallazgo.cerrar_hallazgo()
