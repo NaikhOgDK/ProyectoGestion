@@ -161,36 +161,6 @@ class MantenimientoForm(forms.ModelForm):
         model = Mantenimiento
         fields = ['vehiculo', 'kilometraje_mtto', 'fecha_mtto', 'servicio_realizado', 'respaldo_mtto', 'proximo_mantenimiento_km', 'proximo_servicio']
 
-class HallazgoForm(forms.ModelForm):
-    class Meta:
-        model = Hallazgo
-        fields = [
-            'hallazgo', 'vehiculo', 'posicion_neumatico', 'fecha_inspeccion', 'tipo_hallazgo',
-            'nivel_riesgo', 'responsable', 'grupo', 'evidencia','documento_cierre',
-        ]
-        widgets = {
-            'fecha_inspeccion': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'hallazgo': forms.TextInput(attrs={'class': 'form-control'}),
-            'vehiculo': forms.Select(attrs={'class': 'form-control'}),
-            'posicion_neumatico': forms.Select(attrs={'class': 'form-control'}),
-            'tipo_hallazgo': forms.Select(attrs={'class': 'form-control'}),
-            'nivel_riesgo': forms.Select(attrs={'class': 'form-control'}),
-            'responsable': forms.Select(attrs={'class': 'form-control'}),
-            'grupo': forms.Select(attrs={'class': 'form-control'}),
-            'evidencia': forms.ClearableFileInput(attrs={'class': 'form-control'}),
-            'documento_cierre': forms.ClearableFileInput(attrs={'class': 'form-control'}),
-        }
-
-class HallazgoCierreForm(forms.ModelForm):
-    class Meta:
-        model = Hallazgo
-        fields = ['estado_cierre', 'descripcion_cierre', 'evidencia_cierre']
-        widgets = {
-            'estado_cierre': forms.Select(attrs={'class': 'form-control'}),
-            'descripcion_cierre': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'evidencia_cierre': forms.ClearableFileInput(attrs={'class': 'form-control'}),
-        }
-
 class ComunicacionForm(forms.ModelForm):
     class Meta:
         model = ComunicacionHallazgo
@@ -256,4 +226,24 @@ class UnidadAceptadaForm(forms.ModelForm):
             'fecha_inicio': forms.DateInput(attrs={'type': 'date'}),
             'fecha_termino': forms.DateInput(attrs={'type': 'date'}),
             'registro': forms.ClearableFileInput(attrs={'multiple': False}),
+        }
+
+class HallazgoForm(forms.ModelForm):
+    # Usar el widget de tipo 'date' sin especificar el formato
+    fecha_inspeccion = forms.DateField(
+        widget=forms.TextInput(attrs={'type': 'date'})  # Usar el widget de tipo "date" en HTML
+    )
+
+    class Meta:
+        model = HallazgoEmpresa
+        fields = ['hallazgo', 'vehiculo', 'posicion_neumatico', 'fecha_inspeccion', 'tipo_hallazgo', 'nivel_riesgo', 'responsable', 'grupo', 'evidencia']
+
+class CierreForm(forms.ModelForm):
+    class Meta:
+        model = Cierre
+        fields = ['responsable_cierre', 'descripcion_cierre', 'evidencia_cierre', 'documento_cierre']
+
+        widgets = {
+            'responsable_cierre': forms.Select(),
+            'descripcion_cierre': forms.Textarea(attrs={'rows': 3}),
         }

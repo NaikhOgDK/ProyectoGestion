@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Hallazgos{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h1 class="display-4 font-weight-bold" style="color: #0b3356;">Lista de Hallazgos</h1>
+    
+    <!-- Botón para agregar un nuevo hallazgo -->
+    <a href="{% url 'crear_hallazgo' %}">
+        <button class="btn btn-primary mt-3">Agregar Nuevo Hallazgo</button>
+    </a>
+    
+    <table class="table mt-4">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Descripción</th>
+                <th>Tipo</th>
+                <th>Fecha de Inspección</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for hallazgo in hallazgos %}
+                <tr>
+                    <td>{{ hallazgo.id }}</td>
+                    <td>{{ hallazgo.hallazgo }}</td>
+                    <td>{{ hallazgo.tipo_hallazgo }}</td>
+                    <td>{{ hallazgo.fecha_inspeccion }}</td>
+                    <td>{{ hallazgo.estado }}</td>
+                    <td>
+                        <!-- Botón para ver detalles del hallazgo -->
+                        <a href="{% url 'detalle_hallazgoemp' hallazgo.id %}" class="btn btn-info btn-sm">
+                            Ver Detalles
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6">No se han encontrado hallazgos.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

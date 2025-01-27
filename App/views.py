@@ -19,6 +19,7 @@ from datetime import datetime, timedelta
 from dateutil import parser
 import pytz  # Para manejar zonas horarias
 from datetime import date
+from .utils import *
 
 @login_required
 def register(request):
@@ -326,76 +327,79 @@ def historial_vehiculo(request, vehiculo_id):
 
 #Inicio Neumatico
 
-# Verificar si el usuario es analista (Admin)
-def is_analyst(user):
-    return user.role and user.role.name == "Administrador"
-
-# Verificar si el usuario es parte de una empresa
-def is_company(user):
-    return user.role and user.role.name == "Empresa"
-
-# Lista de hallazgos
-@login_required
-def hallazgo_list(request):
-    if is_analyst(request.user):
-        hallazgos = Hallazgo.objects.all()  # Analistas ven todos los hallazgos
-    elif is_company(request.user):
-        hallazgos = Hallazgo.objects.filter(grupo=request.user.group)  # Empresas ven solo los de su grupo
-    else:
-        hallazgos = Hallazgo.objects.none()
-    return render(request, "areas/neumatico/hallazgo_list.html", {"hallazgos": hallazgos})
-
-# Crear o editar hallazgo (solo analistas)
-@login_required
-@user_passes_test(is_analyst)
-def hallazgo_create_or_edit(request, pk=None):
-    hallazgo = get_object_or_404(Hallazgo, pk=pk) if pk else None
-    if request.method == "POST":
-        form = HallazgoForm(request.POST, request.FILES, instance=hallazgo)
+def crear_hallazgo(request):
+    if request.method == 'POST':
+        form = HallazgoForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
-            return redirect("hallazgo_list")
+            hallazgo = form.save(commit=False)
+            hallazgo.save()  # Guardamos el hallazgo primero para obtener su ID
+
+            # Enviar notificación por correo a los miembros del grupo
+            asunto = f"Nuevo Hallazgo - {hallazgo.hallazgo}"
+            mensaje = f"Se ha creado un nuevo hallazgo con ID {hallazgo.id}."
+            enviar_notificacion_grupo(hallazgo, asunto, mensaje, tipo='creacion')
+
+            messages.success(request, 'Hallazgo creado exitosamente')
+
+            # Redirigir a la misma vista (a la lista de hallazgos)
+            return redirect('listar_hallazgoemp')  # Cambié la URL por el nombre de la vista
+
     else:
-        form = HallazgoForm(instance=hallazgo)
-    return render(request, "areas/neumatico/hallazgo_form.html", {"form": form, "hallazgo": hallazgo})
+        form = HallazgoForm()
 
-# Cerrar/Reabrir hallazgo (Empresas y analistas)
-@login_required
-def hallazgo_close_or_reopen(request, pk):
-    hallazgo = get_object_or_404(Hallazgo, pk=pk)
-    if is_company(request.user) and hallazgo.grupo != request.user.group:
-        return redirect("hallazgo_list")  # Empresas solo pueden cerrar los suyos
-    if request.method == "POST":
-        if hallazgo.estado_cierre == "Abierto":
-            hallazgo.estado_cierre = "Cerrado"
-        else:
-            hallazgo.estado_cierre = "Abierto"
+    return render(request, 'areas/neumatico/crear_hallazgo.html', {'form': form})
+
+
+def listar_hallazgoemp(request):
+    # Obtener todos los hallazgos sin ningún filtro
+    hallazgos = HallazgoEmpresa.objects.all()
+
+    return render(request, 'areas/neumatico/lista_hallazgo.html', {'hallazgos': hallazgos})
+
+def detalle_hallazgoemp(request, hallazgo_id):
+    hallazgo = get_object_or_404(HallazgoEmpresa, id=hallazgo_id)
+    return render(request, 'areas/neumatico/detalle_hallazgo.html', {'hallazgo': hallazgo})
+
+def cerrar_hallazgoemp(request, hallazgo_id):
+    hallazgo = get_object_or_404(HallazgoEmpresa, id=hallazgo_id)
+
+    # Verificar si el estado es 'Pendiente' para poder cerrarlo
+    if hallazgo.estado == 'Pendiente':
+        hallazgo.estado = 'Cerrado'  # Cambiar el estado a Cerrado
+        hallazgo.descripcion_cierre = "Descripción del cierre aquí"  # Puedes poner la lógica para capturar esta descripción si es necesario
         hallazgo.save()
-        return redirect("hallazgo_detail", pk=pk)
-    return render(request, "areas/neumatico/hallazgo_close.html", {"hallazgo": hallazgo})
 
-# Ver detalles del hallazgo
-@login_required
-def hallazgo_detail(request, pk):
-    hallazgo = get_object_or_404(Hallazgo, pk=pk)
-    comunicaciones = hallazgo.comunicacionhallazgo_set.all()
-    return render(request, "areas/neumatico/hallazgo_detail.html", {"hallazgo": hallazgo, "comunicaciones": comunicaciones})
+    return redirect('detalle_hallazgoemp', hallazgo_id=hallazgo.id)  # Redirige a la página de detalles del hallazgo
 
-# Agregar comunicación
-@login_required
-def add_comunicacion(request, hallazgo_pk):
-    hallazgo = get_object_or_404(Hallazgo, pk=hallazgo_pk)
-    if request.method == "POST":
+def reabrir_hallazgo(request, hallazgo_id):
+    hallazgo = get_object_or_404(HallazgoEmpresa, id=hallazgo_id)
+
+    # Solo reabrir si está cerrado
+    if hallazgo.estado == 'Cerrado':
+        hallazgo.estado = 'Pendiente'  # Cambiar el estado a Pendiente
+        hallazgo.descripcion_cierre = None  # Limpiar la descripción de cierre
+        hallazgo.evidencia_cierre = None  # Limpiar la evidencia de cierre
+        hallazgo.documento_cierre = None  # Limpiar el documento de cierre
+        hallazgo.save()
+
+    return redirect('detalle_hallazgoemp', hallazgo_id=hallazgo.id)
+
+def add_comunicacion(request, hallazgo_id):
+    hallazgo = get_object_or_404(HallazgoEmpresa, id=hallazgo_id)
+
+    if request.method == 'POST':
         form = ComunicacionForm(request.POST, request.FILES)
         if form.is_valid():
             comunicacion = form.save(commit=False)
             comunicacion.hallazgo = hallazgo
             comunicacion.usuario = request.user
             comunicacion.save()
-            return redirect("hallazgo_detail", pk=hallazgo.pk)
+            return redirect('detalle_hallazgoemp', hallazgo_id=hallazgo.id)
     else:
         form = ComunicacionForm()
-    return render(request, "areas/neumatico/comunicacion_form.html", {"form": form, "hallazgo": hallazgo})
+
+    return render(request, 'areas/neumatico/comunicacion_form.html', {'form': form, 'hallazgo': hallazgo})
+
 #Fin Neumatico
 
 #Empresa Hallazgo
@@ -420,21 +424,6 @@ def empresa_hallazgos(request):
         'grupo': grupo_usuario
     })
 
-@login_required
-def cerrar_hallazgo(request, pk):
-    hallazgo = get_object_or_404(Hallazgo, pk=pk)
-
-    if request.method == 'POST':
-        form = HallazgoCierreForm(request.POST, request.FILES, instance=hallazgo)
-        if form.is_valid():
-            hallazgo.estado_cierre = 'Cerrado'
-            form.save()
-            messages.success(request, "El hallazgo ha sido cerrado exitosamente.")
-            return redirect('empresa_hallazgos')
-    else:
-        form = HallazgoCierreForm(instance=hallazgo)
-
-    return render(request, 'empresa/cerrar_hallazgo.html', {'form': form, 'hallazgo': hallazgo})
 
 def detalle_hallazgo(request, pk):
     hallazgo = get_object_or_404(Hallazgo, pk=pk)
@@ -855,4 +844,57 @@ def dashboard_view(request):
 
 #Fin Desempeño
 
+#EMPRESA
+# Vista para cerrar un hallazgo
+def cerrar_hallazgo(request, hallazgo_id):
+    hallazgo = get_object_or_404(HallazgoEmpresa, id=hallazgo_id)
 
+    # Verificar que el hallazgo esté pendiente antes de permitir el cierre
+    if hallazgo.estado != 'Pendiente':
+        messages.error(request, 'El hallazgo ya está cerrado o no está en estado pendiente.')
+        return redirect('listar_hallazgo')
+
+    if request.method == 'POST':
+        form = CierreForm(request.POST, request.FILES)
+        if form.is_valid():
+            # Crear un cierre asociado al hallazgo
+            cierre = form.save(commit=False)
+            cierre.hallazgo = hallazgo
+            cierre.save()
+
+            # Actualizar el estado del hallazgo a 'Cerrado'
+            hallazgo.cerrar_hallazgo()
+
+            # Enviar notificación de cierre por correo
+            from .utils import enviar_notificacion_grupo
+            enviar_notificacion_grupo(hallazgo, 'Hallazgo Cerrado', 'El hallazgo ha sido cerrado', tipo='cierre')
+
+            messages.success(request, 'Hallazgo cerrado exitosamente.')
+            return redirect('listar_hallazgo')
+    else:
+        form = CierreForm()
+
+    return render(request, 'empresa/cerrar_hallazgo.html', {'form': form, 'hallazgo': hallazgo})
+
+def listar_hallazgo(request):
+    # Obtener el grupo del usuario actual
+    grupo_usuario = request.user.group  # Asumiendo que el campo 'group' está en el modelo User
+
+    # Filtrar los hallazgos según el grupo del usuario
+    hallazgos = HallazgoEmpresa.objects.filter(grupo=grupo_usuario)
+
+    return render(request, 'empresa/hallazgos_list.html', {'hallazgos': hallazgos})
+
+def detalle_hallazgo(request, hallazgo_id):
+    # Obtener el hallazgo correspondiente
+    hallazgo = get_object_or_404(HallazgoEmpresa, id=hallazgo_id)
+
+    # Verificar si existe un cierre relacionado con este hallazgo
+    cierre = Cierre.objects.filter(hallazgo=hallazgo).first()  # Devuelve el primer cierre o None
+
+    return render(request, 'empresa/detalle_hallazgo.html', {
+        'hallazgo': hallazgo,
+        'cierre': cierre
+    })
+
+#FIN EMPRESA

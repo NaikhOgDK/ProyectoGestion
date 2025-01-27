@@ -12,23 +12,33 @@
         <div class="card-body">
             <p><strong>Fecha de Inspección:</strong> {{ hallazgo.fecha_inspeccion }}</p>
             <p><strong>Tipo de Hallazgo:</strong> {{ hallazgo.tipo_hallazgo }}</p>
-            <p><strong>Estado:</strong> {{ hallazgo.estado_cierre }}</p>
+            <p><strong>Estado:</strong> {{ hallazgo.estado }}</p>
         </div>
     </div>
 
-    <!-- Formulario para cerrar el hallazgo (si está abierto) -->
-    {% if hallazgo.estado_cierre == 'Abierto' %}
+    <!-- Formulario para cerrar o reabrir el hallazgo -->
     <div class="card mb-4">
         <div class="card-body text-center">
-            <form method="post" action="{% url 'hallazgo_close' hallazgo.pk %}">
-                {% csrf_token %}
-                <button type="submit" class="card-header btn btn-outline-custom btn-lg" style="width: 100%; height: 50px; display: flex; justify-content: center; align-items: center;">
-                    Cerrar Hallazgo
-                </button>
-            </form>
+            {% if hallazgo.estado == 'Pendiente' %}
+                <form method="post" action="{% url 'hallazgo_close' hallazgo.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="card-header btn btn-outline-custom btn-lg" style="width: 100%; height: 50px; display: flex; justify-content: center; align-items: center;">
+                        Cerrar Hallazgo
+                    </button>
+                </form>
+            {% elif hallazgo.estado == 'Cerrado' %}
+                <form method="post" action="{% url 'hallazgo_reabrir' hallazgo.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="card-header btn btn-outline-custom btn-lg" style="width: 100%; height: 50px; display: flex; justify-content: center; align-items: center;">
+                        Reabrir Hallazgo
+                    </button>
+                </form>
+            {% endif %}
         </div>
     </div>
-    {% else %}
+
+    <!-- Información del Cierre -->
+    {% if hallazgo.estado_cierre == 'Cerrado' %}
     <div class="card mb-4">
         <div class="card-header div-outline-custom btn-lg text-center">
             <h5 class="mb-0">Información del Cierre</h5>
@@ -43,13 +53,6 @@
             {% if hallazgo.documento_cierre %}
             <p><strong>Documento de Cierre:</strong> <a href="{{ hallazgo.documento_cierre.url }}" target="_blank">Ver Documento</a></p>
             {% endif %}
-
-            <form method="post" action="{% url 'hallazgo_close' hallazgo.pk %}">
-                {% csrf_token %}
-                <button type="submit" class="card-header btn btn-outline-custom btn-lg" style="width: 100%; height: 50px; display: flex; justify-content: center; align-items: center;">
-                    Reabrir Hallazgo
-                </button>
-            </form>
         </div>
     </div>
     {% endif %}
@@ -63,8 +66,8 @@
             <ul class="list-group">
                 {% for comunicacion in hallazgo.comunicacionhallazgo_set.all %}
                 <li class="list-group-item">
-                    <strong>{{ comunicacion.usuario.username }}</strong> 
-                    <small class="text-muted">({{ comunicacion.fecha_envio }})</small>: 
+                    <strong>{{ comunicacion.usuario.username }}</strong>
+                    <small class="text-muted">({{ comunicacion.fecha_envio }})</small>:
                     <p>{{ comunicacion.mensaje }}</p>
 
                     {% if comunicacion.evidencia_adicional %}

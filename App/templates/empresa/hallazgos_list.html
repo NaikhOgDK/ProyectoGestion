@@ -1,64 +1,41 @@
 {% extends 'empresa/baseempresa.html' %}
 
+{% block title %}Lista de Hallazgos{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <h1 class="text-center mb-5">Hallazgos de {{ grupo.name }}</h1>
-
+    <h1>Lista de Hallazgos</h1>
+    
     {% if hallazgos %}
-    <table class="table table-striped mt-3">
-        <thead>
-            <tr>
-                <th>Hallazgo</th>
-                <th>Fecha Inspección</th>
-                <th>Tipo</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for hallazgo in hallazgos %}
-            <tr>
-                <td>{{ hallazgo.hallazgo }}</td>
-                <td>{{ hallazgo.fecha_inspeccion }}</td>
-                <td>{{ hallazgo.tipo_hallazgo }}</td>
-                <td>
-                    {% if hallazgo.estado_cierre == 'Abierto' %}
-                    <span class="badge bg-success">Abierto</span>
-                    {% else %}
-                    <span class="badge bg-danger">Cerrado</span>
-                    {% endif %}
-                </td>
-                <td>
-                    <a href="{% url 'detalle_hallazgo' hallazgo.pk %}" class="btn btn-outline-custom btn-sm">Ver</a>
-                    {% if hallazgo.estado_cierre == 'Abierto' %}
-                    <a href="{% url 'cerrar_hallazgo' hallazgo.pk %}" class="btn btn-outline-custom btn-sm">Cerrar</a>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <div class="pagination d-flex justify-content-center">
-        <span class="step-links">
-            {% if hallazgos.has_previous %}
-                <a href="?page=1" class="btn btn-outline-secondary btn-sm">&laquo; Primera</a>
-                <a href="?page={{ hallazgos.previous_page_number }}" class="btn btn-outline-secondary btn-sm">Anterior</a>
-            {% endif %}
-
-            <span class="current mx-2">
-                Página {{ hallazgos.number }} de {{ hallazgos.paginator.num_pages }}
-            </span>
-
-            {% if hallazgos.has_next %}
-                <a href="?page={{ hallazgos.next_page_number }}" class="btn btn-outline-secondary btn-sm">Siguiente</a>
-                <a href="?page={{ hallazgos.paginator.num_pages }}" class="btn btn-outline-secondary btn-sm">Última &raquo;</a>
-            {% endif %}
-        </span>
-    </div>
-
+        <table class="table table-bordered mt-5">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Descripción</th>
+                    <th>Tipo de Hallazgo</th>
+                    <th>Fecha de Inspección</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for hallazgo in hallazgos %}
+                    <tr>
+                        <td>{{ hallazgo.id }}</td>
+                        <td>{{ hallazgo.hallazgo }}</td>
+                        <td>{{ hallazgo.tipo_hallazgo }}</td>
+                        <td>{{ hallazgo.fecha_inspeccion }}</td>
+                        <td>{{ hallazgo.estado }}</td>
+                        <td>
+                            <a href="{% url 'detalle_hallazgo' hallazgo.id %}" class="btn btn-info btn-sm">Ver detalles</a>
+                            {% if hallazgo.estado == 'Pendiente' %}
+                                <a href="{% url 'cerrar_hallazgo' hallazgo.id %}" class="btn btn-danger btn-sm">Cerrar</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     {% else %}
-    <p class="text-center">No hay hallazgos asociados a tu empresa.</p>
+        <p class="alert alert-warning">No se han encontrado hallazgos para tu grupo.</p>
     {% endif %}
-</div>
 {% endblock %}

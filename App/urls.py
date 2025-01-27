@@ -46,18 +46,16 @@ urlpatterns = [
     # Fin Urls Documentos
 
     # URLS Neumaticos
-    path("Hallazgolist", views.hallazgo_list, name="hallazgo_list"),
-    path("hallazgo/new/", views.hallazgo_create_or_edit, name="hallazgo_create"),
-    path("hallazgo/<int:pk>/edit/", views.hallazgo_create_or_edit, name="hallazgo_edit"),
-    path("hallazgo/<int:pk>/", views.hallazgo_detail, name="hallazgo_detail"),
-    path("hallazgo/<int:pk>/close/", views.hallazgo_close_or_reopen, name="hallazgo_close"),
-    path("hallazgo/<int:hallazgo_pk>/comunicacion/new/", views.add_comunicacion, name="add_comunicacion"),
+    path('empresa/hallazgos/', views.listar_hallazgo, name='listar_hallazgo'),
+    path('hallazgo/close/<int:hallazgo_id>/', views.cerrar_hallazgoemp, name='hallazgo_close'),
+    path('cerrar-hallazgo/<int:pk>/', views.cerrar_hallazgo, name='cerrar_hallazgo'),
+    path('hallazgo/<int:hallazgo_id>/', views.detalle_hallazgoemp, name='detalle_hallazgoemp'),
+    path('hallazgo/reabrir/<int:hallazgo_id>/', views.reabrir_hallazgo, name='hallazgo_reabrir'),
+    path('hallazgo/add_comunicacion/<int:hallazgo_id>/', views.add_comunicacion, name='add_comunicacion'),
     # Fin URLS Nuematicos
 
     #Empresa Hallazgo
-    path('empresa/hallazgos/', views.empresa_hallazgos, name='empresa_hallazgos'),
-    path('cerrar-hallazgo/<int:pk>/', views.cerrar_hallazgo, name='cerrar_hallazgo'),
-    path('hallazgos/<int:pk>/', views.detalle_hallazgo, name='detalle_hallazgo'),
+
     #Fin Empresa Hallazgo
 
     #Inicio Empresa
@@ -99,5 +97,11 @@ urlpatterns = [
     path('dashboard/', views.dashboard_view, name='dashboard'),
 
     #Fin Desempeño
+
+    path('listar_hallazgoemp/', views.listar_hallazgoemp, name='listar_hallazgoemp'),
+    path('crear_hallazgo/', views.crear_hallazgo, name='crear_hallazgo'),
+    path('hallazgo/<int:hallazgo_id>/', views.detalle_hallazgo, name='detalle_hallazgo'),
+    path('hallazgo/cerrar/<int:hallazgo_id>/', views.cerrar_hallazgo, name='cerrar_hallazgo'),
+    path('hallazgo/detalle/<int:hallazgo_id>/', views.detalle_hallazgo, name='detalle_hallazgo'),
 
 ]   + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

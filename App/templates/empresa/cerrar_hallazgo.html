@@ -3,16 +3,15 @@
 {% block title %}Cerrar Hallazgo{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1 class="mb-4">Cerrar Hallazgo</h1>
-    <p><strong>Descripción:</strong> {{ hallazgo.hallazgo }}</p>
+    <h1>Cerrar Hallazgo</h1>
+
+    <p><strong>Hallazgo:</strong> {{ hallazgo.hallazgo }}</p>
+    <p><strong>Tipo:</strong> {{ hallazgo.tipo_hallazgo }}</p>
     <p><strong>Fecha de Inspección:</strong> {{ hallazgo.fecha_inspeccion }}</p>
 
-    <form method="post" enctype="multipart/form-data">
+    <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-outline-custom">Cerrar Hallazgo</button>
-        <a href="{% url 'empresa_hallazgos' %}" class="btn btn-outline-custom">Cancelar</a>
+        <button type="submit">Cerrar Hallazgo</button>
     </form>
-</div>
 {% endblock %}

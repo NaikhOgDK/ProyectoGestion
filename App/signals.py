@@ -6,8 +6,8 @@ from .models import User, UsuarioEmpresa, UsuarioTaller
 def assign_user_to_role(sender, instance, created, **kwargs):
     if created:
         if instance.role.name == 'Empresa':
-            # Crea el usuario en el modelo UsuarioEmpresa
-            UsuarioEmpresa.objects.create(user=instance)
+            # Crea el usuario en el modelo UsuarioEmpresa y asigna el grupo
+            UsuarioEmpresa.objects.create(user=instance, grupo=instance.group)
         elif instance.role.name == 'Taller':
-            # Crea el usuario en el modelo UsuarioTaller
-            UsuarioTaller.objects.create(user=instance)
+            # Crea el usuario en el modelo UsuarioTaller y asigna el grupo
+            UsuarioTaller.objects.create(user=instance, grupo=instance.group)

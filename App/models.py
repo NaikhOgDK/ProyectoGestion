@@ -35,6 +35,7 @@ class User(AbstractUser):
 
 class UsuarioEmpresa(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    grupo = models.ForeignKey(Group, on_delete=models.CASCADE)
     # Agregar los campos adicionales que necesites para los usuarios Empresa
 
     def __str__(self):
@@ -42,6 +43,7 @@ class UsuarioEmpresa(models.Model):
 
 class UsuarioTaller(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    grupo = models.ForeignKey(Group, on_delete=models.CASCADE)
     # Agregar los campos adicionales que necesites para los usuarios Taller
 
     def __str__(self):
@@ -269,8 +271,9 @@ def crear_historial_mantenimiento(sender, instance, created, **kwargs):
             proximo_servicio=instance.proximo_servicio,
         )
 
-#Modelo Hallazgo
-class Hallazgo(models.Model):
+#Prueba hallazgo nuevo
+
+class HallazgoEmpresa(models.Model):
     TIPO_HALLAZGO_CHOICES = [
         ('Neumático', 'Neumático'),
         ('Surco', 'Surco'),
@@ -280,36 +283,52 @@ class Hallazgo(models.Model):
         ('Medio', 'Medio'),
         ('Bajo', 'Bajo'),
     ]
-    CIERRE_CHOICES = [
-        ('Abierto', 'Abierto'),
+    ESTADO_CHOICES = [
+        ('Pendiente', 'Pendiente'),
         ('Cerrado', 'Cerrado'),
     ]
 
     hallazgo = models.CharField(max_length=255)
-    vehiculo = models.ForeignKey(Vehiculo, on_delete=models.SET_NULL, null=True, blank=True)  # Relación con el vehículo (patente)
+    vehiculo = models.ForeignKey(Vehiculo, on_delete=models.SET_NULL, null=True, blank=True)  # Relación con el vehículo
     posicion_neumatico = models.CharField(max_length=50, choices=[(f'P{i}', f'P{i}') for i in range(1, 11)])  # P1, P2, ..., P10
     fecha_inspeccion = models.DateField()
     tipo_hallazgo = models.CharField(max_length=50, choices=TIPO_HALLAZGO_CHOICES)
     nivel_riesgo = models.CharField(max_length=10, choices=RIESGO_CHOICES)
-    responsable = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)  # Relación con el responsable
+    responsable = models.ForeignKey(UsuarioEmpresa, on_delete=models.SET_NULL, null=True, blank=True)  # Relación con el responsable
     grupo = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True)  # Relación con el grupo (empresa)
     evidencia = models.FileField(upload_to='evidencias/', null=True, blank=True)  # Evidencia (foto o PDF)
+    estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='Pendiente')  # Estado del hallazgo
 
-    # Cierre
-    estado_cierre = models.CharField(max_length=10, choices=CIERRE_CHOICES, default='Abierto')
-    responsable_cierre = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='responsable_cierre')
+    # Historial
+    history = HistoricalRecords()  # Si deseas mantener un historial de cambios
+
+    def cerrar_hallazgo(self):
+        """Método para cerrar un hallazgo cambiando su estado a 'Cerrado'."""
+        self.estado = 'Cerrado'
+        self.save()  # Guarda el hallazgo con el nuevo estado
+
+    def __str__(self):
+        return f"{self.hallazgo} ({self.tipo_hallazgo} - {self.nivel_riesgo})"
+
+
+class Cierre(models.Model):
+    hallazgo = models.OneToOneField(HallazgoEmpresa, on_delete=models.CASCADE)  # Relación uno a uno con el hallazgo
+    responsable_cierre = models.ForeignKey(UsuarioEmpresa, on_delete=models.SET_NULL, null=True, blank=True, related_name='responsable_cierre')
     descripcion_cierre = models.TextField(null=True, blank=True)  # Descripción del trabajo realizado
     evidencia_cierre = models.FileField(upload_to='cierres/', null=True, blank=True)  # Evidencia del cierre
     documento_cierre = models.FileField(upload_to='documentos_cierre/', null=True, blank=True)  # Documento de cierre
 
-    history = HistoricalRecords()  # Agregar historial
+    def save(self, *args, **kwargs):
+        """Al guardar un cierre, cambia el estado del hallazgo relacionado a 'Cerrado'."""
+        super().save(*args, **kwargs)
+        if self.hallazgo.estado != 'Cerrado':
+            self.hallazgo.cerrar_hallazgo()
 
     def __str__(self):
-        return f"{self.hallazgo} ({self.tipo_hallazgo} - {self.estado_cierre})"
-
+        return f"Cierre del Hallazgo {self.hallazgo.id} - {self.hallazgo.estado}"
 
 class ComunicacionHallazgo(models.Model):
-    hallazgo = models.ForeignKey(Hallazgo, on_delete=models.SET_NULL, null=True)  # Relación con el hallazgo
+    hallazgo = models.ForeignKey(HallazgoEmpresa, on_delete=models.SET_NULL, null=True)  # Relación con el hallazgo
     usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)  # Usuario que envía la comunicación
     mensaje = models.TextField()  # Mensaje del usuario sobre el hallazgo
     fecha_envio = models.DateTimeField(auto_now_add=True)  # Fecha de envío del mensaje
@@ -318,6 +337,8 @@ class ComunicacionHallazgo(models.Model):
 
     def __str__(self):
         return f"Comunicacion del Hallazgo {self.hallazgo.id} por {self.usuario.username} - {self.estado}"
+
+#Fin Prueba hallazgo nuevo
 
 #Taller
 

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Hallazgo{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h1 class="display-4 font-weight-bold" style="color: #0b3356;">Crear Hallazgo</h1>
+
+    <form method="POST" enctype="multipart/form-data" class="mt-4">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary mt-3">Crear Hallazgo</button>
+    </form>
+</div>
+
+{% endblock %}

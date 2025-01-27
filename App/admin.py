@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import *
-
+from .utils import enviar_notificacion_grupo
 # Register your models here.
 
 admin.site.register(Group)
@@ -19,3 +19,5 @@ admin.site.register(Tipo)
 admin.site.register(tipo_usuario)
 admin.site.register(HistoricalVehiculo)
 admin.site.register(EstadoGPS)
+admin.site.register(HallazgoEmpresa)
+admin.site.register(Cierre)
