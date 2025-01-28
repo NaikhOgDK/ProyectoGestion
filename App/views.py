@@ -924,3 +924,6 @@ def detalle_hallazgo(request, hallazgo_id):
     })
 
 #FIN EMPRESA
+
+def custom_404_view(request, exception):
+    return render(request, '404.html', status=404)
