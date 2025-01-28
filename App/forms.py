@@ -4,67 +4,78 @@ from .models import *
 import re
 
 class UserRegisterForm(UserCreationForm):
-    email = forms.EmailField(required=True, error_messages={
-        'required': 'Este campo es obligatorio.',
-        'invalid': 'Por favor, introduce un correo electrónico válido.'
-    })
-    
-    # Personalización de mensajes de error
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Correo electrónico'}),
+        label="Correo electrónico"
+    )
+    role = forms.ModelChoiceField(
+        queryset=Role.objects.all(),
+        empty_label="Selecciona un rol",
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        label="Rol"
+    )
+    group = forms.ModelChoiceField(
+        queryset=Group.objects.all(),
+        empty_label="Selecciona un grupo",
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        label="Grupo",
+        required=False  # Inicialmente no obligatorio
+    )
+
     class Meta:
         model = User
         fields = ['username', 'email', 'password1', 'password2', 'role', 'group']
-
-    # Validación personalizada para el campo username
-    username = forms.CharField(
-        max_length=150,
-        error_messages={
-            'required': 'Este campo es obligatorio.',
-            'max_length': 'El nombre de usuario no puede tener más de 150 caracteres.',
+        labels = {
+            'username': 'Nombre de usuario',
+            'password1': 'Contraseña',
+            'password2': 'Confirma tu contraseña',
         }
-    )
 
-    # Validación personalizada para el campo password1
-    password1 = forms.CharField(
-        widget=forms.PasswordInput(),
-        error_messages={
-            'required': 'Este campo es obligatorio.',
-            'min_length': 'La contraseña debe tener al menos 8 caracteres.',
-        }
-    )
-    
-    # Validación personalizada para el campo password2
-    password2 = forms.CharField(
-        widget=forms.PasswordInput(),
-        error_messages={
-            'required': 'Este campo es obligatorio.',
-            'invalid': 'Las contraseñas no coinciden.',
-        }
-    )
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'form-control'
+            field.help_text = ''  # Elimina el texto de ayuda
+            field.error_messages = {
+                'required': f'El campo {field.label} es obligatorio.',
+                'invalid': f'Introduce un valor válido para {field.label}.'
+            }
+        # Ajusta los placeholders para mayor claridad
+        self.fields['username'].widget.attrs['placeholder'] = 'Nombre de usuario'
+        self.fields['password1'].widget.attrs['placeholder'] = 'Contraseña'
+        self.fields['password2'].widget.attrs['placeholder'] = 'Confirma tu contraseña'
 
-    # Validación para password1
-    def clean_password1(self):
-        password = self.cleaned_data.get("password1")
-        if len(password) < 8:
-            raise forms.ValidationError("La contraseña debe tener al menos 8 caracteres.")
-        # Puedes agregar más validaciones aquí como verificar si la contraseña es demasiado simple.
-        if password.isnumeric():
-            raise forms.ValidationError("La contraseña no puede ser completamente numérica.")
-        if re.match(r'^[a-zA-Z0-9]*$', password):
-            raise forms.ValidationError("La contraseña no puede ser una palabra común. Intenta con una combinación de caracteres.")
-        return password
+    def clean(self):
+        cleaned_data = super().clean()
+        role = cleaned_data.get('role')
+        group = cleaned_data.get('group')
 
-    # Validación para el campo username
-    def clean_username(self):
-        username = self.cleaned_data.get("username")
-        if len(username) > 150:
-            raise forms.ValidationError("El nombre de usuario no puede tener más de 150 caracteres.")
-        # Puedes agregar más validaciones si es necesario
-        return username
+        # Lista de roles que no requieren grupo
+        roles_sin_grupo = ['Administrador', 'Visualizador']
+
+        if role and role.name not in roles_sin_grupo and not group:
+            raise forms.ValidationError({
+                'group': 'El grupo es obligatorio para este rol.'
+            })
+
+        return cleaned_data
 
 class UserLoginForm(AuthenticationForm):
-    class Meta:
-        model = User
-        fields = ['username', 'password']
+    username = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Nombre de usuario'
+        }),
+        label="Nombre de usuario"
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Contraseña'
+        }),
+        label="Contraseña"
+    )
 
 
 class DocumentoForm(forms.ModelForm):

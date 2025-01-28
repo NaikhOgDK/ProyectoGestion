@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.contrib import messages
 from .forms import *
 from .models import *
@@ -15,13 +15,12 @@ from decouple import config
 from django.http import JsonResponse
 from cryptography.fernet import Fernet
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from dateutil import parser
 import pytz  # Para manejar zonas horarias
-from datetime import date
 from .utils import *
 
-@login_required
+@permission_required('App.add_user')
 def register(request):
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
