@@ -19,8 +19,11 @@ from datetime import datetime, timedelta, date
 from dateutil import parser
 import pytz  # Para manejar zonas horarias
 from .utils import *
+from .decorators import role_required
+from django.views.generic import ListView
+from django.template.loader import render_to_string
 
-@permission_required('App.add_user')
+@role_required(['Administrador'])
 def register(request):
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
@@ -83,6 +86,7 @@ from App.models import (
     Propietario, Operacion, Empresa, Microempresa, Vehiculo
 )
 
+@role_required(['Administrador'])
 def cargar_datos_excel(request):
     if request.method == 'POST' and request.FILES.get('archivo_excel'):
         archivo = request.FILES['archivo_excel']
@@ -174,6 +178,7 @@ def visual(request):
 #Fin Admin
 
 #Consulta (Arreglar)
+@role_required(['Administrador', 'Visualizador'])
 def consulta_vehiculo(request):
     query = request.GET.get('search', '')
     
@@ -204,6 +209,7 @@ def detalle_vehiculo(request, vehiculo_id):
 #Fin Consulta
 
 #Documentacion
+@role_required(['Administrador', 'Visualizador'])
 def Documentos(request): 
     # Obtener los valores de búsqueda y filtro
     query = request.GET.get('search', '')  # Búsqueda por patente
@@ -235,6 +241,7 @@ def Documentos(request):
         'tipos': tipos,
     })
 
+@role_required(['Administrador', 'Visualizador'])
 def cargar_documentos(request, id):
     vehiculo = get_object_or_404(Vehiculo, id=id)
     
@@ -254,6 +261,7 @@ def cargar_documentos(request, id):
         'form': form
     })
 
+@role_required(['Administrador', 'Visualizador'])
 def editar_documentos(request, id):
     # Obtén el vehículo específico por su ID
     vehiculo = get_object_or_404(Vehiculo, id=id)
@@ -295,6 +303,7 @@ def crear_mantenimiento(request):
     
     return render(request, 'areas/documento/crear_mantenimiento.html', {'form': form})
 
+@role_required(['Administrador', 'Visualizador'])
 def listado_vehiculos(request):
     # Obtener el término de búsqueda
     search = request.GET.get('search', '')
@@ -310,6 +319,7 @@ def listado_vehiculos(request):
         'search': search,
     })
 
+@role_required(['Administrador', 'Visualizador'])
 def historial_vehiculo(request, vehiculo_id):
     # Obtener el vehículo seleccionado
     vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
@@ -326,6 +336,7 @@ def historial_vehiculo(request, vehiculo_id):
 
 #Inicio Neumatico
 
+@role_required(['Administrador'])
 def crear_hallazgo(request):
     if request.method == 'POST':
         form = HallazgoForm(request.POST, request.FILES)
@@ -348,17 +359,19 @@ def crear_hallazgo(request):
 
     return render(request, 'areas/neumatico/crear_hallazgo.html', {'form': form})
 
-
+@role_required(['Administrador', 'Visualizador'])
 def listar_hallazgoemp(request):
     # Obtener todos los hallazgos sin ningún filtro
     hallazgos = HallazgoEmpresa.objects.all()
 
     return render(request, 'areas/neumatico/lista_hallazgo.html', {'hallazgos': hallazgos})
 
+@role_required(['Administrador', 'Visualizador'])
 def detalle_hallazgoemp(request, hallazgo_id):
     hallazgo = get_object_or_404(HallazgoEmpresa, id=hallazgo_id)
     return render(request, 'areas/neumatico/detalle_hallazgo.html', {'hallazgo': hallazgo})
 
+@role_required(['Administrador'])
 def cerrar_hallazgoemp(request, hallazgo_id):
     hallazgo = get_object_or_404(HallazgoEmpresa, id=hallazgo_id)
 
@@ -370,6 +383,7 @@ def cerrar_hallazgoemp(request, hallazgo_id):
 
     return redirect('detalle_hallazgoemp', hallazgo_id=hallazgo.id)  # Redirige a la página de detalles del hallazgo
 
+@role_required(['Administrador'])
 def reabrir_hallazgo(request, hallazgo_id):
     hallazgo = get_object_or_404(HallazgoEmpresa, id=hallazgo_id)
 
@@ -383,6 +397,7 @@ def reabrir_hallazgo(request, hallazgo_id):
 
     return redirect('detalle_hallazgoemp', hallazgo_id=hallazgo.id)
 
+@role_required(['Administrador'])
 def add_comunicacion(request, hallazgo_id):
     hallazgo = get_object_or_404(HallazgoEmpresa, id=hallazgo_id)
 
@@ -403,7 +418,7 @@ def add_comunicacion(request, hallazgo_id):
 
 #Empresa Hallazgo
 
-@login_required
+@role_required(['Empresa'])
 def empresa_hallazgos(request):
     # Obtener el grupo del usuario autenticado
     grupo_usuario = request.user.group  # Suponiendo que el usuario pertenece a un único grupo
@@ -423,7 +438,7 @@ def empresa_hallazgos(request):
         'grupo': grupo_usuario
     })
 
-
+@role_required(['Empresa'])
 def detalle_hallazgo(request, pk):
     hallazgo = get_object_or_404(Hallazgo, pk=pk)
 
@@ -446,7 +461,7 @@ def detalle_hallazgo(request, pk):
 #Fin Empresa Hallazgo
 
 #Inicio Taller Admin
-
+@role_required(['Administrador'])
 def crear_asignacion(request):
     if request.method == 'POST':
         form = AsignacionVehiculoForm(request.POST)
@@ -457,6 +472,7 @@ def crear_asignacion(request):
         form = AsignacionVehiculoForm()
     return render(request, 'areas/taller/crear_asignacion.html', {'form': form})
 
+@role_required(['Administrador', 'Visualizador'])
 class UnidadAceptadaListView(ListView):
     model = UnidadAceptada
     template_name = 'areas/taller/unidad_aceptada_list.html'  # Archivo de plantilla para la lista
@@ -468,18 +484,22 @@ class UnidadAceptadaListView(ListView):
             return UnidadAceptada.objects.filter(taller=self.request.user.group)
         return UnidadAceptada.objects.all()
 
+@role_required(['Administrador', 'Visualizador'])
 def unidades_pendientes(request):
     unidades = UnidadAceptada.objects.filter(estado='Pendiente')
     return render(request, 'areas/taller/unidades_pendientes.html', {'unidades': unidades})
 
+@role_required(['Administrador', 'Visualizador'])
 def unidades_en_proceso(request):
     unidades = UnidadAceptada.objects.filter(estado='En Proceso')
     return render(request, 'areas/taller/unidades_en_proceso.html', {'unidades': unidades})
 
+@role_required(['Administrador', 'Visualizador'])
 def unidades_reparadas(request):
     unidades = UnidadAceptada.objects.filter(estado='Reparada')
     return render(request, 'areas/taller/unidades_reparadas.html', {'unidades': unidades})
 
+@role_required(['Administrador', 'Visualizador'])
 def marcar_como_reparada(request, unidad_id):
     # Asegúrate de que la unidad existe
     unidad = UnidadAceptada.objects.get(id=unidad_id)
@@ -530,44 +550,66 @@ def admin_chat_view(request):
         group_id = request.POST.get('group_id')
         if content and group_id:
             group = Group.objects.get(id=group_id)
-            Message.objects.create(
+            message = Message.objects.create(
                 sender=request.user,
                 group=group,
                 content=content,
                 timestamp=timezone.now()
             )
-            return redirect('admin_chat')  # Redirigir para evitar reenvío de formulario
+            # Devolver los datos del nuevo mensaje en formato JSON
+            return JsonResponse({
+                'success': True,
+                'message': {
+                    'sender': message.sender.username,
+                    'content': message.content,
+                    'timestamp': message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                }
+            })
 
     return render(request, 'chat/admin_chat.html', {'groups': groups, 'messages': messages, 'selected_group': selected_group})
 
+@role_required(['Empresa','Taller'])
 def user_chat_view(request):
     user_group = request.user.group
     messages = Message.objects.filter(group=user_group).order_by('timestamp') if user_group else []
+    
+    # Marcar los mensajes como leídos
+    if messages:
+        Message.objects.filter(group=user_group, read=False).update(read=True)
+
+    # Contar los mensajes no leídos
+    unread_count = Message.objects.filter(group=user_group, read=False).count() if user_group else 0
 
     if request.method == 'POST':
         content = request.POST.get('content')
         if content and user_group:
-            Message.objects.create(
+            # Crear el mensaje
+            message = Message.objects.create(
                 sender=request.user,
                 group=user_group,
                 content=content,
                 timestamp=timezone.now()
             )
-            return redirect('user_chat')  # Redirigir para evitar reenvío de formulario
+            # Devolver los datos del mensaje creado como respuesta JSON
+            return JsonResponse({
+                'username': message.sender.username,
+                'content': message.content,
+                'timestamp': message.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+            })
 
-    return render(request, 'chat/user_chat.html', {'messages': messages, 'user_group': user_group})
+    return render(request, 'chat/user_chat.html', {'messages': messages, 'user_group': user_group, 'unread_count': unread_count})
 
 #Fin Chat
 
 #Inicio Taller usuario
-
+@role_required(['Taller'])
 def listar_asignaciones(request):
     # Obtener todas las asignaciones sin aplicar filtros
     asignaciones = Asignacion_taller.objects.all()
 
     return render(request, 'areas/taller/listar_asignaciones.html', {'asignaciones': asignaciones})
 
-
+@role_required(['Taller'])
 def actualizar_estado(request, asignacion_id):
     asignacion = AsignacionVehiculo.objects.get(id=asignacion_id)
     if request.method == "POST":
@@ -579,6 +621,7 @@ def actualizar_estado(request, asignacion_id):
         form = ActualizarEstadoForm(instance=asignacion)
     return render(request, 'taller/actualizar_estado.html', {'form': form, 'asignacion': asignacion})
 
+@role_required(['Taller'])
 def gestionar_asignaciones(request):
     grupo_usuario = request.user.group
 
@@ -638,6 +681,7 @@ def gestionar_asignaciones(request):
 
     return render(request, 'taller/gestionar_asignaciones.html', {'asignaciones': asignaciones})
 
+@role_required(['Taller'])
 def lista_unidades_aceptadas(request):
     # Obtener el grupo (taller) del usuario actual
     grupo_usuario = request.user.group
@@ -650,6 +694,7 @@ def lista_unidades_aceptadas(request):
 
     return render(request, 'taller/lista_unidades.html', {'unidades_aceptadas': unidades_aceptadas})
 
+@role_required(['Taller'])
 def editar_unidad_aceptada(request, unidad_id):
     # Obtener la unidad aceptada específica
     unidad = get_object_or_404(UnidadAceptada, id=unidad_id)
@@ -671,6 +716,7 @@ def editar_unidad_aceptada(request, unidad_id):
 #Fin Taller Usuario
 
 #Vista Empresa
+@role_required(['Empresa'])
 def homeEmpresa(request):
     # Obtener el grupo (empresa) del usuario logueado
     empresa = request.user.group  # Asumiendo que el usuario está asignado a un grupo
@@ -753,7 +799,7 @@ def decrypt_message(encrypted_message):
 #Fin Encriptar
 
 #API
-
+@role_required(['Administrador'])
 def make_post_request(request):
     def normalize_plate(plate):
         if plate and plate.endswith("I"):
@@ -830,7 +876,7 @@ def make_post_request(request):
     else:
         return JsonResponse({'status': 'error', 'message': 'Token no encontrado en las cookies.'}, status=404)
 
-
+@role_required(['Administrador', 'Visualizador'])
 def get_vehiculos_con_seguimiento(request):
     # Obtener todas las placas de los vehículos registrados en el modelo Vehiculo
     placas_vehiculos = Vehiculo.objects.values_list('patente', flat=True)
@@ -871,6 +917,7 @@ def dashboard_view(request):
 
 #EMPRESA
 # Vista para cerrar un hallazgo
+@role_required(['Empresa'])
 def cerrar_hallazgo(request, hallazgo_id):
     hallazgo = get_object_or_404(HallazgoEmpresa, id=hallazgo_id)
 
@@ -901,6 +948,7 @@ def cerrar_hallazgo(request, hallazgo_id):
 
     return render(request, 'empresa/cerrar_hallazgo.html', {'form': form, 'hallazgo': hallazgo})
 
+@role_required(['Empresa'])
 def listar_hallazgo(request):
     # Obtener el grupo del usuario actual
     grupo_usuario = request.user.group  # Asumiendo que el campo 'group' está en el modelo User
@@ -910,6 +958,7 @@ def listar_hallazgo(request):
 
     return render(request, 'empresa/hallazgos_list.html', {'hallazgos': hallazgos})
 
+@role_required(['Empresa'])
 def detalle_hallazgo(request, hallazgo_id):
     # Obtener el hallazgo correspondiente
     hallazgo = get_object_or_404(HallazgoEmpresa, id=hallazgo_id)
@@ -926,3 +975,6 @@ def detalle_hallazgo(request, hallazgo_id):
 
 def custom_404_view(request, exception):
     return render(request, '404.html', status=404)
+
+def permission_denied_view(request):
+    return render(request, 'error/permission_denied.html')

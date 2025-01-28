@@ -70,7 +70,7 @@ urlpatterns = [
 
     #Taller Admin
     path('crear_asignacion/', views.crear_asignacion, name='crear_asignacion'),
-    path('unidades-aceptadas/', UnidadAceptadaListView.as_view(), name='unidad_aceptada_list'),
+    path('unidades-aceptadas/', UnidadAceptadaListView, name='unidad_aceptada_list'),
     path('unidades/pendientes/', views.unidades_pendientes, name='unidades_pendientes'),
     path('unidades/en_proceso/', views.unidades_en_proceso, name='unidades_en_proceso'),
     path('unidades/reparadas/', views.unidades_reparadas, name='unidades_reparadas'),
@@ -103,5 +103,7 @@ urlpatterns = [
     path('hallazgo/<int:hallazgo_id>/', views.detalle_hallazgo, name='detalle_hallazgo'),
     path('hallazgo/cerrar/<int:hallazgo_id>/', views.cerrar_hallazgo, name='cerrar_hallazgo'),
     path('hallazgo/detalle/<int:hallazgo_id>/', views.detalle_hallazgo, name='detalle_hallazgo'),
+
+    path('permission-denied/', permission_denied_view, name='permission_denied'),
 
 ]   + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,4 +1,3 @@
-<!-- user_chat.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,37 +5,123 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat de Usuario</title>
     <style>
+        /* Estilo global */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 0;
         }
+
         .chat-container {
-            width: 50%;
-            margin: 0 auto;
-            border: 1px solid #ccc;
-            padding: 10px;
+            width: 80%;
+            max-width: 800px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ddd;
         }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 1.8em;
+        }
+
         .messages {
-            height: 300px;
-            overflow-y: scroll;
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin-bottom: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
         }
+
         .message {
-            margin-bottom: 10px;
+            background-color: #e7f3ff;
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
         }
-        .message .sender {
+
+        .message:hover {
+            background-color: #d1e7ff;
+        }
+
+        .sender {
             font-weight: bold;
+            color: #0b3356;
         }
-        .message .timestamp {
+
+        .timestamp {
             font-size: 0.8em;
             color: #888;
+        }
+
+        .content {
+            margin: 10px 0;
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        /* Estilo para el formulario de entrada */
+        form {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            background-color: #f9f9f9;
+        }
+
+        button {
+            background-color: #0b3356;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #09324b;
+        }
+
+        /* Mensaje de alerta en caso de que no haya grupo seleccionado */
+        .alert {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
     <div class="chat-container">
-        <div class="messages">
+        <h1>Chat de Usuario</h1>
+
+        <!-- Mensaje de alerta si no hay grupo seleccionado -->
+        {% if not user_group %}
+            <div class="alert">
+                <strong>¡Atención!</strong> No tienes acceso a ningún grupo. Por favor, selecciona un grupo para chatear.
+            </div>
+        {% endif %}
+
+        <div class="messages" id="messages">
             {% for message in messages %}
                 <div class="message">
                     <div class="sender">{{ message.sender.username }}:</div>
@@ -47,12 +132,41 @@
         </div>
 
         {% if user_group %}
-            <form method="post">
+            <form id="chat-form">
                 {% csrf_token %}
-                <input type="text" name="content" placeholder="Escribe tu mensaje..." required>
+                <input type="text" id="content" name="content" placeholder="Escribe tu mensaje..." required>
                 <button type="submit">Enviar</button>
             </form>
         {% endif %}
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#chat-form').submit(function(event) {
+                event.preventDefault(); // Prevenir la recarga de la página
+                var content = $('#content').val();
+
+                $.ajax({
+                    url: "{% url 'user_chat' %}",  // Asegúrate de que esta URL sea la correcta
+                    method: "POST",
+                    data: {
+                        'content': content,
+                        'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+                    },
+                    success: function(data) {
+                        // Agregar el nuevo mensaje al chat sin recargar la página
+                        var newMessage = '<div class="message"><div class="sender">' + data.username + ':</div><div class="content">' + data.content + '</div><div class="timestamp">' + data.timestamp + '</div></div>';
+                        $('#messages').append(newMessage);
+                        $('#content').val(''); // Limpiar el campo de texto
+                        $('#messages').scrollTop($('#messages')[0].scrollHeight); // Desplazar hacia el mensaje más reciente
+                    },
+                    error: function() {
+                        alert('Error al enviar el mensaje.');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

@@ -1,4 +1,3 @@
-<!-- admin_chat.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,47 +5,154 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat de Administración</title>
     <style>
+        /* Estilo global */
         body {
             font-family: Arial, sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 0;
         }
+
         .chat-container {
-            width: 50%;
-            margin: 0 auto;
-            border: 1px solid #ccc;
-            padding: 10px;
+            width: 80%;
+            max-width: 900px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ddd;
         }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+
         .messages {
-            height: 300px;
-            overflow-y: scroll;
-            border: 1px solid #ccc;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
             padding: 10px;
-            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
         }
+
         .message {
-            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #e7f3ff;
         }
+
         .message .sender {
             font-weight: bold;
+            color: #0b3356;
         }
+
         .message .timestamp {
             font-size: 0.8em;
             color: #888;
+        }
+
+        .message .content {
+            margin: 10px 0;
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        #chat-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        #message-content {
+            flex: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #0b3356;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #09324b;
+        }
+
+        .message {
+            transition: background-color 0.3s ease;
+        }
+
+        .message:hover {
+            background-color: #d1e7ff;
+        }
+
+        .alert {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
     <div class="chat-container">
-        <form method="get">
-            <label for="group">Selecciona un grupo:</label>
-            <select name="group_id" id="group" onchange="this.form.submit()">
-                <option value="">--Selecciona un grupo--</option>
-                {% for group in groups %}
-                    <option value="{{ group.id }}" {% if selected_group and group.id == selected_group.id %}selected{% endif %}>{{ group.name }}</option>
-                {% endfor %}
-            </select>
+        <h1>Chat de Administración</h1>
+        
+        <!-- Mensaje de alerta si no se ha seleccionado un grupo -->
+        {% if not selected_group %}
+            <div class="alert">
+                <strong>¡Atención!</strong> Selecciona un grupo para ver los mensajes.
+            </div>
+        {% endif %}
+
+        <form method="get" id="group-selection-form">
+            <div class="form-group">
+                <label for="group">Selecciona un grupo:</label>
+                <select name="group_id" id="group" onchange="this.form.submit()">
+                    <option value="">--Selecciona un grupo--</option>
+                    {% for group in groups %}
+                        <option value="{{ group.id }}" {% if selected_group and group.id == selected_group.id %}selected{% endif %}>{{ group.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </form>
 
-        <div class="messages">
+        <div class="messages" id="messages-container">
             {% if selected_group %}
                 {% for message in messages %}
                     <div class="message">
@@ -55,19 +161,60 @@
                         <div class="timestamp">{{ message.timestamp }}</div>
                     </div>
                 {% endfor %}
-            {% else %}
-                <p>Selecciona un grupo para ver los mensajes.</p>
             {% endif %}
         </div>
 
         {% if selected_group %}
-            <form method="post">
+            <form id="chat-form">
                 {% csrf_token %}
                 <input type="hidden" name="group_id" value="{{ selected_group.id }}">
-                <input type="text" name="content" placeholder="Escribe tu mensaje..." required>
+                <input type="text" id="message-content" name="content" placeholder="Escribe tu mensaje..." required>
                 <button type="submit">Enviar</button>
             </form>
         {% endif %}
     </div>
+
+    <script>
+        // Enviar mensaje usando AJAX
+        document.getElementById('chat-form').addEventListener('submit', function(event) {
+            event.preventDefault();  // Prevenir la recarga de la página
+
+            var formData = new FormData(this);
+            var csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+
+            fetch('{% url "admin_chat" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => response.json())  // Esperar la respuesta en JSON
+            .then(data => {
+                if (data.success) {
+                    // Agregar el nuevo mensaje al contenedor de mensajes sin recargar la página
+                    const messageContainer = document.getElementById('messages-container');
+                    const newMessage = document.createElement('div');
+                    newMessage.classList.add('message');
+                    newMessage.innerHTML = `
+                        <div class="sender">${data.message.sender}:</div>
+                        <div class="content">${data.message.content}</div>
+                        <div class="timestamp">${data.message.timestamp}</div>
+                    `;
+                    messageContainer.appendChild(newMessage);
+                    messageContainer.scrollTop = messageContainer.scrollHeight;  // Desplazarse al final
+
+                    // Limpiar el campo de entrada
+                    document.getElementById('message-content').value = '';
+                } else {
+                    alert('Hubo un error al enviar el mensaje. Intenta de nuevo.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Hubo un error al enviar el mensaje. Intenta de nuevo.');
+            });
+        });
+    </script>
 </body>
 </html>

@@ -20,12 +20,6 @@ class Role(models.Model):
     def __str__(self):
         return self.name
 
-class tipo_usuario(models.Model):
-    tipo = models.CharField(max_length=50)
-
-    def __str__(self):
-        return selp.nombre
-
 class User(AbstractUser):
     email = models.EmailField(unique=True)
     group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True, related_name="users")
@@ -33,6 +27,12 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+
+class tipo_usuario(models.Model):
+    tipo = models.CharField(max_length=50)
+
+    def __str__(self):
+        return selp.nombre
 
 class UsuarioEmpresa(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -447,6 +447,7 @@ class Message(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='messages')
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+    read = models.BooleanField(default=False)  # Este campo indica si el mensaje ha sido leído
 
     def __str__(self):
         return f"{self.sender.username}: {self.content[:20]}"
