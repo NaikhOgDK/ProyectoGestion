@@ -194,7 +194,7 @@ def consulta_vehiculo(request):
 def detalle_vehiculo(request, vehiculo_id):
     vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
     documentos = Documento.objects.filter(vehiculo=vehiculo)
-    hallazgos = Hallazgo.objects.filter(vehiculo=vehiculo)
+    hallazgos = HallazgoEmpresa.objects.filter(vehiculo=vehiculo)
     mantenimientos = Mantenimiento.objects.filter(vehiculo=vehiculo)
     reparaciones = Reparacion.objects.filter(vehiculo=vehiculo)
     
