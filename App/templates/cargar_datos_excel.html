@@ -1,25 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cargar Datos Excel</title>
-</head>
-<body>
-    <h1>Cargar Datos de Vehículos desde Excel</h1>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <label for="archivo_excel">Seleccione un archivo Excel:</label>
-        <input type="file" name="archivo_excel" id="archivo_excel" accept=".xlsx,.xls">
-        <button type="submit">Cargar</button>
-    </form>
+{% extends 'base.html' %}
 
-    {% if messages %}
-    <ul>
-        {% for message in messages %}
-        <li>{{ message }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-</body>
-</html>
+{% block title %}Cargar Datos Excel{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg p-4">
+        <h2 class="text-center mb-4">Cargar Datos de Vehículos desde Excel</h2>
+        <form method="post" enctype="multipart/form-data" class="text-center">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="archivo_excel" class="form-label">Seleccione un archivo Excel:</label>
+                <input type="file" name="archivo_excel" id="archivo_excel" accept=".xlsx,.xls" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary">Cargar</button>
+        </form>
+
+        {% if messages %}
+        <div class="mt-4">
+            {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

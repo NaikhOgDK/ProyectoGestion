@@ -83,7 +83,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from App.models import (
     Marca, TipoVehiculo, Carroceria, Canal, Zona, Seccion, ubicacion_fisica, 
-    Propietario, Operacion, Empresa, Microempresa, Vehiculo
+    Propietario, Operacion, Group, Microempresa, Vehiculo
 )
 
 @role_required(['Administrador'])
@@ -93,7 +93,7 @@ def cargar_datos_excel(request):
 
         try:
             # Leer solo la hoja llamada 'Base'
-            df_base = pd.read_excel(archivo, sheet_name='Base')
+            df_base = pd.read_excel(archivo, sheet_name='Plantilla')
 
             # Contador para llevar registro de los registros nuevos
             registros_creados = 0
@@ -113,7 +113,7 @@ def cargar_datos_excel(request):
                         ubicacion, _ = ubicacion_fisica.objects.get_or_create(nombre=row['Ubicación fisica'])
                         propietario, _ = Propietario.objects.get_or_create(tipo_propietario=row['Propietario'])
                         operacion, _ = Operacion.objects.get_or_create(operacion=row['Operación'])
-                        empresa, _ = Empresa.objects.get_or_create(nombre=row['Empresa'])
+                        empresa, _ = Group.objects.get_or_create(name=row['Empresa'])
                         tipo, _ = Tipo.objects.get_or_create(nombre=row['Tipo'])
                         
                         # Si es una microempresa, crearla o buscarla
@@ -214,31 +214,40 @@ def Documentos(request):
     # Obtener los valores de búsqueda y filtro
     query = request.GET.get('search', '')  # Búsqueda por patente
     tipo_filtro = request.GET.get('tipo', '')  # Filtro por tipo
+    page_number = request.GET.get('page', 1)  # Número de página
 
-    # Filtrar los vehículos
+    # Obtener todos los vehículos
     vehiculos = Vehiculo.objects.all()
+
+    # Aplicar filtro por patente
     if query:
         vehiculos = vehiculos.filter(patente__icontains=query)
-    if tipo_filtro:
-        vehiculos = vehiculos.filter(tipo=tipo_filtro)
 
+    # Aplicar filtro por tipo (buscando el ID del tipo)
+    if tipo_filtro:
+        try:
+            tipo_obj = Tipo.objects.get(nombre=tipo_filtro)
+            vehiculos = vehiculos.filter(tipo=tipo_obj.id)
+        except Tipo.DoesNotExist:
+            vehiculos = Vehiculo.objects.none()  # Si no existe el tipo, retorna lista vacía
+
+    # Agregar la cantidad de documentos a cada vehículo
     for vehiculo in vehiculos:
         vehiculo.documentos_count = vehiculo.documento_set.count()
-    # Opciones de tipo para el filtro
-    tipos = [
-        ('Operativo', 'Operativo'),
-        ('No Disponible', 'No Disponible'),
-        ('En Taller', 'En Taller'),
-        ('En Venta', 'En Venta'),
-        ('Fuera de Servicio', 'Fuera de Servicio'),
-    ]
 
-    # Pasar los datos y filtros actuales a la plantilla
+    # Configurar la paginación (10 elementos por página)
+    paginator = Paginator(vehiculos, 10)
+    page_obj = paginator.get_page(page_number)
+
+    # Obtener opciones de tipos desde la base de datos
+    tipos = Tipo.objects.values_list('nombre', 'nombre')  # Lista de tuplas (nombre, nombre)
+
+    # Renderizar la plantilla con los datos
     return render(request, 'areas/documento/listadoc.html', {
-        'vehiculos': vehiculos,
+        'page_obj': page_obj,  # Página actual
         'search': query,
         'tipo_filtro': tipo_filtro,
-        'tipos': tipos,
+        'tipos': tipos,  # Opciones dinámicas desde la BD
     })
 
 @role_required(['Administrador', 'Visualizador'])

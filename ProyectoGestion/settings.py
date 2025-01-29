@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-caf$da=p3gn#wr5*eplbgvmyl78*6db+s2v57)^j!j3yp9+6x0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['www.gestionflota.odisinventorybk.com','gestionflota.odisinventorybk.com','localhost']
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -91,12 +91,16 @@ WSGI_APPLICATION = 'ProyectoGestion.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+import pymysql
+pymysql.install_as_MySQLdb()
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'koandina',
-        'USER' : 'root',
-        'PASSWORD' : '12345678AB',
+        'USER' : 'admin',
+        'PASSWORD' : 'Zf08apMaVxmRJQWCP4QN',
+        'HOST' : 'koandina.cmotwqqn1uh9.us-east-1.rds.amazonaws.com',
         'PORT' : '3306'
     }
 }

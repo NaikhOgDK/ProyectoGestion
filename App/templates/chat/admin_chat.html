@@ -1,32 +1,33 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat de Administración</title>
+{% extends 'base.html' %}
+
+{% block title %}Chat de Administración{% endblock %}
+
+{% block content %}
     <style>
-        /* Estilo global */
+        /* Estilos generales */
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f7fa;
+            background-color: #eef2f7;
             margin: 0;
             padding: 0;
         }
 
         .chat-container {
-            width: 80%;
-            max-width: 900px;
-            margin: 50px auto;
-            background-color: #fff;
+            width: 90%;
+            max-width: 800px;
+            margin: 40px auto;
+            background-color: #ffffff;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border: 1px solid #ddd;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            border: 1px solid #ccc;
         }
 
         h1 {
             text-align: center;
             color: #333;
+            font-size: 24px;
+            margin-bottom: 15px;
         }
 
         .form-group {
@@ -35,7 +36,8 @@
 
         label {
             font-weight: bold;
-            color: #333;
+            color: #444;
+            font-size: 16px;
         }
 
         select {
@@ -46,25 +48,37 @@
             font-size: 16px;
             background-color: #f9f9f9;
             cursor: pointer;
+            transition: 0.3s;
+        }
+
+        select:hover {
+            background-color: #eef2f7;
         }
 
         .messages {
             max-height: 400px;
             overflow-y: auto;
-            margin-bottom: 20px;
-            padding: 10px;
+            padding: 15px;
             border: 1px solid #ddd;
             border-radius: 5px;
             background-color: #f9f9f9;
+            margin-bottom: 15px;
+            scroll-behavior: smooth;
         }
 
         .message {
             display: flex;
             flex-direction: column;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             padding: 10px;
-            border-radius: 5px;
+            border-radius: 8px;
             background-color: #e7f3ff;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s;
+        }
+
+        .message:hover {
+            background-color: #d1e7ff;
         }
 
         .message .sender {
@@ -73,13 +87,13 @@
         }
 
         .message .timestamp {
-            font-size: 0.8em;
-            color: #888;
+            font-size: 0.85em;
+            color: #666;
         }
 
         .message .content {
-            margin: 10px 0;
-            font-size: 1.1em;
+            margin-top: 5px;
+            font-size: 1em;
             color: #333;
         }
 
@@ -92,8 +106,14 @@
             flex: 1;
             padding: 10px;
             border-radius: 5px;
-            border: 1px solid #ddd;
+            border: 1px solid #ccc;
             font-size: 16px;
+            transition: 0.3s;
+        }
+
+        #message-content:focus {
+            border-color: #0b3356;
+            outline: none;
         }
 
         button {
@@ -104,36 +124,26 @@
             padding: 10px 15px;
             font-size: 16px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: 0.3s;
         }
 
         button:hover {
             background-color: #09324b;
         }
 
-        .message {
-            transition: background-color 0.3s ease;
-        }
-
-        .message:hover {
-            background-color: #d1e7ff;
-        }
-
         .alert {
             background-color: #f8d7da;
             color: #721c24;
-            padding: 15px;
-            margin-bottom: 20px;
+            padding: 10px;
+            margin-bottom: 15px;
             border: 1px solid #f5c6cb;
             border-radius: 5px;
         }
     </style>
-</head>
-<body>
+
     <div class="chat-container">
         <h1>Chat de Administración</h1>
         
-        <!-- Mensaje de alerta si no se ha seleccionado un grupo -->
         {% if not selected_group %}
             <div class="alert">
                 <strong>¡Atención!</strong> Selecciona un grupo para ver los mensajes.
@@ -175,9 +185,8 @@
     </div>
 
     <script>
-        // Enviar mensaje usando AJAX
         document.getElementById('chat-form').addEventListener('submit', function(event) {
-            event.preventDefault();  // Prevenir la recarga de la página
+            event.preventDefault();  
 
             var formData = new FormData(this);
             var csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
@@ -189,10 +198,9 @@
                     'X-CSRFToken': csrfToken
                 }
             })
-            .then(response => response.json())  // Esperar la respuesta en JSON
+            .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Agregar el nuevo mensaje al contenedor de mensajes sin recargar la página
                     const messageContainer = document.getElementById('messages-container');
                     const newMessage = document.createElement('div');
                     newMessage.classList.add('message');
@@ -202,9 +210,7 @@
                         <div class="timestamp">${data.message.timestamp}</div>
                     `;
                     messageContainer.appendChild(newMessage);
-                    messageContainer.scrollTop = messageContainer.scrollHeight;  // Desplazarse al final
-
-                    // Limpiar el campo de entrada
+                    messageContainer.scrollTop = messageContainer.scrollHeight;
                     document.getElementById('message-content').value = '';
                 } else {
                     alert('Hubo un error al enviar el mensaje. Intenta de nuevo.');
@@ -216,5 +222,4 @@
             });
         });
     </script>
-</body>
-</html>
+{% endblock %}

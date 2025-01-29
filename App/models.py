@@ -118,12 +118,6 @@ class Operacion(models.Model):
     def __str__(self):
         return self.operacion
 
-class Empresa(models.Model):
-    nombre = models.CharField(max_length=50)
-
-    def __str__(self):
-        return self.nombre
-
 class Microempresa(models.Model):
     nombre = models.CharField(max_length=50)
 
@@ -159,7 +153,7 @@ class Vehiculo(models.Model):
     ubicacion_fisica = models.ForeignKey(ubicacion_fisica, on_delete=models.SET_NULL, null=True, blank=True)
     seccion = models.ForeignKey(Seccion, on_delete=models.SET_NULL, null=True, blank=True)
     propietario = models.ForeignKey(Propietario, on_delete=models.SET_NULL, null=True, blank=True)
-    empresa = models.ForeignKey(Empresa, on_delete=models.SET_NULL, null=True, blank=True)
+    empresa = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True)
     operacion = models.ForeignKey(Operacion, on_delete=models.SET_NULL, null=True, blank=True)
     canal = models.ForeignKey(Canal, on_delete=models.SET_NULL, null=True, blank=True)
     microempresa = models.ForeignKey(Microempresa, on_delete=models.SET_NULL, null=True, blank=True)

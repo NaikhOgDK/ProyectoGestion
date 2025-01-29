@@ -28,7 +28,7 @@
 
     <!-- Tabla de vehículos -->
     <div class="table-responsive">
-        <table class="table table-bordered table-hover">
+        <table class="table table-bordered table-hover text-center">
             <thead class="thead-light">
                 <tr>
                     <th>Patente</th>
@@ -41,13 +41,13 @@
                 </tr>
             </thead>
             <tbody>
-                {% for vehiculo in vehiculos %}
+                {% for vehiculo in page_obj %}
                 <tr>
                     <td>{{ vehiculo.patente }}</td>
                     <td>{{ vehiculo.marca }}</td>
                     <td>{{ vehiculo.modelo }}</td>
                     <td>{{ vehiculo.ano }}</td>
-                    <td>{{ vehiculo.tipo }}</td>
+                    <td>{{ vehiculo.tipo.nombre }}</td>  <!-- Se usa .nombre para mostrar el nombre correcto -->
                     <td>{{ vehiculo.propietario }}</td>
                     <td>
                         {% if vehiculo.documentos_count > 0 %}
@@ -71,5 +71,32 @@
             </tbody>
         </table>
     </div>
+
+    <!-- Paginación -->
+    <nav>
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1&search={{ search }}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}">&laquo; Primera</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search }}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}">Anterior</a>
+                </li>
+            {% endif %}
+
+            <li class="page-item disabled">
+                <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            </li>
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search }}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}">Siguiente</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&search={{ search }}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}">Última &raquo;</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
 </div>
 {% endblock %}
