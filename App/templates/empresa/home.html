@@ -29,7 +29,7 @@
     </div>
 
     <div class="row mt-5 justify-content-center">
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="card shadow-sm">
                 <div class="card-body text-center">
                     <h4 class="card-title">Hallazgos de Mi Empresa</h4>
@@ -40,9 +40,28 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h4 class="card-title">Mis Vehiculos</h4>
+                    <p class="card-text">Accede a la gestión de los vehiculos</p>
+                    <a href="{% url 'vehiculos_del_grupo' %}" class="btn btn-outline-custom mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                        Ver vehiculos
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h4 class="card-title">Estado Docuemntos</h4>
+                    <p class="card-text">Ver el estado de los Docuemntos</p>
+                    <a href="{% url 'lista_documentos' %}" class="btn btn-outline-custom mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                        Ver estados
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <!-- ... tus otros bloques de contenido ... -->
-
 </div>
 {% endblock %}

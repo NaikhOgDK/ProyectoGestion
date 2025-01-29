@@ -469,6 +469,107 @@ def detalle_hallazgo(request, pk):
 
 #Fin Empresa Hallazgo
 
+#Empresa Vehiculos
+@role_required(['Empresa'])
+def vehiculos_del_grupo(request):
+    # Obtener el grupo del usuario actual
+    grupo_usuario = request.user.group
+
+    # Obtener el término de búsqueda y tipo de filtro (si existen)
+    search = request.GET.get('search', '')
+    tipo_filtro = request.GET.get('tipo', '')
+
+    # Filtrar los vehículos que pertenecen al mismo grupo y aplicar el filtro de búsqueda
+    vehiculos = Vehiculo.objects.filter(empresa=grupo_usuario)
+
+    # Aplicar filtro de búsqueda por patente si se proporciona
+    if search:
+        vehiculos = vehiculos.filter(patente__icontains=search)
+
+    # Aplicar filtro de tipo si se proporciona
+    if tipo_filtro:
+        vehiculos = vehiculos.filter(tipo__nombre=tipo_filtro)
+
+    # Ordenar los vehículos por patente
+    vehiculos = vehiculos.order_by('patente')
+
+    # Implementación de paginación
+    paginator = Paginator(vehiculos, 10)  # 10 vehículos por página
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'empresa/lista_vehiculosemp.html', {
+        'page_obj': page_obj,
+        'search': search,  # Pasar el término de búsqueda para mantenerlo en el formulario
+        'tipo_filtro': tipo_filtro,  # Pasar el tipo de filtro para mantenerlo en el formulario
+        'tipos': [('Tipo1', 'Tipo 1'), ('Tipo2', 'Tipo 2')]  # Ejemplo de tipos de vehículos
+    })
+
+@role_required(['Empresa'])
+def cargar_documentosemp(request, vehiculo_id):
+    vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
+
+    if request.method == 'POST':
+        form = DocumentoForm(request.POST, request.FILES)
+        if form.is_valid():
+            # Guardamos el documento asociado al vehículo
+            documento = form.save(commit=False)
+            documento.vehiculo = vehiculo
+            documento.save()
+            return redirect('vehiculos_del_grupo')  # Redirige a la lista de vehículos después de guardar
+    else:
+        form = DocumentoForm()
+
+    return render(request, 'empresa/cargar_documentos.html', {'form': form, 'vehiculo': vehiculo})
+
+@role_required(['Empresa'])
+def lista_documentos(request):
+    grupo_usuario = request.user.group
+    vehiculos = Vehiculo.objects.filter(empresa=grupo_usuario)
+    documentos = Documento.objects.filter(vehiculo__in=vehiculos)
+    today = timezone.now().date()
+    vehiculos_estado = []
+
+    for vehiculo in vehiculos:
+        estado = {
+            'patente': vehiculo.patente,
+            'revision': 'Sin Documento',
+            'padron': 'Sin Documento',
+            'mantenimiento': 'Sin Documento',
+            'soap': 'Sin Documento',
+            'permiso_circulacion': 'Sin Documento',
+        }
+
+        vehiculo_documentos = documentos.filter(vehiculo=vehiculo)
+
+        if vehiculo_documentos.exists():
+            for doc in vehiculo_documentos:
+                # Función helper para determinar el estado
+                def determinar_estado(fecha):
+                    if not fecha:
+                        return 'Sin Documento'
+                    
+                    dias_para_vencer = (fecha - today).days
+                    
+                    if dias_para_vencer <= 0:
+                        return 'Vencido'
+                    elif dias_para_vencer <= 30:
+                        return 'Por Vencer'
+                    else:
+                        return 'Vigente'
+
+                # Aplicar la lógica a cada tipo de documento
+                estado['revision'] = determinar_estado(doc.fecha_vencimiento_revision)
+                estado['padron'] = determinar_estado(doc.fecha_vencimiento_padron)
+                estado['mantenimiento'] = determinar_estado(doc.fecha_vencimiento_mantencion)
+                estado['soap'] = determinar_estado(doc.fecha_vencimiento_soap)
+                estado['permiso_circulacion'] = determinar_estado(doc.fecha_vencimiento_permiso)
+
+        vehiculos_estado.append(estado)
+
+    return render(request, 'empresa/lista_documentos.html', {'vehiculos_estado': vehiculos_estado})
+#Fin Empresa Vehiculos
+
 #Inicio Taller Admin
 @role_required(['Administrador'])
 def crear_asignacion(request):
@@ -724,7 +825,7 @@ def editar_unidad_aceptada(request, unidad_id):
     return render(request, 'taller/editar_unidad.html', {'form': form, 'unidad': unidad})
 #Fin Taller Usuario
 
-#Vista Empresa
+#Vista Desempeño Empresa
 @role_required(['Empresa'])
 def homeEmpresa(request):
     # Obtener el grupo (empresa) del usuario logueado

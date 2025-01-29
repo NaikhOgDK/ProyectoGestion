@@ -60,6 +60,9 @@ urlpatterns = [
 
     #Inicio Empresa
     path('homeEmpresa/', views.homeEmpresa, name="homeEmpresa"),
+    path('Mis_Vehiculos', views.vehiculos_del_grupo, name="vehiculos_del_grupo"),
+    path('vehiculo/<int:vehiculo_id>/cargar_documentos/', views.cargar_documentosemp, name='cargar_documentosemp'),
+    path('lista_vehiculosdoc', views.lista_documentos, name='lista_documentos'),
     #Fin Empresa
 
     #Servicio Chat

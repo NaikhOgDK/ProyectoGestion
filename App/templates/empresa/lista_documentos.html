@@ -1,0 +1,58 @@
+{% extends 'empresa/baseempresa.html' %}
+
+{% block title %}Estado de Documentos por Vehículo{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="display-4 font-weight-bold text-center" style="color: #0b3356;">Estado de Documentos por Vehículo</h1>
+
+    <table class="table table-bordered table-hover text-center mt-4">
+        <thead class="thead-light">
+            <tr>
+                <th>Patente</th>
+                <th>Revisión</th>
+                <th>Padrón</th>
+                <th>Mantenimiento</th>
+                <th>SOAP</th>
+                <th>P. Circulación</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vehiculo in vehiculos_estado %}
+            <tr>
+                <td>{{ vehiculo.patente }}</td>
+
+                <!-- Revisión -->
+                <td class="{% if vehiculo.revision == 'Vigente' %}bg-success text-white{% elif vehiculo.revision == 'Por Vencer' %}bg-warning{% elif vehiculo.revision == 'Vencido' %}bg-danger text-white{% else %}bg-white{% endif %}">
+                    {{ vehiculo.revision }}
+                </td>
+
+                <!-- Padrón -->
+                <td class="{% if vehiculo.padron == 'Vigente' %}bg-success text-white{% elif vehiculo.padron == 'Por Vencer' %}bg-warning{% elif vehiculo.padron == 'Vencido' %}bg-danger text-white{% else %}bg-white{% endif %}">
+                    {{ vehiculo.padron }}
+                </td>
+
+                <!-- Mantenimiento -->
+                <td class="{% if vehiculo.mantenimiento == 'Vigente' %}bg-success text-white{% elif vehiculo.mantenimiento == 'Por Vencer' %}bg-warning{% elif vehiculo.mantenimiento == 'Vencido' %}bg-danger text-white{% else %}bg-white{% endif %}">
+                    {{ vehiculo.mantenimiento }}
+                </td>
+
+                <!-- SOAP -->
+                <td class="{% if vehiculo.soap == 'Vigente' %}bg-success text-white{% elif vehiculo.soap == 'Por Vencer' %}bg-warning{% elif vehiculo.soap == 'Vencido' %}bg-danger text-white{% else %}bg-white{% endif %}">
+                    {{ vehiculo.soap }}
+                </td>
+
+                <!-- Permiso de Circulación -->
+                <td class="{% if vehiculo.permiso_circulacion == 'Vigente' %}bg-success text-white{% elif vehiculo.permiso_circulacion == 'Por Vencer' %}bg-warning{% elif vehiculo.permiso_circulacion == 'Vencido' %}bg-danger text-white{% else %}bg-white{% endif %}">
+                    {{ vehiculo.permiso_circulacion }}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">No hay vehículos o documentos disponibles.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
