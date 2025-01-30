@@ -52,7 +52,7 @@ class UserRegisterForm(UserCreationForm):
         group = cleaned_data.get('group')
 
         # Lista de roles que no requieren grupo
-        roles_sin_grupo = ['Administrador', 'Visualizador']
+        roles_sin_grupo = ['Administrador', 'Visualizador', 'AC Comercial']
 
         if role and role.name not in roles_sin_grupo and not group:
             raise forms.ValidationError({

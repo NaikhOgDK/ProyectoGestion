@@ -1,0 +1,56 @@
+{% extends 'empresa/baseempresa.html' %}
+
+{% block title %}Cargar Documentos{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="display-4 font-weight-bold text-center" style="color: #0b3356;">Cargar Documentos para el Vehículo {{ vehiculo.patente }}</h1>
+
+    <!-- Formulario de carga de documentos -->
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="id_Mantencion_Preventiva">Mantención Preventiva</label>
+            {{ form.Mantencion_Preventiva }}
+            <label for="id_fecha_vencimiento_mantencion">Fecha Vencimiento</label>
+            {{ form.fecha_vencimiento_mantencion }}
+        </div>
+
+        <div class="form-group">
+            <label for="id_Revision_Tecnica">Revisión Técnica</label>
+            {{ form.Revision_Tecnica }}
+            <label for="id_fecha_vencimiento_revision">Fecha Vencimiento</label>
+            {{ form.fecha_vencimiento_revision }}
+        </div>
+
+        <div class="form-group">
+            <label for="id_Permiso_Circulacion">Permiso de Circulación</label>
+            {{ form.Permiso_Circulacion }}
+            <label for="id_fecha_vencimiento_permiso">Fecha Vencimiento</label>
+            {{ form.fecha_vencimiento_permiso }}
+        </div>
+
+        <div class="form-group">
+            <label for="id_SOAP">SOAP</label>
+            {{ form.SOAP }}
+            <label for="id_fecha_vencimiento_soap">Fecha Vencimiento</label>
+            {{ form.fecha_vencimiento_soap }}
+        </div>
+
+        <div class="form-group">
+            <label for="id_Padron">Padrón</label>
+            {{ form.Padron }}
+            <label for="id_fecha_vencimiento_padron">Fecha Vencimiento</label>
+            {{ form.fecha_vencimiento_padron }}
+        </div>
+
+        <div class="form-group">
+            <label for="id_descripcion">Descripción Adicional</label>
+            {{ form.descripcion }}
+        </div>
+
+        <button type="submit" class="btn btn-outline-custom w-100">Cargar Documentos</button>
+    </form>
+</div>
+{% endblock %}

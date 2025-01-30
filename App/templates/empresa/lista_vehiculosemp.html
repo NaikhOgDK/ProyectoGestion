@@ -42,14 +42,14 @@
                     <td>{{ vehiculo.tipo.nombre }}</td>
                     <td>{{ vehiculo.propietario }}</td>
                     <td>
-                        <a href="{% url 'cargar_documentosemp' vehiculo.id %}" class="btn btn-outline-custom btn-sm">
-                            Agregar Documentos
-                        </a>
-                    </td> <!-- Enlace para cargar documentos -->
+                            <a href="{% url 'editar_documentosemp' vehiculo.id %}" class="btn btn-outline-custom btn-sm">
+                                Cargar Documentos
+                            </a>
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8" class="text-center">No se encontraron vehículos.</td>
+                    <td colspan="7" class="text-center">No se encontraron vehículos.</td>
                 </tr>
                 {% endfor %}
             </tbody>

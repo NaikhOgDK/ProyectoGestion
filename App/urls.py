@@ -1,8 +1,9 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
 from .views import *
+
 
 urlpatterns = [
     #Seccion acceso
@@ -61,7 +62,8 @@ urlpatterns = [
     #Inicio Empresa
     path('homeEmpresa/', views.homeEmpresa, name="homeEmpresa"),
     path('Mis_Vehiculos', views.vehiculos_del_grupo, name="vehiculos_del_grupo"),
-    path('vehiculo/<int:vehiculo_id>/cargar_documentos/', views.cargar_documentosemp, name='cargar_documentosemp'),
+    path('vehiculos/<int:vehiculo_id>/cargar_documentos/', views.cargar_documentosemp, name='cargar_documentosemp'),
+    path('vehiculos/<int:vehiculo_id>/editar_documentos/', views.editar_documentosemp, name='editar_documentosemp'),
     path('lista_vehiculosdoc', views.lista_documentos, name='lista_documentos'),
     #Fin Empresa
 
@@ -73,11 +75,11 @@ urlpatterns = [
 
     #Taller Admin
     path('crear_asignacion/', views.crear_asignacion, name='crear_asignacion'),
-    path('unidades-aceptadas/', UnidadAceptadaListView, name='unidad_aceptada_list'),
     path('unidades/pendientes/', views.unidades_pendientes, name='unidades_pendientes'),
     path('unidades/en_proceso/', views.unidades_en_proceso, name='unidades_en_proceso'),
     path('unidades/reparadas/', views.unidades_reparadas, name='unidades_reparadas'),
     path('marcar-como-reparada/<int:unidad_id>/', views.marcar_como_reparada, name='marcar_como_reparada'),
+    path('unidad-aceptada/', views.unidad_aceptada_list, name='unidad_aceptada_list'),
     #Fin Taller Admin
 
     #Taller Usuario
@@ -108,5 +110,11 @@ urlpatterns = [
     path('hallazgo/detalle/<int:hallazgo_id>/', views.detalle_hallazgo, name='detalle_hallazgo'),
 
     path('permission-denied/', permission_denied_view, name='permission_denied'),
+
+    #Vista AC Comercial
+
+    path('homeACComercial', views.homeACComercial, name='homeACComercial'),
+
+    #Fin Vista AC Comercial
 
 ]   + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

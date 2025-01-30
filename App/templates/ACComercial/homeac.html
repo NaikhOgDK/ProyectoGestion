@@ -1,0 +1,40 @@
+{% extends 'ACComercial/baseac.html' %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h1 class="display-4 font-weight-bold" style="color: #0b3356;">Gestión AC Comercial</h1>
+        </div>
+    </div>
+
+    <div class="row mt-5 justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h4 class="card-title"> Ingresar inspecciones </h4>
+                    <p class="card-text">Registra y carga nuevas inspecciones para los vehículos.</p>
+                    <a href="#" class="btn btn-outline-custom mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                        Cargar inspecciones
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h4 class="card-title">Ingresar Hallazgos</h4>
+                    <p class="card-text">Registra y documenta hallazgos detectados en las inspecciones.</p>
+                    <a href="{% url 'vehiculos_del_grupo' %}" class="btn btn-outline-custom mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                        Cargar Hallazgos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

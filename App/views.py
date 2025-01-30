@@ -58,8 +58,8 @@ def login_view(request):
                     response['Location'] = 'homeEmpresa'
                 elif user.role.name == 'Taller':
                     response['Location'] = 'homeTallerUsuario'
-                #elif user.role.name == 'ACComercial':
-                #    response['Location'] = 'homeACComercial'
+                elif user.role.name == 'AC Comercial':
+                    response['Location'] = 'homeACComercial'
                 else:
                     messages.error(request, "Role not defined for this user.")
                     return render(request, 'acceso/login.html', {'form': form})
@@ -477,7 +477,6 @@ def vehiculos_del_grupo(request):
 
     # Obtener el término de búsqueda y tipo de filtro (si existen)
     search = request.GET.get('search', '')
-    tipo_filtro = request.GET.get('tipo', '')
 
     # Filtrar los vehículos que pertenecen al mismo grupo y aplicar el filtro de búsqueda
     vehiculos = Vehiculo.objects.filter(empresa=grupo_usuario)
@@ -486,9 +485,9 @@ def vehiculos_del_grupo(request):
     if search:
         vehiculos = vehiculos.filter(patente__icontains=search)
 
-    # Aplicar filtro de tipo si se proporciona
-    if tipo_filtro:
-        vehiculos = vehiculos.filter(tipo__nombre=tipo_filtro)
+    # Agregar la cantidad de documentos a cada vehículo
+    for vehiculo in vehiculos:
+        vehiculo.documentos_count = vehiculo.documento_set.count()  # Cuenta los documentos asociados al vehículo
 
     # Ordenar los vehículos por patente
     vehiculos = vehiculos.order_by('patente')
@@ -501,26 +500,55 @@ def vehiculos_del_grupo(request):
     return render(request, 'empresa/lista_vehiculosemp.html', {
         'page_obj': page_obj,
         'search': search,  # Pasar el término de búsqueda para mantenerlo en el formulario
-        'tipo_filtro': tipo_filtro,  # Pasar el tipo de filtro para mantenerlo en el formulario
-        'tipos': [('Tipo1', 'Tipo 1'), ('Tipo2', 'Tipo 2')]  # Ejemplo de tipos de vehículos
     })
+
 
 @role_required(['Empresa'])
 def cargar_documentosemp(request, vehiculo_id):
     vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
-
+    
     if request.method == 'POST':
         form = DocumentoForm(request.POST, request.FILES)
+        
         if form.is_valid():
-            # Guardamos el documento asociado al vehículo
             documento = form.save(commit=False)
-            documento.vehiculo = vehiculo
-            documento.save()
-            return redirect('vehiculos_del_grupo')  # Redirige a la lista de vehículos después de guardar
+            documento.vehiculo = vehiculo  # Asocia el documento con el vehículo
+            documento.save()  # Guarda el documento
+            return redirect('vehiculos_del_grupo')  # Redirige a la lista de vehículos
     else:
         form = DocumentoForm()
+    
+    return render(request, 'empresa/cargar_documentosemp.html', {'form': form, 'vehiculo': vehiculo})
 
-    return render(request, 'empresa/cargar_documentos.html', {'form': form, 'vehiculo': vehiculo})
+@role_required(['Empresa'])
+def editar_documentosemp(request, vehiculo_id):
+    vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
+
+    # Obtener los documentos asociados al vehículo
+    documentos = Documento.objects.filter(vehiculo=vehiculo)
+
+    # Si no hay documentos asociados, redirigir a cargar documentos
+    if not documentos:
+        return redirect('cargar_documentosemp', vehiculo_id=vehiculo.id)
+
+    # Si el formulario se ha enviado
+    if request.method == 'POST':
+        for documento in documentos:
+            form = DocumentoForm(request.POST, request.FILES, instance=documento)
+            if form.is_valid():
+                form.save()  # Guarda los cambios del documento
+        return redirect('vehiculos_del_grupo')  # Redirige a la lista de vehículos
+
+    # Si no se ha enviado el formulario, mostrar el formulario de edición
+    form = DocumentoForm(instance=documentos.first())  # Agregar el formulario aquí si estás editando el primer documento
+
+    context = {
+        'vehiculo': vehiculo,
+        'documentos': documentos,
+        'form': form,  # Asegúrate de pasar el formulario al contexto
+    }
+    return render(request, 'empresa/editar_documentosemp.html', context)
+
 
 @role_required(['Empresa'])
 def lista_documentos(request):
@@ -583,16 +611,11 @@ def crear_asignacion(request):
     return render(request, 'areas/taller/crear_asignacion.html', {'form': form})
 
 @role_required(['Administrador', 'Visualizador'])
-class UnidadAceptadaListView(ListView):
-    model = UnidadAceptada
-    template_name = 'areas/taller/unidad_aceptada_list.html'  # Archivo de plantilla para la lista
-    context_object_name = 'unidades'  # Nombre de la variable en el contexto
+def unidad_aceptada_list(request):
+    # Obtener todas las unidades aceptadas sin ningún filtro
+    unidades = UnidadAceptada.objects.all()
     
-    def get_queryset(self):
-        # Si deseas filtrar las unidades aceptadas por el taller del usuario, puedes hacerlo aquí
-        if self.request.user.group:
-            return UnidadAceptada.objects.filter(taller=self.request.user.group)
-        return UnidadAceptada.objects.all()
+    return render(request, 'areas/taller/unidad_aceptada_list.html', {'unidades': unidades})
 
 @role_required(['Administrador', 'Visualizador'])
 def unidades_pendientes(request):
@@ -712,7 +735,7 @@ def user_chat_view(request):
 #Fin Chat
 
 #Inicio Taller usuario
-@role_required(['Taller'])
+@role_required(['Administrador'])
 def listar_asignaciones(request):
     # Obtener todas las asignaciones sin aplicar filtros
     asignaciones = Asignacion_taller.objects.all()
@@ -1088,3 +1111,8 @@ def custom_404_view(request, exception):
 
 def permission_denied_view(request):
     return render(request, 'error/permission_denied.html')
+
+#Home
+
+def homeACComercial(request):
+    return render(request,'ACComercial/homeac.html')
