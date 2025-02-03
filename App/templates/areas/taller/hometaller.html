@@ -12,7 +12,7 @@
     </div>
 
     <div class="row mt-5">
-        {% if request.user.role == "Administrador" %}
+        {% if request.user.role.name == "Administrador" %}
         <!-- Asignar Unidades Taller Card (ocupa todo el ancho) -->
         <div class="col-md-12 mb-4">
             <div class="card shadow-sm">

@@ -27,7 +27,7 @@
     </div>
 
     <div class="row mt-5">
-        {% if request.user.role == "Administrador" %}
+        {% if request.user.role.name == "Administrador" %}
         <!-- Registrar Mantenciones Card (mitad de la página) -->
         <div class="col-md-6 text-center mb-4">
             <div class="card shadow-sm h-100">

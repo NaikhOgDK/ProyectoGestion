@@ -8,7 +8,7 @@
     <h1 class="display-4 font-weight-bold" style="color: #0b3356;">Lista de Hallazgos</h1>
     
     <!-- Botón para agregar un nuevo hallazgo -->
-    {% if request.user.role == "Administrador" %}
+    {% if request.user.role.name == "Administrador" %}
     <a href="{% url 'crear_hallazgo' %}">
         <button class="btn btn-primary mt-3">Agregar Nuevo Hallazgo</button>
     </a>
