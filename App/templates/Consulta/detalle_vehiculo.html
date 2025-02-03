@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'Consulta/baseDetalle.html' %}
 
 {% block title %}Detalles del Vehículo{% endblock %}
 
@@ -7,154 +7,55 @@
     <h2 class="text-center mb-4" style="font-size: 2.5rem; font-weight: bold; color: #0056b3;">
         {{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo }}
     </h2>
-        <div class="card-body">
 
-            <!-- Estilos personalizados -->
-            <style>
-                .section-title {
-                    font-weight: bold;
-                    color: #007bff;
-                    margin-bottom: 10px;
-                }
+    <!-- MENÚ DE NAVEGACIÓN -->
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link active" id="tab-detalles" onclick="mostrarSeccion('detalles')">Detalles del Vehículo</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="tab-documentos" onclick="mostrarSeccion('documentos')">Documentos</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="tab-hallazgos" onclick="mostrarSeccion('hallazgos')">Hallazgos</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="tab-mantenimientos" onclick="mostrarSeccion('mantenimientos')">Mantenimientos</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="tab-reparaciones" onclick="mostrarSeccion('reparaciones')">Reparaciones</a>
+        </li>
+    </ul>
 
-                .section {
-                    border: 1px solid #ddd;
-                    padding: 20px;
-                    background-color: #f9f9f9;
-                    margin-bottom: 20px;
-                    height: 300px; /* Altura fija para todos los recuadros */
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: space-between;
-                }
-
-                .card-body .list-group-item {
-                    padding: 10px;
-                    margin-bottom: 5px;
-                    border: 1px solid #ddd;
-                    background-color: #fff;
-                }
-
-                .list-group-item a {
-                    color: #007bff;
-                    text-decoration: none;
-                }
-
-                .list-group-item a:hover {
-                    text-decoration: underline;
-                }
-            </style>
-
-            <!-- Contenedor con dos columnas: Detalles del Vehículo y Documentos -->
-            <div class="row">
-                <!-- Detalles del vehículo -->
-                <div class="col-md-4 mb-4">
-                    <div class="section">
-                        <h5 class="section-title">Detalles del Vehículo</h5>
-                        <p><strong>Año:</strong> {{ vehiculo.ano }}</p>
-                        <p><strong>Tipo de Vehículo:</strong> {{ vehiculo.tipo_vehiculo }}</p>
-                        <p><strong>Ubicación Física:</strong> {{ vehiculo.ubicacion_fisica }}</p>
-                        <p><strong>Propietario:</strong> {{ vehiculo.propietario }}</p>
-                        <P> <strong>Asigancion: </strong> {{vehiculo.empresa}} </P>
-                    </div>
-                </div>
-
-                <!-- Documentos -->
-                <div class="col-md-8 mb-4">
-                    <div class="section">
-                        <h5 class="section-title">Documentos</h5>
-                        <ul class="list-group">
-                            {% for documento in documentos %}
-                                {% if documento.Mantencion_Preventiva %}
-                                    <li class="list-group-item">
-                                        <strong>Mantención Preventiva</strong>
-                                        - Fecha de vencimiento: {{ documento.fecha_vencimiento_mantencion }}
-                                        - <a href="{{ documento.Mantencion_Preventiva.url }}" target="_blank">Ver Documento</a>
-                                    </li>
-                                {% endif %}
-                                
-                                {% if documento.Revision_Tecnica %}
-                                    <li class="list-group-item">
-                                        <strong>Revisión Técnica</strong>
-                                        - Fecha de vencimiento: {{ documento.fecha_vencimiento_revision }}
-                                        - <a href="{{ documento.Revision_Tecnica.url }}" target="_blank">Ver Documento</a>
-                                    </li>
-                                {% endif %}
-                                
-                                {% if documento.Permiso_Circulacion %}
-                                    <li class="list-group-item">
-                                        <strong>Permiso de Circulación</strong>
-                                        - Fecha de vencimiento: {{ documento.fecha_vencimiento_permiso }}
-                                        - <a href="{{ documento.Permiso_Circulacion.url }}" target="_blank">Ver Documento</a>
-                                    </li>
-                                {% endif %}
-                                
-                                {% if documento.SOAP %}
-                                    <li class="list-group-item">
-                                        <strong>SOAP</strong>
-                                        - Fecha de vencimiento: {{ documento.fecha_vencimiento_soap }}
-                                        - <a href="{{ documento.SOAP.url }}" target="_blank">Ver Documento</a>
-                                    </li>
-                                {% endif %}
-                                
-                                {% if documento.Padron %}
-                                    <li class="list-group-item">
-                                        <strong>Padrón</strong>
-                                        - Fecha de vencimiento: {{ documento.fecha_vencimiento_padron }}
-                                        - <a href="{{ documento.Padron.url }}" target="_blank">Ver Documento</a>
-                                    </li>
-                                {% endif %}
-                            {% empty %}
-                                <li class="list-group-item">No hay documentos asociados.</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Hallazgos -->
-            <div class="section mb-4">
-                <h5 class="section-title">Hallazgos</h5>
-                <ul class="list-group">
-                    {% for hallazgo in hallazgos %}
-                        <li class="list-group-item">
-                            {{ hallazgo.hallazgo }} - Riesgo: {{ hallazgo.nivel_riesgo }} - Estado de Cierre: {{ hallazgo.estado_cierre }}
-                        </li>
-                    {% empty %}
-                        <li class="list-group-item">No hay hallazgos asociados.</li>
-                    {% endfor %}
-                </ul>
-            </div>
-
-            <!-- Mantenimientos -->
-            <div class="section mb-4">
-                <h5 class="section-title">Mantenimientos</h5>
-                <ul class="list-group">
-                    {% for mantenimiento in mantenimientos %}
-                        <li class="list-group-item">
-                            Fecha: {{ mantenimiento.fecha_mtto }} - Servicio: {{ mantenimiento.servicio_realizado }} - Kilometraje: {{ mantenimiento.kilometraje_mtto }}
-                        </li>
-                    {% empty %}
-                        <li class="list-group-item">No hay mantenimientos registrados.</li>
-                    {% endfor %}
-                </ul>
-            </div>
-
-            <!-- Reparaciones -->
-            <div class="section mb-4">
-                <h5 class="section-title">Reparaciones</h5>
-                <ul class="list-group">
-                    {% for reparacion in reparaciones %}
-                        <li class="list-group-item">
-                            Fecha: {{ reparacion.fecha_inicio }} - Costo: {{ reparacion.costo_total }} - Estado: {{ reparacion.estado }}
-                        </li>
-                    {% empty %}
-                        <li class="list-group-item">No hay reparaciones realizadas.</li>
-                    {% endfor %}
-                </ul>
-            </div>
-
-        </div>
+    <!-- SECCIONES CARGADAS POR AJAX -->
+    <div id="modal-content">
+        <!-- Aquí se cargarán las secciones correspondientes -->
     </div>
 </div>
+
+<script>
+    function mostrarSeccion(seccion) {
+        // Cambiar la clase activa en el menú
+        let secciones = ["detalles", "documentos", "hallazgos", "mantenimientos", "reparaciones"];
+        secciones.forEach(function(sec) {
+            document.getElementById("tab-" + sec).classList.toggle("active", sec === seccion);
+        });
+
+        // Hacer una petición AJAX para cargar la sección
+        fetch(`/vehiculo/${seccion}/{{ vehiculo.id }}`)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('modal-content').innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Error al cargar la sección:', error);
+            });
+    }
+
+    // Cargar detalles por defecto al cargar la página
+    window.onload = function() {
+        mostrarSeccion('detalles');
+    };
+</script>
+
 {% endblock %}

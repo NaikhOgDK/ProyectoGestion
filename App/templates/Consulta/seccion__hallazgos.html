@@ -1,0 +1,8 @@
+<h4>Hallazgos</h4>
+<ul>
+    {% for hallazgo in hallazgos %}
+    <li>{{ hallazgo.descripcion }} - Riesgo: {{ hallazgo.riesgo }}</li>
+    {% empty %}
+    <li>No hay hallazgos disponibles.</li>
+    {% endfor %}
+</ul>

@@ -201,21 +201,34 @@ def consulta_vehiculo(request):
     
     return render(request, 'Consulta/consulta.html', context)
 
-def detalle_vehiculo(request, vehiculo_id):
-    vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
+# Vista para cargar los detalles del vehículo
+def vehiculo_detalle(request, vehiculo_id):
+    vehiculo = Vehiculo.objects.get(id=vehiculo_id)
+    return render(request, 'Consulta/seccion_detalles.html', {'vehiculo': vehiculo})
+
+# Vista para cargar los documentos del vehículo
+def vehiculo_documentos(request, vehiculo_id):
+    vehiculo = Vehiculo.objects.get(id=vehiculo_id)
     documentos = Documento.objects.filter(vehiculo=vehiculo)
+    return render(request, 'Consulta/seccion__documentos.html', {'vehiculo': vehiculo, 'documentos': documentos})
+
+# Vista para cargar los hallazgos del vehículo
+def vehiculo_hallazgos(request, vehiculo_id):
+    vehiculo = Vehiculo.objects.get(id=vehiculo_id)
     hallazgos = HallazgoEmpresa.objects.filter(vehiculo=vehiculo)
+    return render(request, 'Consulta/seccion__hallazgos.html', {'vehiculo': vehiculo, 'hallazgos': hallazgos})
+
+# Vista para cargar los mantenimientos del vehículo
+def vehiculo_mantenimientos(request, vehiculo_id):
+    vehiculo = Vehiculo.objects.get(id=vehiculo_id)
     mantenimientos = Mantenimiento.objects.filter(vehiculo=vehiculo)
+    return render(request, 'Consulta/seccion_mantenimientos.html', {'vehiculo': vehiculo, 'mantenimientos': mantenimientos})
+
+# Vista para cargar las reparaciones del vehículo
+def vehiculo_reparaciones(request, vehiculo_id):
+    vehiculo = Vehiculo.objects.get(id=vehiculo_id)
     reparaciones = Reparacion.objects.filter(vehiculo=vehiculo)
-    
-    context = {
-        'vehiculo': vehiculo,
-        'documentos': documentos,
-        'hallazgos': hallazgos,
-        'mantenimientos': mantenimientos,
-        'reparaciones': reparaciones
-    }
-    return render(request, 'Consulta/detalle_vehiculo.html', context)
+    return render(request, 'Consulta/seccion_reparaciones.html', {'vehiculo': vehiculo, 'reparaciones': reparaciones})
 #Fin Consulta
 
 #Asiganciones

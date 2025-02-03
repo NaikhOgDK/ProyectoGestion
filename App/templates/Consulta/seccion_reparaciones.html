@@ -1,0 +1,8 @@
+<h4>Reparaciones</h4>
+<ul>
+    {% for reparacion in reparaciones %}
+    <li>{{ reparacion.descripcion }} - Fecha: {{ reparacion.fecha }}</li>
+    {% empty %}
+    <li>No hay reparaciones disponibles.</li>
+    {% endfor %}
+</ul>

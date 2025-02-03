@@ -1,0 +1,8 @@
+<h4>Documentos</h4>
+<ul>
+    {% for documento in documentos %}
+    <li>{{ documento.nombre }} - {{ documento.tipo }}</li>
+    {% empty %}
+    <li>No hay documentos disponibles.</li>
+    {% endfor %}
+</ul>

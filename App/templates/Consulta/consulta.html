@@ -17,9 +17,9 @@
     <ul class="list-group mb-4">
         {% for vehiculo in vehiculos %}
         <li class="list-group-item">
-            <a href="{% url 'detalle_vehiculo' vehiculo.id %}">
+            <button class="btn btn-link" onclick="openVehicleModal({{ vehiculo.id }})">
                 {{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo }}
-            </a>
+            </button>
         </li>
         {% empty %}
         <li class="list-group-item">No se encontraron vehículos.</li>
@@ -27,15 +27,18 @@
     </ul>
 
     <!-- Paginación -->
-    {% if vehiculos.paginator.num_pages > 1 %}
-    <nav>
-        <ul class="pagination justify-content-center">
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
             {% if vehiculos.has_previous %}
             <li class="page-item">
-                <a class="page-link" href="?search={{ search }}&page=1">Primero</a>
+                <a class="page-link" href="?search={{ search }}&page=1" aria-label="Primera">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="?search={{ search }}&page={{ vehiculos.previous_page_number }}">Anterior</a>
+                <a class="page-link" href="?search={{ search }}&page={{ vehiculos.previous_page_number }}" aria-label="Anterior">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
             </li>
             {% endif %}
 
@@ -45,14 +48,116 @@
 
             {% if vehiculos.has_next %}
             <li class="page-item">
-                <a class="page-link" href="?search={{ search }}&page={{ vehiculos.next_page_number }}">Siguiente</a>
+                <a class="page-link" href="?search={{ search }}&page={{ vehiculos.next_page_number }}" aria-label="Siguiente">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="?search={{ search }}&page={{ vehiculos.paginator.num_pages }}">Último</a>
+                <a class="page-link" href="?search={{ search }}&page={{ vehiculos.paginator.num_pages }}" aria-label="Última">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
             </li>
             {% endif %}
         </ul>
     </nav>
-    {% endif %}
 </div>
+
+<!-- Modal para mostrar detalles del vehículo -->
+<div class="modal fade" id="vehicleModal" tabindex="-1" aria-labelledby="vehicleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="vehicleModalLabel">Detalles del Vehículo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Menu de navegación -->
+                <ul class="nav nav-pills mb-3" id="vehicleTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link active" id="detalles-tab" data-bs-toggle="pill" href="#detalles" role="tab" aria-controls="detalles" aria-selected="true">Detalles</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="documentos-tab" data-bs-toggle="pill" href="#documentos" role="tab" aria-controls="documentos" aria-selected="false">Documentos</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="hallazgos-tab" data-bs-toggle="pill" href="#hallazgos" role="tab" aria-controls="hallazgos" aria-selected="false">Hallazgos</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="mantenimientos-tab" data-bs-toggle="pill" href="#mantenimientos" role="tab" aria-controls="mantenimientos" aria-selected="false">Mantenimientos</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="reparaciones-tab" data-bs-toggle="pill" href="#reparaciones" role="tab" aria-controls="reparaciones" aria-selected="false">Reparaciones</a>
+                    </li>
+                </ul>
+
+                <!-- Contenido de las secciones -->
+                <div class="tab-content" id="vehicleTabContent">
+                    <!-- Detalles -->
+                    <div class="tab-pane fade show active" id="detalles" role="tabpanel" aria-labelledby="detalles-tab">
+                        <div id="vehicleDetails">Cargando...</div>
+                    </div>
+
+                    <!-- Documentos -->
+                    <div class="tab-pane fade" id="documentos" role="tabpanel" aria-labelledby="documentos-tab">
+                        <div id="vehicleDocuments">Cargando...</div>
+                    </div>
+
+                    <!-- Hallazgos -->
+                    <div class="tab-pane fade" id="hallazgos" role="tabpanel" aria-labelledby="hallazgos-tab">
+                        <div id="vehicleHallazgos">Cargando...</div>
+                    </div>
+
+                    <!-- Mantenimientos -->
+                    <div class="tab-pane fade" id="mantenimientos" role="tabpanel" aria-labelledby="mantenimientos-tab">
+                        <div id="vehicleMantenimientos">Cargando...</div>
+                    </div>
+
+                    <!-- Reparaciones -->
+                    <div class="tab-pane fade" id="reparaciones" role="tabpanel" aria-labelledby="reparaciones-tab">
+                        <div id="vehicleReparaciones">Cargando...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openVehicleModal(vehicleId) {
+        // Cargar cada sección del vehículo
+        fetch(`/vehiculo/${vehicleId}/detalle/`)
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('vehicleDetails').innerHTML = data;
+            });
+
+        fetch(`/vehiculo/${vehicleId}/documentos/`)
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('vehicleDocuments').innerHTML = data;
+            });
+
+        fetch(`/vehiculo/${vehicleId}/hallazgos/`)
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('vehicleHallazgos').innerHTML = data;
+            });
+
+        fetch(`/vehiculo/${vehicleId}/mantenimientos/`)
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('vehicleMantenimientos').innerHTML = data;
+            });
+
+        fetch(`/vehiculo/${vehicleId}/reparaciones/`)
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('vehicleReparaciones').innerHTML = data;
+            });
+
+        // Mostrar el modal
+        var modal = new bootstrap.Modal(document.getElementById('vehicleModal'));
+        modal.show();
+    }
+</script>
 {% endblock %}

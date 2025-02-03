@@ -24,7 +24,11 @@ urlpatterns = [
 
     #Consulta
     path('consulta/', views.consulta_vehiculo, name='consulta_vehiculo'),
-    path('detalle/<int:vehiculo_id>/', views.detalle_vehiculo, name='detalle_vehiculo'),
+    path('vehiculo/<int:vehiculo_id>/detalle/', views.vehiculo_detalle, name='vehiculo_detalle'),
+    path('vehiculo/<int:vehiculo_id>/documentos/', views.vehiculo_documentos, name='vehiculo_documentos'),
+    path('vehiculo/<int:vehiculo_id>/hallazgos/', views.vehiculo_hallazgos, name='vehiculo_hallazgos'),
+    path('vehiculo/<int:vehiculo_id>/mantenimientos/', views.vehiculo_mantenimientos, name='vehiculo_mantenimientos'),
+    path('vehiculo/<int:vehiculo_id>/reparaciones/', views.vehiculo_reparaciones, name='vehiculo_reparaciones'),
     #Fin Consulta
 
     #Asigancion

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sistema de Gestión{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- MENÚ DE NAVEGACIÓN (HEREDADO) -->
+        {% block nav %}
+        <ul class="nav nav-tabs mb-4">
+            <li class="nav-item">
+                <a class="nav-link active" id="tab-detalles" onclick="mostrarSeccion('detalles')">Detalles del Vehículo</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tab-documentos" onclick="mostrarSeccion('seccion-documentos')">Documentos</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tab-hallazgos" onclick="mostrarSeccion('hallazgos')">Hallazgos</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tab-mantenimientos" onclick="mostrarSeccion('mantenimientos')">Mantenimientos</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tab-reparaciones" onclick="mostrarSeccion('reparaciones')">Reparaciones</a>
+            </li>
+        </ul>
+        {% endblock %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script>
+        function mostrarSeccion(seccion) {
+            let secciones = ["detalles", "documentos", "hallazgos", "mantenimientos", "reparaciones"];
+
+            secciones.forEach(function(sec) {
+                document.getElementById("seccion-" + sec).style.display = (sec === seccion) ? "block" : "none";
+                document.getElementById("tab-" + sec).classList.toggle("active", sec === seccion);
+            });
+        }
+    </script>
+
+    <style>
+        .section {
+            border: 1px solid #ddd;
+            padding: 20px;
+            background-color: #f9f9f9;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+
+        .list-group-item {
+            padding: 10px;
+            margin-bottom: 5px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+        }
+
+        .list-group-item a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .list-group-item a:hover {
+            text-decoration: underline;
+        }
+
+        .nav-tabs .nav-link {
+            font-weight: bold;
+            color: #007bff;
+            cursor: pointer;
+        }
+
+        .nav-tabs .nav-link.active {
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 5px;
+        }
+    </style>
+</body>
+</html>
