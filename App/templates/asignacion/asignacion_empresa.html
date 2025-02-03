@@ -43,6 +43,7 @@
             <td>{{ vehiculo.empresa }}</td>
             <td>
               <!-- Reasignación de empresa -->
+              {% if request.user.role == "Administrador" %}
               <form method="post" action="{% url 'asignar_empresa' %}">
                 {% csrf_token %}
                 <input type="hidden" name="vehiculo" value="{{ vehiculo.id }}">
@@ -57,6 +58,7 @@
                 </div>
                 <button type="submit" class="btn btn-outline-custom w-100">Reasignar</button>
               </form>
+              {% endif %}
             </td>
           </tr>
           {% endfor %}

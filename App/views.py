@@ -53,7 +53,7 @@ def login_view(request):
                 if user.role.name == 'Administrador':
                     response['Location'] = 'home'
                 elif user.role.name == 'Visualizador':
-                    response['Location'] = 'homeVisual'
+                    response['Location'] = 'home'
                 elif user.role.name == 'Empresa':
                     response['Location'] = 'homeEmpresa'
                 elif user.role.name == 'Taller':
@@ -290,7 +290,7 @@ def Documentos(request):
         'tipos': tipos,  # Opciones dinámicas desde la BD
     })
 
-@role_required(['Administrador', 'Visualizador'])
+@role_required(['Administrador'])
 def cargar_documentos(request, id):
     vehiculo = get_object_or_404(Vehiculo, id=id)
     

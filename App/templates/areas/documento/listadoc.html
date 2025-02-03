@@ -50,6 +50,7 @@
                     <td>{{ vehiculo.tipo.nombre }}</td>  <!-- Se usa .nombre para mostrar el nombre correcto -->
                     <td>{{ vehiculo.propietario }}</td>
                     <td>
+                        {% if request.user.role == "Administrador" %}
                         {% if vehiculo.documentos_count > 0 %}
                             <!-- Botón para editar documentos si ya existen -->
                             <a href="{% url 'editar_documentos' vehiculo.id %}" class="btn btn-outline-custom btn-sm">
@@ -60,6 +61,7 @@
                             <a href="{% url 'cargar_documentos' vehiculo.id %}" class="btn btn-outline-custom btn-sm">
                                 Cargar Documentos
                             </a>
+                        {% endif %}
                         {% endif %}
                     </td>
                 </tr>
