@@ -1,8 +1,15 @@
-<h4>Mantenimientos</h4>
-<ul>
+<h4 class="text-center mb-4">Mantenimientos</h4>
+<div class="list-group mb-4">
     {% for mantenimiento in mantenimientos %}
-    <li>{{ mantenimiento.descripcion }} - Fecha: {{ mantenimiento.fecha }}</li>
+    <a href="#" class="list-group-item list-group-item-action">
+        <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">{{ mantenimiento.descripcion }}</h5>
+            <small class="text-muted">Fecha: {{ mantenimiento.fecha }}</small>
+        </div>
+    </a>
     {% empty %}
-    <li>No hay mantenimientos disponibles.</li>
+    <div class="alert alert-info" role="alert">
+        No hay mantenimientos disponibles.
+    </div>
     {% endfor %}
-</ul>
+</div>

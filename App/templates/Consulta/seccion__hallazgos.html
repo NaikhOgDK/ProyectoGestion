@@ -1,8 +1,15 @@
-<h4>Hallazgos</h4>
-<ul>
+<h4 class="text-center mb-4">Hallazgos</h4>
+<div class="list-group">
     {% for hallazgo in hallazgos %}
-    <li>{{ hallazgo.descripcion }} - Riesgo: {{ hallazgo.riesgo }}</li>
+    <a href="#" class="list-group-item list-group-item-action">
+        <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">{{ hallazgo.descripcion }}</h5>
+            <small class="text-warning">{{ hallazgo.riesgo }}</small>
+        </div>
+    </a>
     {% empty %}
-    <li>No hay hallazgos disponibles.</li>
+    <div class="alert alert-info" role="alert">
+        No hay hallazgos disponibles.
+    </div>
     {% endfor %}
-</ul>
+</div>

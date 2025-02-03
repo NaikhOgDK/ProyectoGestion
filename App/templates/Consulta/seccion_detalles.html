@@ -1,5 +1,20 @@
-<h4>Detalles del Vehículo</h4>
-<p><strong>Patente:</strong> {{ vehiculo.patente }}</p>
-<p><strong>Marca:</strong> {{ vehiculo.marca }}</p>
-<p><strong>Modelo:</strong> {{ vehiculo.modelo }}</p>
-<!-- Agrega más detalles aquí -->
+<h4 class="text-center mb-4">Detalles del Vehículo</h4>
+<div class="card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <p><strong>Patente:</strong></p>
+                <p class="text-muted">{{ vehiculo.patente }}</p>
+            </div>
+            <div class="col-md-4">
+                <p><strong>Marca:</strong></p>
+                <p class="text-muted">{{ vehiculo.marca }}</p>
+            </div>
+            <div class="col-md-4">
+                <p><strong>Modelo:</strong></p>
+                <p class="text-muted">{{ vehiculo.modelo }}</p>
+            </div>
+        </div>
+        <!-- Agrega más detalles aquí -->
+    </div>
+</div>
