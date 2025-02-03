@@ -17,11 +17,42 @@
     <ul class="list-group mb-4">
         {% for vehiculo in vehiculos %}
         <li class="list-group-item">
-            <a href="{% url 'detalle_vehiculo' vehiculo.id %}">{{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo }}</a>
+            <a href="{% url 'detalle_vehiculo' vehiculo.id %}">
+                {{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo }}
+            </a>
         </li>
         {% empty %}
         <li class="list-group-item">No se encontraron vehículos.</li>
         {% endfor %}
     </ul>
+
+    <!-- Paginación -->
+    {% if vehiculos.paginator.num_pages > 1 %}
+    <nav>
+        <ul class="pagination justify-content-center">
+            {% if vehiculos.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?search={{ search }}&page=1">Primero</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?search={{ search }}&page={{ vehiculos.previous_page_number }}">Anterior</a>
+            </li>
+            {% endif %}
+
+            <li class="page-item disabled">
+                <span class="page-link">Página {{ vehiculos.number }} de {{ vehiculos.paginator.num_pages }}</span>
+            </li>
+
+            {% if vehiculos.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?search={{ search }}&page={{ vehiculos.next_page_number }}">Siguiente</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?search={{ search }}&page={{ vehiculos.paginator.num_pages }}">Último</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
 </div>
 {% endblock %}

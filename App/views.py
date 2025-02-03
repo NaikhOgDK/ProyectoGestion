@@ -181,14 +181,24 @@ def visual(request):
 @role_required(['Administrador', 'Visualizador'])
 def consulta_vehiculo(request):
     query = request.GET.get('search', '')
-    
-    # Filtrar vehículos por patente, marca o modelo
-    vehiculos = Vehiculo.objects.filter
-    
+
+    # Filtrar vehículos correctamente
+    vehiculos = Vehiculo.objects.filter(
+        Q(patente__icontains=query) | 
+        Q(marca__nombre__icontains=query) |  # Acceder al campo "nombre" de la ForeignKey Marca
+        Q(modelo__icontains=query)   
+    )
+
+    # Paginación: 15 vehículos por página
+    paginator = Paginator(vehiculos, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'vehiculos': vehiculos,
+        'vehiculos': page_obj,
         'search': query
     }
+    
     return render(request, 'Consulta/consulta.html', context)
 
 def detalle_vehiculo(request, vehiculo_id):
