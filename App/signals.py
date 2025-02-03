@@ -1,13 +1,25 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import User, UsuarioEmpresa, UsuarioTaller
+from django.db import IntegrityError
+from django.contrib.auth import get_user_model  # Usar el modelo User configurado
+from .models import UsuarioEmpresa, UsuarioTaller  # Importar los modelos correspondientes
+
+User = get_user_model()  # Obtener el modelo User correcto
 
 @receiver(post_save, sender=User)
-def assign_user_to_role(sender, instance, created, **kwargs):
-    if created:
-        if instance.role.name == 'Empresa':
-            # Crea el usuario en el modelo UsuarioEmpresa y asigna el grupo
-            UsuarioEmpresa.objects.create(user=instance, grupo=instance.group)
-        elif instance.role.name == 'Taller':
-            # Crea el usuario en el modelo UsuarioTaller y asigna el grupo
-            UsuarioTaller.objects.create(user=instance, grupo=instance.group)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:  # Solo ejecuta si el usuario es recién creado
+        if instance.role and instance.role.name == 'Empresa':  # Si el rol es "Empresa"
+            try:
+                # Crear un UsuarioEmpresa
+                UsuarioEmpresa.objects.create(user=instance, grupo=instance.group)
+            except IntegrityError:
+                # Evitar duplicados si ya existe un perfil asociado
+                pass
+        elif instance.role and instance.role.name == 'Taller':  # Si el rol es "Taller"
+            try:
+                # Crear un UsuarioTaller
+                UsuarioTaller.objects.create(user=instance, grupo=instance.group)
+            except IntegrityError:
+                # Evitar duplicados si ya existe un perfil asociado
+                pass

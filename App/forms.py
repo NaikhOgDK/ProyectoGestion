@@ -260,5 +260,5 @@ class CierreForm(forms.ModelForm):
         }
 
 class AsignacionEmpresaForm(forms.Form):
-    vehiculo = forms.ModelChoiceField(queryset=Vehiculo.objects.all())
-    empresa = forms.ModelChoiceField(queryset=Group.objects.all()) 
+    vehiculo = forms.ModelChoiceField(queryset=Vehiculo.objects.all(), label="Vehículo")
+    empresa = forms.ModelChoiceField(queryset=Group.objects.all(), label="Empresa")

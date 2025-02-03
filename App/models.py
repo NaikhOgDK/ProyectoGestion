@@ -40,7 +40,7 @@ class UsuarioEmpresa(models.Model):
     # Agregar los campos adicionales que necesites para los usuarios Empresa
 
     def __str__(self):
-        return self.user.username
+        return f"{self.user.username} - {self.user.group}"
 
 class UsuarioTaller(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -48,7 +48,7 @@ class UsuarioTaller(models.Model):
     # Agregar los campos adicionales que necesites para los usuarios Taller
 
     def __str__(self):
-        return self.user.username
+        return f"{self.user.username} - {self.user.group}"
 
 #Procedimiento
 class Procedimiento(models.Model):
@@ -391,7 +391,6 @@ class Asignacion_taller(models.Model):
 
     def __str__(self):
         return f"{self.patente} asignado a {self.taller.name}"
-
 
 class RespuestaAsignacion_taller(models.Model):
     asignacion = models.ForeignKey(Asignacion_taller, on_delete=models.CASCADE, related_name='respuestas')  # Relación con la asignación

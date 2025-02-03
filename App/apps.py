@@ -7,9 +7,3 @@ class MyAppConfig(AppConfig):
 
     def ready(self):
         import App.signals  # Asegúrate de importar el archivo donde están las señales
-
-class HallazgosConfig(AppConfig):
-    name = 'hallazgos'
-
-    def ready(self):
-        import hallazgos.signals
