@@ -1,9 +1,105 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2>Asignar Vehículos</h2>
-<form method="post">
+<h2 class="text-center mb-4">Asignar Vehículos</h2>
+<form method="post" class="p-4 border rounded shadow-sm">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Asignar</button>
+    
+    <!-- Campos estáticos -->
+    <div class="mb-3">
+        <label for="{{ form.patente.id_for_label }}" class="form-label text-center d-block">Vehículo:</label>
+        <div class="input-group">
+            {{ form.patente }}
+        </div>
+    </div>
+    
+    <div class="mb-3">
+        <label for="{{ form.taller.id_for_label }}" class="form-label text-center d-block">Taller:</label>
+        <div class="input-group">
+            {{ form.taller }}
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="{{ form.tipo.id_for_label }}" class="form-label text-center d-block">Tipo de Asignación:</label>
+        <div class="input-group">
+            {{ form.tipo }}
+        </div>
+    </div>
+
+    <!-- Campos dinámicos para Mantención o Reparación -->
+    <div id="mantencion_fields" style="display: none;" class="border p-3 mt-4 rounded">
+        <h4 class="text-center">Detalles de la Mantención o Reparación</h4>
+        <div class="mb-3">
+            <label for="{{ form.fecha_disponible_mantencion.id_for_label }}" class="form-label text-center d-block">Fecha disponible para Mantención:</label>
+            <div class="input-group">
+                {{ form.fecha_disponible_mantencion }}
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.descripcion_tarea.id_for_label }}" class="form-label text-center d-block">Descripción de la tarea:</label>
+            <div class="input-group">
+                {{ form.descripcion_tarea }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Campos dinámicos para Asignación Empresa -->
+    <div id="empresa_fields" style="display: none;" class="border p-3 mt-4 rounded">
+        <h4 class="text-center">Detalles de la Asignación a Empresa</h4>
+        <div class="mb-3">
+            <label for="{{ form.empresa_asignada.id_for_label }}" class="form-label text-center d-block">Empresa asignada:</label>
+            <div class="input-group">
+                {{ form.empresa_asignada }}
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.fecha_disponible_asignacion.id_for_label }}" class="form-label text-center d-block">Fecha disponible para Asignación:</label>
+            <div class="input-group">
+                {{ form.fecha_disponible_asignacion }}
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.descripcion_asignacion.id_for_label }}" class="form-label text-center d-block">Descripción de la Asignación:</label>
+            <div class="input-group">
+                {{ form.descripcion_asignacion }}
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <button type="submit" class="btn btn-primary">Asignar</button>
+    </div>
 </form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tipoAsignacion = document.querySelector('select[name="tipo"]');  // El campo select del tipo de asignación
+        const mantencionFields = document.getElementById('mantencion_fields');
+        const empresaFields = document.getElementById('empresa_fields');
+
+        // Asegurarse de que los campos estén ocultos inicialmente
+        mantencionFields.style.display = 'none';
+        empresaFields.style.display = 'none';
+
+        // Función para manejar el cambio en el campo tipo
+        tipoAsignacion.addEventListener('change', function() {
+            const tipoSeleccionado = tipoAsignacion.value;
+
+            if (tipoSeleccionado === 'mantencion_preventiva' || tipoSeleccionado === 'mantencion_correctiva' || tipoSeleccionado === 'reparacion') {
+                mantencionFields.style.display = 'block'; // Mostrar campos de mantenimiento
+                empresaFields.style.display = 'none';    // Ocultar campos de asignación a empresa
+            } else if (tipoSeleccionado === 'asignacion_empresa') {
+                mantencionFields.style.display = 'none';  // Ocultar campos de mantenimiento
+                empresaFields.style.display = 'block';   // Mostrar campos de asignación a empresa
+            } else {
+                mantencionFields.style.display = 'none';
+                empresaFields.style.display = 'none';
+            }
+        });
+
+        // Ejecutar la lógica de los campos visibles cuando la página se carga por primera vez
+        tipoAsignacion.dispatchEvent(new Event('change'));
+    });
+</script>
+
 {% endblock %}

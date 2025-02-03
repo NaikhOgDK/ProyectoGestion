@@ -84,6 +84,8 @@ urlpatterns = [
     path('unidades/reparadas/', views.unidades_reparadas, name='unidades_reparadas'),
     path('marcar-como-reparada/<int:unidad_id>/', views.marcar_como_reparada, name='marcar_como_reparada'),
     path('unidad-aceptada/', views.unidad_aceptada_list, name='unidad_aceptada_list'),
+    path('listar/mantencion-reparacion/', views.listar_mantencion_reparacion, name='listar_mantencion_reparacion'),
+    path('listar/asignaciones-empresa/', views.listar_asignaciones_empresa, name='listar_asignaciones_empresa'),
     #Fin Taller Admin
 
     #Taller Usuario

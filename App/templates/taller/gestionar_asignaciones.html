@@ -12,7 +12,8 @@
                 <th>Vehículo</th>
                 <th>Taller</th>
                 <th>Fecha Asignación</th>
-                <th>Motivo</th>
+                <th>Tipo</th>
+                <th>Descripción</th> <!-- Cambiado aquí -->
                 <th>Estado</th>
                 <th>Acciones</th>
             </tr>
@@ -23,7 +24,11 @@
                     <td>{{ asignacion.patente }}</td>
                     <td>{{ asignacion.taller.name }}</td>
                     <td>{{ asignacion.fecha_asignacion }}</td>
-                    <td>{{ asignacion.motivo }}</td>
+                    <td>{{ asignacion.tipo }}</td>
+                    <td>
+                        {{ asignacion.descripcion_tarea }}<br>
+                        {{ asignacion.descripcion_asignacion }}
+                    </td> <!-- Ambas descripciones mostradas aquí -->
                     <td>
                         {% with asignacion.respuestas.last as respuesta %}
                             {% if respuesta %}

@@ -650,6 +650,27 @@ def crear_asignacion(request):
         form = AsignacionVehiculoForm()
     return render(request, 'areas/taller/crear_asignacion.html', {'form': form})
 
+@role_required(['Administrador'])
+def listar_asignaciones(request):
+    # Obtener todas las asignaciones sin aplicar filtros
+    asignaciones = Asignacion_taller.objects.all()
+
+    return render(request, 'areas/taller/listar_asignaciones.html', {'asignaciones': asignaciones})
+
+@role_required(['Administrador'])
+def listar_mantencion_reparacion(request):
+    # Filtrar asignaciones de tipo 'Mantención Preventiva', 'Mantención Correctiva', y 'Reparación'
+    asignaciones = Asignacion_taller.objects.filter(tipo__in=['mantencion_preventiva', 'mantencion_correctiva', 'reparacion'])
+
+    return render(request, 'areas/taller/listar_asignaciones.html', {'asignaciones': asignaciones})
+
+@role_required(['Administrador'])
+def listar_asignaciones_empresa(request):
+    # Filtrar asignaciones de tipo 'Asignación Empresa'
+    asignaciones = Asignacion_taller.objects.filter(tipo='asignacion_empresa')
+
+    return render(request, 'areas/taller/listar_asignaciones_empresa.html', {'asignaciones': asignaciones})
+
 @role_required(['Administrador', 'Visualizador'])
 def unidad_aceptada_list(request):
     # Obtener todas las unidades aceptadas sin ningún filtro
@@ -775,13 +796,6 @@ def user_chat_view(request):
 #Fin Chat
 
 #Inicio Taller usuario
-@role_required(['Administrador'])
-def listar_asignaciones(request):
-    # Obtener todas las asignaciones sin aplicar filtros
-    asignaciones = Asignacion_taller.objects.all()
-
-    return render(request, 'areas/taller/listar_asignaciones.html', {'asignaciones': asignaciones})
-
 @role_required(['Taller'])
 def actualizar_estado(request, asignacion_id):
     asignacion = AsignacionVehiculo.objects.get(id=asignacion_id)

@@ -1,17 +1,19 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h2>Asignaciones de Mantención y Reparación</h2>
+    <h2>Asignaciones a Empresas</h2>
     <table class="table">
         <thead>
             <tr>
                 <th>Vehículo</th>
                 <th>Taller</th>
+                <th>Empresa Asignada</th>
                 <th>Tipo de Asignación</th>
                 <th>Fecha de Asignación</th>
-                <th>Descripción</th>
+                <th>Fecha de Disponibilidad</th>
+                <th>Descripción de Asignación</th>
                 <th>Estado de Respuesta</th>
-                <th>Motivo Rechazo</th>
+                <th>Motivo de Rechazo</th>
                 <th>Fecha de Retiro</th>
             </tr>
         </thead>
@@ -19,10 +21,12 @@
             {% for asignacion in asignaciones %}
                 <tr>
                     <td>{{ asignacion.patente }}</td>
-                    <td>{{ asignacion.taller.name }}</td>
+                    <td>{{ asignacion.taller }}</td>
+                    <td>{{ asignacion.empresa_asignada.name }}</td>
                     <td>{{ asignacion.get_tipo_display }}</td>
                     <td>{{ asignacion.fecha_asignacion }}</td>
-                    <td>{{ asignacion.descripcion_tarea }}</td>
+                    <td>{{ asignacion.fecha_disponible_asignacion }}</td>
+                    <td>{{ asignacion.descripcion_asignacion }}</td>
                     <td>
                         {% if asignacion.respuestas.count > 0 %}
                             {% with respuesta=asignacion.respuestas.first %}

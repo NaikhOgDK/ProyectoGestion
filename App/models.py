@@ -7,9 +7,15 @@ from simple_history.models import HistoricalRecords
 from django.utils import timezone
 
 class Group(models.Model):
+    TIPO_GRUPO = [
+        ('taller', 'Taller'),
+        ('empresa', 'Empresa'),
+    ]
+    
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
-
+    tipo_grupo = models.CharField(max_length=10, choices=TIPO_GRUPO, default='taller')  # Indica si es taller o empresa
+    
     def __str__(self):
         return self.name
 
@@ -384,13 +390,31 @@ class ComunicacionReparacion(models.Model):
         return f"Comunicacion de Reparación {self.reparacion.id} por {self.usuario.username} - {self.estado}"
 
 class Asignacion_taller(models.Model):
+    TIPOS_ASIGNACION = [
+        ('mantencion_preventiva', 'Mantención Preventiva'),
+        ('mantencion_correctiva', 'Mantención Correctiva'),
+        ('reparacion', 'Reparación'),
+        ('asignacion_empresa', 'Asignación Empresa'),
+    ]
+
     patente = models.ForeignKey('Vehiculo', on_delete=models.SET_NULL, null=True, blank=True)  # Vehículo asignado
-    taller = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True)  # Grupo (taller) asignado
+    taller = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True, related_name="talleres")  # Grupo (taller) asignado
     fecha_asignacion = models.DateTimeField(auto_now_add=True)  # Fecha de asignación
-    motivo = models.TextField()
+    motivo = models.TextField()  # Motivo de la asignación
+    tipo = models.CharField(max_length=30, choices=TIPOS_ASIGNACION, default='Mantención Preventiva')  # Tipo de asignación
+
+    # Campos para Mantención o Reparación
+    fecha_disponible_mantencion = models.DateField(null=True, blank=True)  # Fecha en que la unidad estará disponible para mantenimiento
+    descripcion_tarea = models.TextField(null=True, blank=True)  # Descripción de la tarea (si es mantenimiento o reparación)
+
+
+    # Campos para Asignación Empresa
+    empresa_asignada = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True, related_name="empresas")  # Empresa asignada (si es asignación empresa)
+    fecha_disponible_asignacion = models.DateField(null=True, blank=True)  # Fecha en que la unidad estará disponible para asignación
+    descripcion_asignacion = models.TextField(null=True, blank=True)  # Descripción de lo que se debe hacer en la asignación
 
     def __str__(self):
-        return f"{self.patente} asignado a {self.taller.name}"
+        return f"{self.patente} asignado a {self.taller.name} - Tipo: {self.tipo}"
 
 class RespuestaAsignacion_taller(models.Model):
     asignacion = models.ForeignKey(Asignacion_taller, on_delete=models.CASCADE, related_name='respuestas')  # Relación con la asignación

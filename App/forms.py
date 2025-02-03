@@ -181,18 +181,37 @@ class ComunicacionForm(forms.ModelForm):
             "evidencia_adicional": forms.ClearableFileInput(attrs={"class": "form-control", "id": "Padron"}),
         }
 
+from django import forms
+from .models import Asignacion_taller
+
 class AsignacionVehiculoForm(forms.ModelForm):
     class Meta:
         model = Asignacion_taller
-        fields = ['patente', 'taller', 'motivo']
+        fields = ['patente', 'taller', 'tipo', 'fecha_disponible_mantencion', 'descripcion_tarea', 'empresa_asignada', 'fecha_disponible_asignacion', 'descripcion_asignacion']
+
+        # Widgets para estilizar los campos
         widgets = {
-            'fecha_retiro': forms.DateInput(attrs={'type': 'date'}),  # Campo de fecha con selector
+            'fecha_disponible_mantencion': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'descripcion_tarea': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'tipo': forms.Select(attrs={'class': 'form-control'}),
+            'patente': forms.Select(attrs={'class': 'form-control'}),
+            'taller': forms.Select(attrs={'class': 'form-control'}),
+            'empresa_asignada': forms.Select(attrs={'class': 'form-control'}),
+            'fecha_disponible_asignacion': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'descripcion_asignacion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
+
         labels = {
             'patente': 'Vehículo',
             'taller': 'Taller',
-            'motivo': 'Motivo',
+            'tipo': 'Tipo de Asignación',
+            'fecha_disponible_mantencion': 'Fecha disponible para Mantención',
+            'descripcion_tarea': 'Descripción de la tarea',
+            'empresa_asignada': 'Empresa asignada',
+            'fecha_disponible_asignacion': 'Fecha disponible para Asignación',
+            'descripcion_asignacion': 'Descripción de la Asignación',
         }
+
 
 class RespuestaAsignacionForm(forms.ModelForm):
     class Meta:
