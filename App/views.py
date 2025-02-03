@@ -208,6 +208,46 @@ def detalle_vehiculo(request, vehiculo_id):
     return render(request, 'Consulta/detalle_vehiculo.html', context)
 #Fin Consulta
 
+#Asiganciones
+
+def asignar_empresa(request):
+    # Obtener el término de búsqueda de la patente
+    patente_buscar = request.GET.get('patente', '')  # Si no se pasa, por defecto estará vacío
+
+    # Filtrar vehículos por patente si existe un término de búsqueda
+    if patente_buscar:
+        vehiculos_list = Vehiculo.objects.filter(patente__icontains=patente_buscar)  # Filtrar por patente (ignora mayúsculas/minúsculas)
+    else:
+        vehiculos_list = Vehiculo.objects.all()  # Obtener todos los vehículos si no se busca por patente
+    
+    empresas = Group.objects.all()  # Obtener todas las empresas
+
+    # Paginación de 15 vehículos por página
+    paginator = Paginator(vehiculos_list, 15)
+    page_number = request.GET.get('page')  # Obtener el número de página
+    page_obj = paginator.get_page(page_number)  # Obtener la página actual
+
+    if request.method == "POST":
+        form = AsignacionEmpresaForm(request.POST)
+        if form.is_valid():
+            vehiculo = form.cleaned_data['vehiculo']
+            empresa = form.cleaned_data['empresa']
+            vehiculo.empresa = empresa
+            vehiculo.save()
+            messages.success(request, f'Empresa asignada correctamente a {vehiculo.patente}')
+            return redirect('asignar_empresa')
+    else:
+        form = AsignacionEmpresaForm()
+
+    return render(request, 'asignacion/asignacion_empresa.html', {
+        'vehiculos': page_obj,  # Pasar los vehículos paginados
+        'form': form,
+        'empresas': empresas,  # Asegúrate de pasar las empresas al contexto
+        'patente_buscar': patente_buscar,  # Pasar el valor del campo de búsqueda para que se mantenga
+    })
+
+#Fin asiganciones
+
 #Documentacion
 @role_required(['Administrador', 'Visualizador'])
 def Documentos(request): 

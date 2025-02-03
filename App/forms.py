@@ -258,3 +258,7 @@ class CierreForm(forms.ModelForm):
             'responsable_cierre': forms.Select(),
             'descripcion_cierre': forms.Textarea(attrs={'rows': 3}),
         }
+
+class AsignacionEmpresaForm(forms.Form):
+    vehiculo = forms.ModelChoiceField(queryset=Vehiculo.objects.all())
+    empresa = forms.ModelChoiceField(queryset=Group.objects.all()) 

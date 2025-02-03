@@ -27,6 +27,10 @@ urlpatterns = [
     path('detalle/<int:vehiculo_id>/', views.detalle_vehiculo, name='detalle_vehiculo'),
     #Fin Consulta
 
+    #Asigancion
+    path('asignar-empresa/', asignar_empresa, name='asignar_empresa'),
+    #Fin Asignacion
+
     #Carga Datos
     path('cargar-datos/', cargar_datos_excel, name='cargar_datos_excel'),
     #Fin Carga Datos

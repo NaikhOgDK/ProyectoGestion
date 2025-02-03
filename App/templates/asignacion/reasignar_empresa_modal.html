@@ -1,0 +1,32 @@
+<form method="post" action="{% url 'reasignar_empresa' vehiculo.id %}" id="reasignarForm">
+  {% csrf_token %}
+  <p><strong>Vehículo:</strong> {{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo }}</p>
+  
+  <!-- Campo Empresa -->
+  <div class="mb-3">
+      <label for="{{ form.empresa.id_for_label }}" class="form-label">Seleccionar Empresa</label>
+      {{ form.empresa }}
+  </div>
+  
+  <!-- Botón para guardar los cambios -->
+  <button type="submit" class="btn btn-success w-100">Guardar Cambios</button>
+</form>
+
+<script>
+  // Redirigir tras enviar el formulario
+  document.getElementById('reasignarForm').addEventListener('submit', function(event) {
+      // Espera a que el formulario se envíe y se recargue la página
+      event.preventDefault();  // Previene la acción predeterminada
+      fetch(this.action, {
+          method: 'POST',
+          body: new FormData(this)
+      }).then(response => {
+          if (response.ok) {
+              // Cuando la respuesta es exitosa, redirige a la página 'asignar_empresa'
+              window.location.href = '{% url "asignar_empresa" %}';
+          } else {
+              alert('Hubo un error al reasignar la empresa');
+          }
+      });
+  });
+</script>

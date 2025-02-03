@@ -13,7 +13,7 @@
 
     <div class="row">
         <!-- Card de consulta que ocupa toda la fila -->
-        <div class="col-md-6 text-center mb-4">
+        <div class="col-md-4 text-center mb-4">
             <div class="card shadow-sm">
                 <div class="card-body">
                     <h4 class="card-title">Consulta</h4>
@@ -22,12 +22,21 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 text-center mb-4">
+        <div class="col-md-4 text-center mb-4">
             <div class="card shadow-sm">
                 <div class="card-body">
                     <h4 class="card-title">Carga Masiva</h4>
                     <p class="card-text">Agrega vehículos de forma masiva</p>
                     <a href="{% url 'cargar_datos_excel' %}" class="btn btn-outline-custom">Cargar</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-center mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="card-title">Asignaciones</h4>
+                    <p class="card-text">Asignar vehiculo a empresa</p>
+                    <a href="{% url 'asignar_empresa' %}" class="btn btn-outline-custom">Asignar</a>
                 </div>
             </div>
         </div>
