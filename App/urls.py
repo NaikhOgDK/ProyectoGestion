@@ -41,7 +41,8 @@ urlpatterns = [
 
     # GPS
 
-    path('vehiculos-seguimiento/', views.get_vehiculos_con_seguimiento, name='vehiculos_seguimiento'),
+    path('vehiculos-seguimiento/', views.get_vehiculos_con_seguimiento, name='get_vehiculos_con_seguimiento'),
+    path('actualizar-vehiculos/', views.make_post_request, name='actualizar_vehiculos'),  # Ruta para actualizar datos
 
     #Fin GPS
 
@@ -103,7 +104,7 @@ urlpatterns = [
 
     #API
 
-    path('api/make_post_request/', make_post_request, name='make_post_request'),
+    #path('api/make_post_request/', make_post_request, name='make_post_request'),
 
     #Fin API
 

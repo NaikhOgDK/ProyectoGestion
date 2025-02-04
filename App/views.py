@@ -1009,7 +1009,8 @@ def decrypt_message(encrypted_message):
 #Fin Encriptar
 
 #API
-@role_required(['Administrador'])
+"""
+@role_required(['Administrador'])  # Asegúrate de que este decorador esté bien definido
 def make_post_request(request):
     def normalize_plate(plate):
         if plate and plate.endswith("I"):
@@ -1027,64 +1028,61 @@ def make_post_request(request):
                 return 'online'
         return 'offline'
 
-    encrypted_token = request.COOKIES.get('auth_token')
-    if encrypted_token:
-        token = decrypt_message(encrypted_token.encode())
-        role_name = token.get('role_name')
-        if role_name == 'Administrador':
-            url = 'https://www.drivetech.pro/api/v1/get_vehicles_positions/'
-            tokengps = config('API_TOKEN')
-            headers = {
-                'Authorization': f'Token {tokengps}',
-                'Content-Type': 'application/json'
-            }
-            body = {
-                'client_id': 'coca-cola_andina'
-            }
+    # Llamada a la API externa para obtener posiciones de los vehículos
+    url = 'https://www.drivetech.pro/api/v1/get_vehicles_positions/'
+    tokengps = config('API_TOKEN')  # Asegúrate de que la variable de entorno esté configurada
+    headers = {
+        'Authorization': f'Token {tokengps}',
+        'Content-Type': 'application/json'
+    }
+    body = {
+        'client_id': 'coca-cola_andina'
+    }
 
-            response = requests.post(url, headers=headers, json=body)
+    response = requests.post(url, headers=headers, json=body)
+    
+    # Imprime el código de estado y el texto de la respuesta para depurar
+    print(f"Status Code: {response.status_code}")
+    print(f"Response Text: {response.text}")
 
-            if response.status_code == 200:
-                data = response.json()
-                results = []
+    if response.status_code == 200:
+        data = response.json()
+        results = []
 
-                for position in data.get('positions', []):
-                    placa = position.get('plate', 'N/A')
-                    placa_normalizada = normalize_plate(placa)
-                    last_signal_time = position.get('datetime')
-                    estado = get_vehicle_status(last_signal_time)
-                    latitud = position.get('latitude')
-                    longitud = position.get('longitude')
+        for position in data.get('positions', []):
+            placa = position.get('plate', 'N/A')
+            placa_normalizada = normalize_plate(placa)
+            last_signal_time = position.get('datetime')
+            estado = get_vehicle_status(last_signal_time)
+            latitud = position.get('latitude')
+            longitud = position.get('longitude')
 
-                    # Genera los enlaces
-                    google_maps_link = f"https://www.google.com/maps?q={latitud},{longitud}"
+            # Genera el enlace de Google Maps
+            google_maps_link = f"https://www.google.com/maps?q={latitud},{longitud}"
 
-                    # Guarda en la base de datos
-                    VehiculoAPI.objects.update_or_create(
-                        placa=placa_normalizada,
-                        defaults={
-                            'latitud': latitud,
-                            'longitud': longitud,
-                            'fecha_hora': last_signal_time,
-                            'odometro': position.get('odometer'),
-                            'estado': estado,
-                        }
-                    )
+            # Guarda o actualiza la base de datos
+            VehiculoAPI.objects.update_or_create(
+                placa=placa_normalizada,
+                defaults={
+                    'latitud': latitud,
+                    'longitud': longitud,
+                    'fecha_hora': last_signal_time,
+                    'odometro': position.get('odometer'),
+                    'estado': estado,
+                }
+            )
 
-                    # Agrega el resultado para la respuesta
-                    results.append({
-                        'placa': placa_normalizada,
-                        'estado': estado,
-                        'google_maps_link': google_maps_link,
-                    })
+            # Agrega el resultado para la respuesta
+            results.append({
+                'placa': placa_normalizada,
+                'estado': estado,
+                'google_maps_link': google_maps_link,
+            })
 
-                return JsonResponse({'status': 'success', 'message': 'Datos guardados correctamente.', 'results': results})
-            else:
-                return JsonResponse({'status': 'error', 'message': response.text}, status=response.status_code)
-        else:
-            return JsonResponse({'status': 'error', 'message': 'Usuario no Autenticado'}, status=403)
-    else:
-        return JsonResponse({'status': 'error', 'message': 'Token no encontrado en las cookies.'}, status=404)
+        return JsonResponse({'status': 'success', 'message': 'Datos guardados correctamente.', 'results': results})
+    
+    # En caso de que la API externa falle
+    return JsonResponse({'status': 'error', 'message': response.text}, status=response.status_code)
 
 @role_required(['Administrador', 'Visualizador'])
 def get_vehiculos_con_seguimiento(request):
@@ -1098,6 +1096,91 @@ def get_vehiculos_con_seguimiento(request):
     return render(request, 'areas/gps/vehiculos_seguimiento.html', {'vehiculos': vehiculos_con_seguimiento})
 
 #Fin API
+"""
+@role_required(['Administrador', 'Visualizador'])
+def get_vehiculos_con_seguimiento(request):
+    # Obtener todas las placas de los vehículos registrados en el modelo Vehiculo
+    placas_vehiculos = Vehiculo.objects.values_list('patente', flat=True)
+    
+    # Filtrar los vehículos en VehiculoAPI que tengan una placa registrada en Vehiculo
+    vehiculos_con_seguimiento = VehiculoAPI.objects.filter(placa__in=placas_vehiculos)
+    
+    # Pasar los datos al template
+    return render(request, 'areas/gps/vehiculos_seguimiento.html', {'vehiculos': vehiculos_con_seguimiento})
+
+@role_required(['Administrador'])
+def make_post_request(request):
+    def normalize_plate(plate):
+        return plate[:-1] if plate and plate.endswith("I") else plate
+
+    def get_vehicle_status(last_signal_time):
+        if last_signal_time:
+            last_signal_datetime = parser.parse(last_signal_time)
+            now_utc = datetime.now(pytz.utc)
+            return 'offline' if (now_utc - last_signal_datetime) > timedelta(days=7) else 'online'
+        return 'offline'
+
+    # Obtener los vehículos registrados en el modelo Vehiculo
+    registered_vehicles = Vehiculo.objects.values_list('patente', flat=True)
+
+    url = 'https://www.drivetech.pro/api/v1/get_vehicles_positions/'
+    tokengps = config('API_TOKEN')
+    headers = {'Authorization': f'Token {tokengps}', 'Content-Type': 'application/json'}
+    body = {'client_id': 'coca-cola_andina'}
+
+    response = requests.post(url, headers=headers, json=body)
+
+    if response.status_code == 200:
+        data = response.json()
+        new_vehicles = []  # Para vehículos nuevos
+        updated_vehicles = []  # Para vehículos existentes
+
+        for position in data.get('positions', []):
+            placa = normalize_plate(position.get('plate', 'N/A'))
+
+            # Solo actualizar si el vehículo está registrado en el modelo Vehiculo
+            if placa in registered_vehicles:
+                estado = get_vehicle_status(position.get('datetime'))
+                latitud = position.get('latitude')
+                longitud = position.get('longitude')
+
+                # Crear un objeto VehiculoAPI para insertar o actualizar
+                vehiculo_api = VehiculoAPI(
+                    placa=placa,
+                    latitud=latitud,
+                    longitud=longitud,
+                    fecha_hora=position.get('datetime'),
+                    odometro=position.get('odometer'),
+                    estado=estado,
+                )
+
+                # Verificar si el vehículo ya existe
+                existing_vehicle = VehiculoAPI.objects.filter(placa=placa).first()
+                if existing_vehicle:
+                    # Si el vehículo existe, actualizamos los campos
+                    existing_vehicle.latitud = latitud
+                    existing_vehicle.longitud = longitud
+                    existing_vehicle.fecha_hora = position.get('datetime')
+                    existing_vehicle.odometro = position.get('odometer')
+                    existing_vehicle.estado = estado
+                    updated_vehicles.append(existing_vehicle)
+                else:
+                    # Si el vehículo no existe, agregamos para insertar
+                    new_vehicles.append(vehiculo_api)
+
+        # Realizamos las inserciones masivas y actualizaciones
+        if new_vehicles:
+            VehiculoAPI.objects.bulk_create(new_vehicles)
+
+        if updated_vehicles:
+            VehiculoAPI.objects.bulk_update(updated_vehicles, ['latitud', 'longitud', 'fecha_hora', 'odometro', 'estado'])
+
+        return JsonResponse({'mensaje': 'Datos actualizados correctamente', 'vehiculos': [v.placa for v in new_vehicles + updated_vehicles]})
+
+    else:
+        return JsonResponse({'error': f'Error al obtener datos: {response.text}'}, status=500)
+
+
 
 #Desempeño
 

@@ -1,185 +1,194 @@
-{% extends 'base.html' %}
-
-{% block title %}Gestión de GPS{% endblock %}
+{% extends "base.html" %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-12 text-center">
-        <h1 class="display-4 font-weight-bold" style="color: #0b3356;">Listado Vehiculos API</h1>
+<div class="container">
+    <h1>Vehículos en Seguimiento</h1>
+
+    <!-- Filtros -->
+    <form id="filter-form">
+        <div class="form-row">
+            <div class="form-group col-4">
+                <label for="placa">Placa:</label>
+                <input type="text" id="placa" class="form-control" placeholder="Filtrar por placa">
+            </div>
+            <div class="form-group col-4">
+                <label for="estado">Estado:</label>
+                <select id="estado" class="form-control">
+                    <option value="">Todos</option>
+                    <option value="online">En línea</option>
+                    <option value="offline">Desconectado</option>
+                </select>
+            </div>
+            <div class="form-group col-4">
+                <label for="fecha">Fecha de última señal:</label>
+                <input type="date" id="fecha" class="form-control">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+    </form>
+    
+
+    <hr>
+
+    <!-- Barra de progreso infinita -->
+    <div class="progress-container" id="progress-container" style="display: none;">
+        <div class="progress-bar" id="progress-bar"></div>
     </div>
+
+    <!-- Mensaje de carga -->
+    <div id="loading-message" style="display: none;">
+        <p>Cargando datos...</p>
+    </div>
+
+    <!-- Botón de Actualización -->
+    <button id="update-btn" class="btn btn-success mt-3">Actualizar Datos</button>
+
+    <hr>
+
+    <!-- Tabla de Vehículos -->
+    <table class="table table-bordered" id="vehiculos-table">
+        <thead>
+            <tr>
+                <th>Placa</th>
+                <th>Estado</th>
+                <th>Enlace Google Maps</th>
+                <th>Odómetro</th>
+                <th>Fecha y Hora</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vehiculo in vehiculos %}
+            <tr>
+                <td>{{ vehiculo.placa }}</td>
+                <td>{{ vehiculo.estado }}</td>
+                <td><a href="https://www.google.com/maps?q={{ vehiculo.latitud }},{{ vehiculo.longitud }}" target="_blank">Ver en Google Maps</a></td>
+                <td>{{ vehiculo.odometro }}</td>
+                <td>{{ vehiculo.fecha_hora }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
-
-<button id="updateDataButton" class="btn">Actualizar Datos</button>
-
-<!-- Barra de carga -->
-<div id="loading" class="loading-container">
-    <div id="progressBar" class="loading-bar"></div>
-    <p class="loading-text">Cargando datos, por favor espera...</p>
-</div>
-
-<table class="vehicle-table">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Placa</th>
-            <th>Estado</th>
-            <th>Latitud</th>
-            <th>Longitud</th>
-            <th>Ubicación en Google Maps</th>
-            <th>Odómetro</th>
-            <th>Última Señal</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for vehiculo in vehiculos %}
-        <tr>
-            <td>{{ forloop.counter }}</td>
-            <td>{{ vehiculo.placa }}</td>
-            <td>{{ vehiculo.estado }}</td>
-            <td>{{ vehiculo.latitud }}</td>
-            <td>{{ vehiculo.longitud }}</td>
-            <td>
-                {% if vehiculo.latitud != "No disponible" and vehiculo.longitud != "No disponible" %}
-                <a href="https://www.google.com/maps?q={{ vehiculo.latitud }},{{ vehiculo.longitud }}" target="_blank">Ver en Google Maps</a>
-                {% else %}
-                No disponible
-                {% endif %}
-            </td>
-            <td>{{ vehiculo.odometro }}</td>
-            <td>{{ vehiculo.fecha_hora }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
 
 <script>
-    document.getElementById("updateDataButton").addEventListener("click", function() {
-        // Mostrar barra de carga
-        document.getElementById("loading").style.display = "block";
-        
-        // Variables de progreso
-        var progressBar = document.getElementById("progressBar");
-        var progress = 0;
+// Función para filtrar los vehículos
+document.getElementById('filter-form').addEventListener('submit', function(e) {
+    e.preventDefault();
 
-        // Función para simular el progreso
-        var interval = setInterval(function() {
-            if (progress >= 100) {
-                clearInterval(interval);
-            } else {
-                progress += 1;  // Aumentar el progreso
-                progressBar.style.width = progress + "%"; // Actualizar el ancho de la barra
-            }
-        }, 50); // Incrementar el progreso cada 50 ms
+    // Obtener los valores de los filtros
+    const placa = document.getElementById('placa').value.toLowerCase();
+    const estado = document.getElementById('estado').value;
+    const fecha = document.getElementById('fecha').value;
 
-        // Hacer solicitud AJAX para actualizar datos
-        fetch("{% url 'make_post_request' %}", {
-            method: "POST",
-            headers: {
-                "X-CSRFToken": "{{ csrf_token }}"
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Mostrar mensaje de éxito y recargar página
-            alert(data.message || "Datos actualizados correctamente.");
-            window.location.reload();
-        })
-        .catch(error => {
-            console.error("Error:", error);
-            alert("Hubo un problema al actualizar los datos.");
-        })
-        .finally(() => {
-            // Ocultar barra de carga
-            document.getElementById("loading").style.display = "none";
-        });
+    // Obtener las filas de la tabla
+    const rows = document.querySelectorAll('#vehiculos-table tbody tr');
+
+    // Filtrar las filas según los filtros aplicados
+    rows.forEach(function(row) {
+        const placaCell = row.cells[0].innerText.toLowerCase();
+        const estadoCell = row.cells[1].innerText.toLowerCase();
+        const fechaCell = row.cells[4].innerText; // Suponiendo que la fecha está en la quinta columna (index 4)
+
+        let match = true;
+
+        // Verificar si la fila coincide con los filtros
+        if (placa && !placaCell.includes(placa)) {
+            match = false;
+        }
+
+        if (estado && estadoCell !== estado) {
+            match = false;
+        }
+
+        if (fecha && !fechaCell.includes(fecha)) {
+            match = false;
+        }
+
+        // Mostrar u ocultar la fila según el resultado de la comparación
+        if (match) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
     });
+});
+
+// Función para actualizar los datos
+document.getElementById('update-btn').addEventListener('click', function() {
+    // Mostrar la barra de progreso infinita y el mensaje de carga
+    document.getElementById('progress-container').style.display = 'block';
+    document.getElementById('loading-message').style.display = 'block';
+    document.getElementById('progress-bar').classList.add('infinite-progress');
+
+    // Hacer la solicitud AJAX para obtener los datos actualizados
+    fetch('/actualizar-vehiculos/')  // Aquí reemplaza con la URL correcta
+    .then(response => response.json())
+    .then(data => {
+        if (data.vehiculos) {
+            const tableBody = document.querySelector('#vehiculos-table tbody');
+            tableBody.innerHTML = ''; // Limpiar la tabla actual
+
+            // Llenar la tabla con los datos actualizados
+            data.vehiculos.forEach(vehiculo => {
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td>${vehiculo.placa}</td>
+                    <td>${vehiculo.estado}</td>
+                    <td><a href="https://www.google.com/maps?q=${vehiculo.latitud},${vehiculo.longitud}" target="_blank">Ver en Google Maps</a></td>
+                    <td>${vehiculo.odometro || 'No disponible'}</td>
+                    <td>${vehiculo.fecha_hora || 'No disponible'}</td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+
+            // Ocultar la barra de progreso y el mensaje de carga
+            setTimeout(function() {
+                document.getElementById('progress-container').style.display = 'none';
+                document.getElementById('loading-message').innerHTML = '<p>Datos cargados correctamente.</p>';
+            }, 1000);
+        }
+    })
+    .catch(error => {
+        console.error('Error al actualizar los datos:', error);
+        document.getElementById('loading-message').innerHTML = '<p>Error al cargar los datos.</p>';
+    });
+});
 </script>
 
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f4f4f4;
-        margin: 0;
-        padding: 0;
-    }
+/* Estilo para la barra de progreso infinita */
+.progress-container {
+    width: 100%;
+    height: 5px;
+    background-color: #f3f3f3;
+    border-radius: 3px;
+    margin-top: 20px;
+}
 
-    h1 {
-        text-align: center;
-        color: #333;
-        margin-top: 20px;
-    }
+.progress-bar {
+    height: 5px;
+    width: 0%;
+    background-color: #28a745;
+    animation: progressAnimation 2s infinite;
+}
 
-    .btn {
-        display: inline-block;
-        padding: 10px 20px;
-        font-size: 16px;
-        background-color: #0b3356;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        margin: 20px;
-    }
-
-    .btn:hover {
-        background-color: #0b3356;
-    }
-
-    /* Estilo para la barra de carga */
-    .loading-container {
-        display: none;
-        text-align: center;
-        margin-top: 10px;
-    }
-
-    .loading-bar {
+@keyframes progressAnimation {
+    0% {
         width: 0;
-        height: 10px;
-        background-color: #0b3356;
-        transition: width 0.2s ease-in-out;
     }
+    50% {
+        width: 50%;
+    }
+    100% {
+        width: 100%;
+    }
+}
 
-    .loading-text {
-        margin-top: 10px;
-        font-size: 18px;
-        color: #333;
-    }
-
-    table {
-        width: 90%;
-        margin: 20px auto;
-        border-collapse: collapse;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        background-color: white;
-    }
-
-    table th, table td {
-        padding: 12px;
-        text-align: center;
-        border: 1px solid #ddd;
-    }
-
-    table th {
-        background-color: #0b3356;
-        color: white;
-    }
-
-    table tr:nth-child(even) {
-        background-color: #f2f2f2;
-    }
-
-    table a {
-        color: #007bff;
-        text-decoration: none;
-    }
-
-    table a:hover {
-        text-decoration: underline;
-    }
-
-    table td, table th {
-        word-wrap: break-word;
-    }
+.infinite-progress {
+    animation: progressAnimation 2s infinite;
+}
 </style>
 
 {% endblock %}

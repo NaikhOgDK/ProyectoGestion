@@ -3,11 +3,16 @@
 {% block title %}Gestión de GPS{% endblock %}
 
 {% block content %}
+<style>
+            h4{
+            font-family: sans-serif;
+        }
+</style>
 
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-12 text-center">
-            <h1 class="display-4 font-weight-bold" style="color: #0b3356;">Gestión de GPS</h1>
+            <h1 class="display-4" style="color: #0b3356;">Gestión de GPS</h1>
         </div>
     </div>
 
@@ -31,7 +36,7 @@
                 <div class="card-body d-flex flex-column justify-content-between text-center">
                     <h4 class="card-title">Acceso a API GPS</h4>
                     <p class="card-text">                    <p class="card-text">Accede a los datos de las unidades mediante la API integrada con los dispositivos GPS.</p>                </p>
-                    <a href="{% url 'vehiculos_seguimiento' %}" class="btn btn-outline-custom mt-auto" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                    <a href="{% url 'get_vehiculos_con_seguimiento' %}" class="btn btn-outline-custom mt-auto" style="height: 50px; display: flex; justify-content: center; align-items: center;">
                         Acceder a la API
                     </a>
                 </div>

@@ -4,7 +4,7 @@
   <div class="container mt-5">
     <div class="row">
       <div class="col-md-12 text-center">
-        <h1 class="display-4 font-weight-bold" style="color: #0b3356;">Asignación de Empresa a Vehículos</h1>
+        <h1 class="display-4" style="color: #0b3356;">Asignación de Empresa a Vehículos</h1>
       </div>
     </div>
 
@@ -43,7 +43,7 @@
             <td>{{ vehiculo.empresa }}</td>
             <td>
               <!-- Reasignación de empresa -->
-              {% if request.user.role == "Administrador" %}
+              {% if request.user.role.name == "Administrador" %}
               <form method="post" action="{% url 'asignar_empresa' %}">
                 {% csrf_token %}
                 <input type="hidden" name="vehiculo" value="{{ vehiculo.id }}">
