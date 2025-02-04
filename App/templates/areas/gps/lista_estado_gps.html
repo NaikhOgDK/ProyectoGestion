@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Listado de Estado GPS{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Listado de Estado GPS</h1>
+
+    <!-- Filtro -->
+    <form method="get" class="mb-4">
+        <div class="row">
+            <div class="col-md-4">
+                <label for="estado" class="form-label">Filtrar por estado:</label>
+                <select name="estado" id="estado" class="form-select">
+                    <option value="">Seleccionar estado</option>
+                    <option value="Sin GPS" {% if request.GET.estado == 'Sin GPS' %}selected{% endif %}>Sin GPS</option>
+                    <option value="Pendiente Instalación" {% if request.GET.estado == 'Pendiente Instalación' %}selected{% endif %}>Pendiente Instalación</option>
+                    <option value="Instalado" {% if request.GET.estado == 'Instalado' %}selected{% endif %}>Instalado</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Formulario para actualización masiva -->
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label for="nuevo_estado" class="form-label">Seleccionar estado para actualizar:</label>
+            <select name="nuevo_estado" id="nuevo_estado" class="form-select">
+                <option value="Sin GPS">Sin GPS</option>
+                <option value="Pendiente Instalación">Pendiente Instalación</option>
+                <option value="Instalado">Instalado</option>
+            </select>
+        </div>
+
+        <!-- Tabla de resultados -->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="seleccionar_todos"></th>
+                    <th>Vehículo</th>
+                    <th>Estado</th>
+                    <th>Actualizado En</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for estado in page_obj %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="vehiculos_seleccionados" value="{{ estado.id }}" class="seleccionar_vehiculo">
+                        </td>
+                        <td>{{ estado.vehiculo.patente }}</td>
+                        <td>{{ estado.estado }}</td>
+                        <td>{{ estado.actualizado_en }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center">No se encontraron resultados</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-success">Guardar cambios</button>
+        </div>
+    </form>
+
+    <!-- Paginación -->
+    <div class="d-flex justify-content-between mt-4">
+        <div class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}" class="btn btn-link">Primera</a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}" class="btn btn-link">Anterior</a>
+            {% endif %}
+
+            <span class="current">
+                Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}" class="btn btn-link">Siguiente</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}" class="btn btn-link">Última</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Seleccionar todos los checkboxes
+    document.getElementById('seleccionar_todos').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.seleccionar_vehiculo');
+        checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+    });
+</script>
+{% endblock %}

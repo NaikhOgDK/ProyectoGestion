@@ -43,6 +43,7 @@ urlpatterns = [
 
     path('vehiculos-seguimiento/', views.get_vehiculos_con_seguimiento, name='get_vehiculos_con_seguimiento'),
     path('actualizar-vehiculos/', views.make_post_request, name='actualizar_vehiculos'),  # Ruta para actualizar datos
+    path('estado_gps/', views.listar_estado_gps, name='lista_estado_gps'),
 
     #Fin GPS
 

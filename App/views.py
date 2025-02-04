@@ -6,8 +6,8 @@ from .forms import *
 from .models import *
 import pandas as pd
 from django.http import HttpResponse
-from django.db.models import Count, Q
-from django.core.paginator import Paginator
+from django.db.models import Count, Q, OuterRef, Subquery
+from django.core.paginator import Paginator,  EmptyPage, PageNotAnInteger
 from django.views.generic import ListView
 from django.utils import timezone
 import requests
@@ -203,7 +203,17 @@ def consulta_vehiculo(request):
 
 # Vista para cargar los detalles del vehículo
 def vehiculo_detalle(request, vehiculo_id):
-    vehiculo = Vehiculo.objects.get(id=vehiculo_id)
+    # Subconsulta para obtener el odómetro desde VehiculoAPI
+    vehiculo_api_subquery = VehiculoAPI.objects.filter(
+        placa=OuterRef('patente')  # Relacionar placa con patente
+    ).values('odometro')[:1]  # Traemos solo el primer valor de odómetro
+
+    # Obtener el vehículo y agregar el campo odómetro
+    vehiculo = Vehiculo.objects.annotate(
+        odometro=Subquery(vehiculo_api_subquery)
+    ).get(id=vehiculo_id)
+
+    # Pasar el vehículo a la plantilla
     return render(request, 'Consulta/seccion_detalles.html', {'vehiculo': vehiculo})
 
 # Vista para cargar los documentos del vehículo
@@ -1179,7 +1189,31 @@ def make_post_request(request):
     else:
         return JsonResponse({'error': f'Error al obtener datos: {response.text}'}, status=500)
 
+@role_required(['Administrador', 'Visualizador'])
+def listar_estado_gps(request):
+    # Filtrar por estado si se pasa un parámetro
+    estado_filter = request.GET.get('estado', '')
+    if estado_filter:
+        estados = EstadoGPS.objects.filter(estado=estado_filter)
+    else:
+        estados = EstadoGPS.objects.all()
 
+    # Paginación
+    paginator = Paginator(estados, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Actualización masiva
+    if request.method == 'POST':
+        nuevo_estado = request.POST.get('nuevo_estado')
+        vehiculos_seleccionados = request.POST.getlist('vehiculos_seleccionados')
+
+        if nuevo_estado and vehiculos_seleccionados:
+            EstadoGPS.objects.filter(id__in=vehiculos_seleccionados).update(estado=nuevo_estado)
+            messages.success(request, 'Estados actualizados correctamente.')
+            return redirect('lista_estado_gps')  # Redirigir para evitar reenvío del formulario
+
+    return render(request, 'areas/gps/lista_estado_gps.html', {'page_obj': page_obj})
 
 
 #Desempeño
