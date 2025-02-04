@@ -14,6 +14,25 @@
                 <p><strong>Modelo:</strong></p>
                 <p class="text-muted">{{ vehiculo.modelo }}</p>
             </div>
+            <div class="col-md-4">
+                <p><strong>Propietario:</strong></p>
+                <p class="text-muted">{{ vehiculo.propietario }}</p>
+            </div>
+            <div class="col-md-4">
+                <p><strong>Centro de Distribucion:</strong></p>
+                <p class="text-muted">{{ vehiculo.operacion }}</p>
+            </div>
+            <div class="col-md-4">
+                <p><strong>Empresa Asignada:</strong></p>
+                <p class="text-muted">{{ vehiculo.empresa }}</p>
+            </div>
+            {% if vehiculo_api %}
+                <p>Odómetro: {{ vehiculo_api.odometro }} km</p>
+                <p>Estado: {{ vehiculo_api.estado }}</p>
+                <p>Última actualización: {{ vehiculo_api.fecha_hora }}</p>
+            {% else %}
+                <p>No hay datos de API disponibles para este vehículo.</p>
+            {% endif %}
         </div>
         <!-- Agrega más detalles aquí -->
     </div>

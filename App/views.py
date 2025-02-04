@@ -1120,8 +1120,9 @@ def make_post_request(request):
             return 'offline' if (now_utc - last_signal_datetime) > timedelta(days=7) else 'online'
         return 'offline'
 
-    # Obtener los vehículos registrados en el modelo Vehiculo
+    # Obtener los vehículos registrados en el modelo Vehiculo y VehiculoAPI
     registered_vehicles = Vehiculo.objects.values_list('patente', flat=True)
+    existing_vehicles = {v.placa: v for v in VehiculoAPI.objects.all()}  # Diccionario con vehículos existentes
 
     url = 'https://www.drivetech.pro/api/v1/get_vehicles_positions/'
     tokengps = config('API_TOKEN')
@@ -1144,19 +1145,9 @@ def make_post_request(request):
                 latitud = position.get('latitude')
                 longitud = position.get('longitude')
 
-                # Crear un objeto VehiculoAPI para insertar o actualizar
-                vehiculo_api = VehiculoAPI(
-                    placa=placa,
-                    latitud=latitud,
-                    longitud=longitud,
-                    fecha_hora=position.get('datetime'),
-                    odometro=position.get('odometer'),
-                    estado=estado,
-                )
-
-                # Verificar si el vehículo ya existe
-                existing_vehicle = VehiculoAPI.objects.filter(placa=placa).first()
-                if existing_vehicle:
+                # Verificar si el vehículo ya existe en VehiculoAPI (usando el diccionario)
+                if placa in existing_vehicles:
+                    existing_vehicle = existing_vehicles[placa]
                     # Si el vehículo existe, actualizamos los campos
                     existing_vehicle.latitud = latitud
                     existing_vehicle.longitud = longitud
@@ -1166,6 +1157,14 @@ def make_post_request(request):
                     updated_vehicles.append(existing_vehicle)
                 else:
                     # Si el vehículo no existe, agregamos para insertar
+                    vehiculo_api = VehiculoAPI(
+                        placa=placa,
+                        latitud=latitud,
+                        longitud=longitud,
+                        fecha_hora=position.get('datetime'),
+                        odometro=position.get('odometer'),
+                        estado=estado,
+                    )
                     new_vehicles.append(vehiculo_api)
 
         # Realizamos las inserciones masivas y actualizaciones
@@ -1179,6 +1178,7 @@ def make_post_request(request):
 
     else:
         return JsonResponse({'error': f'Error al obtener datos: {response.text}'}, status=500)
+
 
 
 
