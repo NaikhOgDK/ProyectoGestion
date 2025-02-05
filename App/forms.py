@@ -2,6 +2,9 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import *
 import re
+import boto3
+import uuid
+from django.conf import settings
 
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField(
@@ -290,6 +293,48 @@ class HallazgoForm(forms.ModelForm):
     class Meta:
         model = HallazgoEmpresa
         fields = ['hallazgo', 'vehiculo', 'posicion_neumatico', 'fecha_inspeccion', 'tipo_hallazgo', 'nivel_riesgo', 'responsable', 'grupo', 'evidencia']
+
+    def save(self, commit=True):
+        # Guardamos primero el objeto
+        instance = super().save(commit=False)
+
+        # Si el campo de evidencia tiene un archivo, lo subimos a S3
+        if self.cleaned_data['evidencia']:
+            archivo = self.cleaned_data['evidencia']
+            # Llamar a la función para subir el archivo a S3
+            archivo_s3 = subir_a_s3HALLAZGO(archivo, carpeta='evidencias')
+            if archivo_s3:
+                # Asignamos la ruta del archivo en S3 al campo evidencia
+                instance.evidencia = archivo_s3
+
+        if commit:
+            instance.save()
+        return instance
+
+def subir_a_s3HALLAZGO(archivo, carpeta="licencias"):
+    """
+    Sube un archivo a AWS S3 y retorna la ruta del archivo.
+    """
+    try:
+        s3_client = boto3.client(
+            's3',
+            region_name=settings.AWS_S3_REGION_NAME,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+        )
+
+        # Generar un nombre único para el archivo
+        extension = archivo.name.split('.')[-1]  # Obtener la extensión
+        nombre_archivo = f"{carpeta}/{uuid.uuid4()}.{extension}"  # Carpeta + UUID + extensión
+
+        # Subir archivo a S3
+        s3_client.upload_fileobj(archivo, settings.AWS_STORAGE_BUCKET_NAME, nombre_archivo)
+
+        print(f"Archivo subido correctamente: {nombre_archivo}")
+        return nombre_archivo  # Retorna la ruta del archivo en S3
+    except Exception as e:
+        print(f"Error al subir archivo a S3: {e}")
+        return None
 
 class CierreForm(forms.ModelForm):
     class Meta:
