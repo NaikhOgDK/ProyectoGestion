@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'App',
     'simple_history',
     'channels',
+    'storages',
 ]
 
 ASGI_APPLICATION = "ProyectoGestion.asgi.application"
@@ -152,5 +153,21 @@ AUTH_USER_MODEL = 'App.User'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+#MEDIA_URL = '/media/'
+#MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Configuración de Amazon S3
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY')  # Access Key de IAM
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_KEY')  # Secret Key de IAM
+AWS_STORAGE_BUCKET_NAME = config('AWS_S3_BUCKET_NAME')  # Nombre de tu bucket
+AWS_S3_REGION_NAME = config('AWS_REGION')  # Ejemplo: 'us-west-2'
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+
+# Configurar el almacenamiento de archivos estáticos (si también lo deseas en S3)
+AWS_S3_FILE_OVERWRITE = False  # Evitar sobrescribir archivos
+AWS_DEFAULT_ACL = None  # Establecer permisos de archivo
+
+# Configuración del backend para archivos
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'

@@ -213,6 +213,7 @@ class Conductor(models.Model):
     nombre = models.CharField(max_length=100)
     rut = models.CharField(max_length=12)
     telefono = models.CharField(max_length=15)
+    FechaVencimientoLicencia = models.DateField()
     empresa = models.ForeignKey(Group, on_delete=models.CASCADE)
     
     def __str__(self):
@@ -220,7 +221,7 @@ class Conductor(models.Model):
 
 class LicenciaConductor(models.Model):
     conductor = models.ForeignKey(Conductor, related_name="licencias", on_delete=models.CASCADE)
-    archivo = models.FileField(upload_to='licencias/%Y/%m/%d/', null=True, blank=True)  # Puede ser imagen o PDF
+    archivo = models.FileField(upload_to='licencias', null=True, blank=True)  # Puede ser imagen o PDF
 
     def __str__(self):
         return f"Licencia de {self.conductor.nombre} ({self.id})"

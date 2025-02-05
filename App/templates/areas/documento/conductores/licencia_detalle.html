@@ -1,0 +1,26 @@
+<!-- licencia_detalle.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Detalles de la Licencia</h2>
+
+<div>
+    <h4>Conductor: {{ licencia.conductor.nombre }}</h4>
+    <p><strong>RUT:</strong> {{ licencia.conductor.rut }}</p>
+    <p><strong>Teléfono:</strong> {{ licencia.conductor.telefono }}</p>
+    <p><strong>Fecha de Vencimiento de Licencia:</strong> {{ licencia.FechaVencimientoLicencia }}</p>
+    <p><strong>Estado de la Licencia:</strong> {{ licencia.estado_licencia }}</p>
+    <p><strong>Archivo de la Licencia:</strong></p>
+    {% if url_temporal %}
+    <a href="{{ url_temporal }}" target="_blank">
+        <img src="{{ url_temporal }}" alt="Licencia de Conductor" style="max-width: 100%; height: auto;">
+    </a>
+    {% else %}
+        <p>No se pudo generar la URL temporal.</p>
+    {% endif %}
+
+</div>
+
+<a href="{% url 'list' %}" class="btn btn-secondary">Volver</a>
+
+{% endblock %}

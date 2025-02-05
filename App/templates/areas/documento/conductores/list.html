@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Lista de Conductores</h2>
+
+<div class="mb-3">
+    <a href="{% url 'create' %}" class="btn btn-success">Agregar Conductor</a>
+    <a href="{% url 'import' %}" class="btn btn-primary">Importar Conductores</a>
+</div>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Nombre</th>
+            <th>RUT</th>
+            <th>Teléfono</th>
+            <th>Fecha Vencimiento Licencia</th>
+            <th>Empresa</th>
+            <th class="text-center">Estado Licencia</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for conductor in page_obj %}
+        <tr>
+            <td>{{ conductor.nombre }}</td>
+            <td>{{ conductor.rut }}</td>
+            <td>{{ conductor.telefono }}</td>
+            <td>{{ conductor.FechaVencimientoLicencia }}</td>
+            <td>{{ conductor.empresa }}</td>
+            <td class="text-center">
+                {% if conductor.estado_licencia == "Vigente" %}
+                    <span class="badge bg-success">{{ conductor.estado_licencia }}</span>
+                {% elif conductor.estado_licencia == "Por Vencer" %}
+                    <span class="badge bg-warning text-dark">{{ conductor.estado_licencia }}</span>
+                {% elif conductor.estado_licencia == "Vencida" %}
+                    <span class="badge bg-danger">{{ conductor.estado_licencia }}</span>
+                {% else %}
+                    <span class="badge bg-secondary">{{ conductor.estado_licencia }}</span>
+                {% endif %}
+            </td>
+            <td>
+                <div class="btn-group" role="group" aria-label="Acciones">
+                    <a href="{% url 'edit' conductor.id %}" class="btn btn-warning btn-sm">Editar</a>
+                    <a href="{% url 'delete' conductor.id %}" class="btn btn-danger btn-sm">Eliminar</a>
+                    
+                    {% if conductor.licencias.count == 0 %}
+                        <a href="{% url 'subir_licencia' conductor.id %}" class="btn btn-info btn-sm">Subir Licencia</a>
+                    {% else %}
+                        <a href="{% url 'editar_licencia' conductor.id %}" class="btn btn-info btn-sm">Editar Licencia</a>
+                        
+                        <!-- Agregar el botón para ver la licencia -->
+                        <a href="{{ conductor.licencias.first.archivo.url }}" class="btn btn-primary btn-sm" target="_blank">Ver Licencia</a>
+                    {% endif %}
+                    {% if conductor.licencias.count > 0 %}
+                        <a href="{% url 'licencia_detalle' licencia_id=conductor.licencias.first.id %}" class="btn btn-primary btn-sm">Ver Licencia</a>
+                    {% endif %}
+
+                </div>
+                
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7" class="text-center">No hay conductores disponibles.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="d-flex justify-content-between">
+    <div>
+        {% if page_obj.has_previous %}
+        <a href="?page=1" class="btn btn-secondary btn-sm">Primera</a>
+        <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-secondary btn-sm">Anterior</a>
+        {% endif %}
+        
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="btn btn-secondary btn-sm">Siguiente</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-secondary btn-sm">Última</a>
+        {% endif %}
+    </div>
+    <div class="text-center">
+        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+    </div>
+</div>
+
+{% endblock %}

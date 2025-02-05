@@ -56,6 +56,18 @@ urlpatterns = [
     path('vehiculos/historial/<int:vehiculo_id>/', views.historial_vehiculo, name='historial_mantenimiento'),
     # Fin Urls Documentos
 
+    #Conductores
+    path('conductores/', listar_conductores, name='list'),
+    path('conductores/crear/', crear_conductor, name='create'),
+    path('conductores/<int:pk>/editar/', editar_conductor, name='edit'),
+    path('conductores/<int:pk>/eliminar/', eliminar_conductor, name='delete'),
+    path('conductores/importar/', importar_conductores, name='import'),
+    path('conductores/<int:conductor_id>/subir-licencia/', views.subir_licencia, name='subir_licencia'),
+    path('editar_licencia/<int:conductor_id>/', views.editar_licencia, name='editar_licencia'),
+    path('licencia/<int:licencia_id>/detalle/', views.licencia_detalle, name='licencia_detalle'),
+
+    #Fin Conductores
+
     # URLS Neumaticos
     path('empresa/hallazgos/', views.listar_hallazgo, name='listar_hallazgo'),
     path('hallazgo/close/<int:hallazgo_id>/', views.cerrar_hallazgoemp, name='hallazgo_close'),
@@ -129,4 +141,4 @@ urlpatterns = [
 
     #Fin Vista AC Comercial
 
-]   + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]  # + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

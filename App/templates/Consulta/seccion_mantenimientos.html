@@ -4,7 +4,16 @@
     <a href="#" class="list-group-item list-group-item-action">
         <div class="d-flex w-100 justify-content-between">
             <h5 class="mb-1">{{ mantenimiento.descripcion }}</h5>
-            <small class="text-muted">Fecha: {{ mantenimiento.fecha }}</small>
+            <small class="text-muted">
+                Fecha: {{ mantenimiento.fecha_mtto|date:"d/m/Y" }}<br>
+                Kilometraje: {{ mantenimiento.kilometraje_mtto }} km<br>
+                Servicio Realizado: {{ mantenimiento.get_servicio_realizado_display }}<br>
+                Próximo Servicio: {{ mantenimiento.get_proximo_servicio_display }}<br>
+                Próximo Mantenimiento a los: {{ mantenimiento.proximo_mantenimiento_km }} km<br>
+                {% if mantenimiento.respaldo_mtto %}
+                    <a href="{{ mantenimiento.respaldo_mtto.url }}" target="_blank" class="btn btn-link">Ver Respaldo</a>
+                {% endif %}
+            </small>
         </div>
     </a>
     {% empty %}

@@ -3,8 +3,34 @@
     {% for documento in documentos %}
     <a href="#" class="list-group-item list-group-item-action">
         <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1">{{ documento.nombre }}</h5>
-            <small class="text-muted">{{ documento.tipo }}</small>
+            <h5 class="mb-1">{{ documento.Vehiculo.patente }}</h5>
+            <small class="text-muted">
+                {% if documento.Revision_Tecnica %}
+                    <strong>Revisión Técnica:</strong> 
+                    <a href="{{ documento.Revision_Tecnica.url }}" target="_blank" class="btn btn-link">Ver Documento</a> 
+                    (Vencimiento: {{ documento.fecha_vencimiento_revision|date:"d/m/Y" }})<br>
+                {% endif %}
+                {% if documento.Mantencion_Preventiva %}
+                    <strong>Mantención Preventiva:</strong> 
+                    <a href="{{ documento.Mantencion_Preventiva.url }}" target="_blank" class="btn btn-link">Ver Documento</a> 
+                    (Vencimiento: {{ documento.fecha_vencimiento_mantencion|date:"d/m/Y" }})<br>
+                {% endif %}
+                {% if documento.Permiso_Circulacion %}
+                    <strong>Permiso Circulación:</strong> 
+                    <a href="{{ documento.Permiso_Circulacion.url }}" target="_blank" class="btn btn-link">Ver Documento</a> 
+                    (Vencimiento: {{ documento.fecha_vencimiento_permiso|date:"d/m/Y" }})<br>
+                {% endif %}
+                {% if documento.SOAP %}
+                    <strong>SOAP:</strong> 
+                    <a href="{{ documento.SOAP.url }}" target="_blank" class="btn btn-link">Ver Documento</a> 
+                    (Vencimiento: {{ documento.fecha_vencimiento_soap|date:"d/m/Y" }})<br>
+                {% endif %}
+                {% if documento.Padron %}
+                    <strong>Padrón:</strong> 
+                    <a href="{{ documento.Padron.url }}" target="_blank" class="btn btn-link">Ver Documento</a> 
+                    (Vencimiento: {{ documento.fecha_vencimiento_padron|date:"d/m/Y" }})<br>
+                {% endif %}
+            </small>
         </div>
     </a>
     {% empty %}

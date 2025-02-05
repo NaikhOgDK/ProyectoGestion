@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Subir Licencia de Conductor para {{ conductor.nombre }}</h2>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="id_archivo_licencia" class="form-label">Licencia (por ambas caras)</label>
+        <input type="file" name="archivo_licencia" class="form-control" multiple>
+    </div>
+    <button type="submit" class="btn btn-primary">Subir Licencia</button>
+</form>
+
+<a href="{% url 'list' %}" class="btn btn-secondary mt-3">Volver a la lista de conductores</a>
+
+{% endblock %}

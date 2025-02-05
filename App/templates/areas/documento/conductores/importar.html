@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Importar Conductores</h2>
+
+    {% if messages %}
+        <div class="alert alert-info">
+            <ul class="mb-0">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form action="{% url 'import' %}" method="post" enctype="multipart/form-data" class="mb-3">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="file" class="form-label">Subir archivo Excel:</label>
+            <input type="file" name="file" accept=".xlsx, .xls" required class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary">Importar</button>
+    </form>
+
+    <a href="{% url 'list' %}" class="btn btn-secondary">Volver a la lista</a>
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">{% if form.instance.pk %}Editar{% else %}Agregar{% endif %} Conductor</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form.as_p }}
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+    </form>
+
+    <a href="{% url 'list' %}" class="btn btn-secondary mt-3">Volver a la lista</a>
+</div>
+{% endblock %}

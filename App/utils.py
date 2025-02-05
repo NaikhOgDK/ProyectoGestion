@@ -1,4 +1,6 @@
 from django.core.mail import send_mail
+import boto3
+from django.conf import settings
 
 def enviar_notificacion_grupo(hallazgo, asunto, mensaje, tipo='creacion'):
     """
@@ -38,3 +40,28 @@ def enviar_notificacion_grupo(hallazgo, asunto, mensaje, tipo='creacion'):
     # Enviar el correo
     send_mail(asunto, mensaje_detallado, 'nicolasvilchesa12@gmail.com', correos)
 
+
+def upload_file_to_s3(local_file, s3_file_name):
+    """
+    Subir un archivo a un bucket de AWS S3.
+
+    :param local_file: Ruta del archivo en el sistema local.
+    :param s3_file_name: Nombre del archivo en el bucket S3.
+    :return: True si la carga fue exitosa, False si hubo un error.
+    """
+    try:
+        # Crear un cliente de S3 con las credenciales
+        s3_client = boto3.client(
+            service_name='s3',
+            region_name=settings.AWS_REGION,
+            aws_access_key_id=settings.AWS_ACCESS_KEY,
+            aws_secret_access_key=settings.AWS_SECRET_KEY
+        )
+
+        # Realizar la carga del archivo
+        s3_client.upload_file(local_file, settings.AWS_STORAGE_BUCKET_NAME, s3_file_name)
+        print(f"Archivo {local_file} subido correctamente a {s3_file_name} en S3.")
+        return True
+    except Exception as e:
+        print(f"Error al subir archivo a S3: {e}")
+        return False

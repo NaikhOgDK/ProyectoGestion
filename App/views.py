@@ -22,6 +22,12 @@ from .utils import *
 from .decorators import role_required
 from django.views.generic import ListView
 from django.template.loader import render_to_string
+from django.core.files.storage import FileSystemStorage
+from openpyxl import load_workbook
+from django.urls import reverse
+import boto3
+from django.conf import settings
+import uuid
 
 @role_required(['Administrador'])
 def register(request):
@@ -415,6 +421,239 @@ def historial_vehiculo(request, vehiculo_id):
     })
 
 #Fin Documentacion
+
+#Conductores
+@role_required(['Administrador', 'Visualizador'])
+def listar_conductores(request):
+    conductores = Conductor.objects.all()
+    
+    # Implementación de la paginación
+    paginator = Paginator(conductores, 15)  # 15 conductores por página
+    page_number = request.GET.get('page')  # Obtiene el número de página desde la URL
+    page_obj = paginator.get_page(page_number)
+    
+    # Lógica para determinar el estado de la licencia de cada conductor
+    for conductor in page_obj:
+        # Verificar si el conductor tiene licencias asociadas
+        licencia = conductor.licencias.first()  # Se obtiene la primera licencia asociada al conductor
+        if licencia and licencia.archivo:
+            # Verificamos la fecha de vencimiento de la licencia
+            fecha_vencimiento = conductor.FechaVencimientoLicencia
+
+            # Verifica si la licencia está vencida, por vencer o vigente
+            if fecha_vencimiento < timezone.now().date():
+                conductor.estado_licencia = "Vencida"
+            elif fecha_vencimiento <= (timezone.now().date() + timedelta(days=15)):
+                conductor.estado_licencia = "Por Vencer"
+            else:
+                conductor.estado_licencia = "Vigente"
+        else:
+            conductor.estado_licencia = "Sin Respaldo Licencia"
+    
+    return render(request, 'areas/documento/conductores/list.html', {'page_obj': page_obj})
+@role_required(['Administrador'])
+def crear_conductor(request):
+    if request.method == 'POST':
+        form = ConductorForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Conductor agregado exitosamente.")
+            return redirect('list')
+    else:
+        form = ConductorForm()
+    return render(request, 'areas/documento/conductores/form.html', {'form': form})
+
+@role_required(['Administrador'])
+def subir_a_s3(archivo, carpeta="licencias"):
+    """
+    Sube un archivo a AWS S3 y retorna la ruta del archivo.
+    """
+    try:
+        s3_client = boto3.client(
+            's3',
+            region_name=settings.AWS_S3_REGION_NAME,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+        )
+
+        # Generar un nombre único para el archivo
+        extension = archivo.name.split('.')[-1]  # Obtener la extensión
+        nombre_archivo = f"{carpeta}/{uuid.uuid4()}.{extension}"  # Carpeta + UUID + extensión
+
+        # Subir archivo a S3
+        s3_client.upload_fileobj(archivo, settings.AWS_STORAGE_BUCKET_NAME, nombre_archivo)
+
+        print(f"Archivo subido correctamente: {nombre_archivo}")
+        return nombre_archivo  # Retorna la ruta del archivo en S3
+    except Exception as e:
+        print(f"Error al subir archivo a S3: {e}")
+        return None
+
+
+def subir_licencia(request, conductor_id):
+    conductor = get_object_or_404(Conductor, id=conductor_id)
+    
+    if request.method == 'POST':
+        archivos = request.FILES.getlist('archivo_licencia')
+
+        if archivos:
+            for archivo in archivos:
+                url_archivo = subir_a_s3(archivo, "Licencias")
+
+                if url_archivo:
+                    # Guardar en la base de datos
+                    LicenciaConductor.objects.create(
+                        conductor=conductor,
+                        archivo=url_archivo
+                    )
+                else:
+                    messages.error(request, "Hubo un error al subir un archivo.")
+
+            messages.success(request, "Licencia subida exitosamente.")
+            return redirect('list')  # Redirige a la lista de conductores
+        else:
+            messages.error(request, "Por favor, sube al menos un archivo de licencia.")
+    
+    return render(request, 'areas/documento/conductores/subir_licencia.html', {'conductor': conductor})
+
+@role_required(['Administrador'])
+def editar_licencia(request, conductor_id):
+    conductor = get_object_or_404(Conductor, id=conductor_id)
+    
+    # Obtener las licencias existentes del conductor
+    licencias = LicenciaConductor.objects.filter(conductor=conductor)
+
+    if request.method == 'POST':
+        archivos = request.FILES.getlist('archivo_licencia')
+        
+        if archivos:
+            # Eliminar las licencias anteriores si el conductor las tiene
+            if not request.POST.get('mantener_licencias'):
+                licencias.delete()  # Borramos las licencias anteriores
+            
+            # Subir los nuevos archivos
+            for archivo in archivos:
+                LicenciaConductor.objects.create(
+                    conductor=conductor,
+                    archivo=archivo
+                )
+            messages.success(request, "Licencias actualizadas exitosamente.")
+            return redirect('list')  # Redirige a la lista de conductores
+        else:
+            messages.error(request, "Por favor, sube al menos un archivo de licencia.")
+    
+    return render(request, 'areas/documento/conductores/editar_licencia.html', {
+        'conductor': conductor,
+        'licencias': licencias  # Pasar las licencias existentes al template
+    })
+
+@role_required(['Administrador'])
+def editar_conductor(request, pk):
+    conductor = get_object_or_404(Conductor, pk=pk)
+    if request.method == 'POST':
+        form = ConductorForm(request.POST, instance=conductor)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Conductor actualizado correctamente.")
+            return redirect('list')
+    else:
+        form = ConductorForm(instance=conductor)
+    return render(request, 'areas/documento/conductores/form.html', {'form': form})
+
+@role_required(['Administrador'])
+def eliminar_conductor(request, pk):
+    conductor = get_object_or_404(Conductor, pk=pk)
+    if request.method == 'POST':
+        conductor.delete()
+        messages.success(request, "Conductor eliminado correctamente.")
+        return redirect('list')
+    return render(request, 'areas/documento/conductores/confirm_delete.html', {'conductor': conductor})
+
+@role_required(['Administrador'])
+def importar_conductores(request):
+    if request.method == 'POST':
+        file = request.FILES.get('file')
+        if not file:
+            messages.error(request, "No se ha subido ningún archivo.")
+            return redirect('import')  
+
+        fs = FileSystemStorage()
+        filename = fs.save(file.name, file)
+        file_path = fs.path(filename)
+
+        try:
+            wb = load_workbook(file_path)
+            sheet = wb.active
+            for row in sheet.iter_rows(min_row=2, max_col=5, values_only=True):  # Limitar a las 5 columnas necesarias
+                if row[0]:  # Evita procesar filas vacías
+                    nombre, rut, telefono, fecha_vencimiento, empresa_nombre = row
+
+                    # Buscar la empresa por su nombre en la base de datos
+                    try:
+                        empresa = Group.objects.get(name=empresa_nombre)
+                    except Group.DoesNotExist:
+                        messages.error(request, f"Empresa '{empresa_nombre}' no encontrada.")
+                        continue
+
+                    # Asegurarse de que la fecha es un objeto de tipo datetime y convertirlo si es necesario
+                    try:
+                        if isinstance(fecha_vencimiento, datetime):
+                            fecha_vencimiento = fecha_vencimiento.date()  # Si es un objeto datetime, tomar solo la fecha
+                        else:
+                            # Si la fecha no es un objeto datetime, intentar convertirla
+                            fecha_vencimiento = datetime.strptime(str(fecha_vencimiento), '%d-%m-%Y').date()
+
+                    except Exception as e:
+                        messages.error(request, f"Fecha de vencimiento inválida para {nombre}: {str(e)}")
+                        continue
+
+                    Conductor.objects.create(
+                        nombre=nombre,
+                        rut=rut,
+                        telefono=telefono,
+                        FechaVencimientoLicencia=fecha_vencimiento,
+                        empresa=empresa
+                    )
+            messages.success(request, "Conductores importados exitosamente.")
+        except Exception as e:
+            messages.error(request, f"Error al importar: {str(e)}")
+
+    return render(request, 'areas/documento/conductores/importar.html')  # Renderiza el formulario
+
+def licencia_detalle(request, licencia_id):
+    licencia = get_object_or_404(LicenciaConductor, id=licencia_id)
+
+    # Obtener el nombre del archivo como cadena
+    archivo_s3 = str(licencia.archivo.name)  # Asegurar que es una cadena
+    #print(f"Archivo S3: {archivo_s3}")
+
+    tiempo_expiracion = 5
+
+    s3_client = boto3.client(
+        's3',
+        region_name=settings.AWS_S3_REGION_NAME,
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+    )
+
+    # Generar URL temporal
+    try:
+        url_temporal = s3_client.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': archivo_s3},
+            ExpiresIn=tiempo_expiracion
+        )
+        #print(f"URL temporal generada: {url_temporal}")   
+    except Exception as e:
+        #print(f"Error al generar el enlace temporal: {e}")
+        url_temporal = None
+
+    return render(request, 'areas/documento/conductores/licencia_detalle.html', {'licencia': licencia, 'url_temporal': url_temporal})
+
+
+
+#Fin Conductores
+
 
 #Inicio Neumatico
 

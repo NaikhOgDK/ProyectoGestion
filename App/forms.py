@@ -140,6 +140,29 @@ class DocumentoForm(forms.ModelForm):
         required=False
     )
 
+class ConductorForm(forms.ModelForm):
+    class Meta:
+        model = Conductor
+        fields = ['nombre', 'rut', 'telefono', 'FechaVencimientoLicencia', 'empresa']
+        widgets = {
+            'FechaVencimientoLicencia': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'rut': forms.TextInput(attrs={'class': 'form-control'}),
+            'telefono': forms.TextInput(attrs={'class': 'form-control'}),
+            'empresa': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(ConductorForm, self).__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
+
+class LicenciaConductorForm(forms.ModelForm):
+    archivo = forms.FileField(required=False)
+
+    class Meta:
+        model = LicenciaConductor
+        fields = ['archivo']
 
 class MantenimientoForm(forms.ModelForm):
     vehiculo = forms.ModelChoiceField(
