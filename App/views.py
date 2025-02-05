@@ -29,7 +29,6 @@ import boto3
 from django.conf import settings
 import uuid
 
-@role_required(['Administrador'])
 def subir_a_s3(archivo, carpeta="licencias"):
     """
     Sube un archivo a AWS S3 y retorna la ruta del archivo.
@@ -477,6 +476,7 @@ def listar_conductores(request):
             conductor.estado_licencia = "Sin Respaldo Licencia"
     
     return render(request, 'areas/documento/conductores/list.html', {'page_obj': page_obj})
+
 @role_required(['Administrador'])
 def crear_conductor(request):
     if request.method == 'POST':
@@ -489,7 +489,7 @@ def crear_conductor(request):
         form = ConductorForm()
     return render(request, 'areas/documento/conductores/form.html', {'form': form})
 
-
+@role_required(['Administrador'])
 def subir_licencia(request, conductor_id):
     conductor = get_object_or_404(Conductor, id=conductor_id)
     
