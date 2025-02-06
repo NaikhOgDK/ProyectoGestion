@@ -11,6 +11,7 @@
         </div>
     </div>
 
+    {% if request.user.role.name == "Administrador" %}
     <div class="row">
         <!-- Card de consulta que ocupa toda la fila -->
         <div class="col-md-4 text-center mb-4">
@@ -22,7 +23,6 @@
                 </div>
             </div>
         </div>
-        {% if request.user.role.name == "Administrador" %}
         <div class="col-md-4 text-center mb-4">
             <div class="card shadow-sm">
                 <div class="card-body">
@@ -32,7 +32,6 @@
                 </div>
             </div>
         </div>
-        {% endif %}
         <div class="col-md-4 text-center mb-4">
             <div class="card shadow-sm">
                 <div class="card-body">
@@ -43,6 +42,22 @@
             </div>
         </div>
     </div>
+    {% endif %}
+    
+    {% if request.user.role.name == "Visualizador" %}
+    <div class="row">
+        <!-- Card de consulta que ocupa toda la fila -->
+        <div class="col-md-12 text-center mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="card-title">Consulta</h4>
+                    <p class="card-text">Consulta la información actualizada de cualquier unidad, incluyendo estado, documentación y hallazgos.</p>
+                    <a href="{% url 'consulta_vehiculo' %}" class="btn btn-outline-custom">Consulta</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
     
 
 <div class="row mt-5">

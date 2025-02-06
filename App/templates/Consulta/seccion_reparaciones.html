@@ -3,8 +3,11 @@
     {% for reparacion in reparaciones %}
     <a href="#" class="list-group-item list-group-item-action">
         <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1">{{ reparacion.descripcion }}</h5>
-            <small class="text-muted">Fecha: {{ reparacion.fecha }}</small>
+            <h5 class="mb-1">{{ reparacion.taller }}</h5>
+            <small class="text-muted">Fecha: {{ reparacion.kilometraje }}</small>
+            <small class="text-muted">Fecha: {{ reparacion.fecha_inicio }}</small>
+            <small class="text-muted">Fecha: {{ reparacion.fecha_termino }}</small>
+            <small class="text-muted">Fecha: {{ reparacion.costo_total }}</small>
         </div>
     </a>
     {% empty %}

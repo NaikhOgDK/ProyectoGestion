@@ -37,6 +37,7 @@
                     <th>Año</th>
                     <th>Tipo</th>
                     <th>Propietario</th>
+                    <th>Empresa</th>
                     <th>Opciones</th>
                 </tr>
             </thead>
@@ -49,6 +50,7 @@
                     <td>{{ vehiculo.ano }}</td>
                     <td>{{ vehiculo.tipo.nombre }}</td>  <!-- Se usa .nombre para mostrar el nombre correcto -->
                     <td>{{ vehiculo.propietario }}</td>
+                    <td>{{ vehiculo.empresa }}</td>
                     <td>
                         {% if request.user.role.name == "Administrador" %}
                         {% if vehiculo.documentos_count > 0 %}

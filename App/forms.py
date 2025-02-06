@@ -293,7 +293,7 @@ class HallazgoForm(forms.ModelForm):
     class Meta:
         model = HallazgoEmpresa
         fields = ['hallazgo', 'vehiculo', 'posicion_neumatico', 'fecha_inspeccion', 'tipo_hallazgo', 'nivel_riesgo', 'responsable', 'grupo', 'evidencia']
-
+"""
     def save(self, commit=True):
         # Guardamos primero el objeto
         instance = super().save(commit=False)
@@ -312,9 +312,7 @@ class HallazgoForm(forms.ModelForm):
         return instance
 
 def subir_a_s3HALLAZGO(archivo, carpeta="licencias"):
-    """
-    Sube un archivo a AWS S3 y retorna la ruta del archivo.
-    """
+
     try:
         s3_client = boto3.client(
             's3',
@@ -335,7 +333,7 @@ def subir_a_s3HALLAZGO(archivo, carpeta="licencias"):
     except Exception as e:
         print(f"Error al subir archivo a S3: {e}")
         return None
-
+"""
 class CierreForm(forms.ModelForm):
     class Meta:
         model = Cierre

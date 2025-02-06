@@ -87,6 +87,8 @@ urlpatterns = [
     path('vehiculos/<int:vehiculo_id>/cargar_documentos/', views.cargar_documentosemp, name='cargar_documentosemp'),
     path('vehiculos/<int:vehiculo_id>/editar_documentos/', views.editar_documentosemp, name='editar_documentosemp'),
     path('lista_vehiculosdoc', views.lista_documentos, name='lista_documentos'),
+    path('conductores_empresa/', views.lista_conductores, name='lista_conductores'),
+    path('editar-licencia-empresa/<int:conductor_id>/', views.editar_licencia_empresa, name='editar_licencia_empresa'),
     #Fin Empresa
 
     #Servicio Chat
@@ -141,4 +143,4 @@ urlpatterns = [
 
     #Fin Vista AC Comercial
 
-]  # + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]   + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

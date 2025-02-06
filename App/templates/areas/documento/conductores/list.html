@@ -3,10 +3,12 @@
 {% block content %}
 <h2>Lista de Conductores</h2>
 
+{% if request.user.role.name == "Administrador" %}
 <div class="mb-3">
     <a href="{% url 'create' %}" class="btn btn-success">Agregar Conductor</a>
     <a href="{% url 'import' %}" class="btn btn-primary">Importar Conductores</a>
 </div>
+{% endif %}
 
 <table class="table table-bordered table-striped">
     <thead class="table-dark">
@@ -41,21 +43,27 @@
             </td>
             <td>
                 <div class="btn-group" role="group" aria-label="Acciones">
-                    <a href="{% url 'edit' conductor.id %}" class="btn btn-warning btn-sm">Editar</a>
-                    <a href="{% url 'delete' conductor.id %}" class="btn btn-danger btn-sm">Eliminar</a>
-                    
-                    {% if conductor.licencias.count == 0 %}
-                        <a href="{% url 'subir_licencia' conductor.id %}" class="btn btn-info btn-sm">Subir Licencia</a>
-                    {% else %}
-                        <a href="{% url 'editar_licencia' conductor.id %}" class="btn btn-info btn-sm">Editar Licencia</a>
+                    {% if request.user.role.name == "Administrador" %}
+                        <a href="{% url 'edit' conductor.id %}" class="btn btn-warning btn-sm">Editar</a>
+                        <a href="{% url 'delete' conductor.id %}" class="btn btn-danger btn-sm">Eliminar</a>
                         
-                        <!-- Agregar el botón para ver la licencia -->
-                        <a href="{{ conductor.licencias.first.archivo.url }}" class="btn btn-primary btn-sm" target="_blank">Ver Licencia</a>
+                        {% if conductor.licencias.count == 0 %}
+                            <a href="{% url 'subir_licencia' conductor.id %}" class="btn btn-info btn-sm">Subir Licencia</a>
+                        {% else %}
+                            <a href="{% url 'editar_licencia' conductor.id %}" class="btn btn-info btn-sm">Editar Licencia</a>
+
+                            <!-- Agregar el botón para ver la licencia -->
+                            <a href="{{ conductor.licencias.first.archivo.url }}" class="btn btn-primary btn-sm" target="_blank">Ver Licencia</a>
+                        {% endif %}
                     {% endif %}
+                    {% if request.user.role.name == "Visualizador" %}
+                    <a href="{{ conductor.licencias.first.archivo.url }}" class="btn btn-primary btn-sm" target="_blank">Ver Licencia</a>
+                    {% endif %}
+                    <!--
                     {% if conductor.licencias.count > 0 %}
                         <a href="{% url 'licencia_detalle' licencia_id=conductor.licencias.first.id %}" class="btn btn-primary btn-sm">Ver Licencia</a>
                     {% endif %}
-
+                    -->
                 </div>
                 
             </td>

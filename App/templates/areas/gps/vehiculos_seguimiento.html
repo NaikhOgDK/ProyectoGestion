@@ -40,8 +40,10 @@
         <p>Cargando datos...</p>
     </div>
 
+    {% if request.user.role.name == "Administrador" %}
     <!-- Botón de Actualización -->
     <button id="update-btn" class="btn btn-success mt-3">Actualizar Datos</button>
+    {% endif %}
 
     <hr>
 

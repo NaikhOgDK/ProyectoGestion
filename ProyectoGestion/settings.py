@@ -153,8 +153,8 @@ AUTH_USER_MODEL = 'App.User'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
 
-#MEDIA_URL = '/media/'
-#MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Configuración de Amazon S3
 AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY')  # Access Key de IAM
@@ -170,4 +170,4 @@ AWS_DEFAULT_ACL = None  # Establecer permisos de archivo
 # Configuración del backend para archivos
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+#MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'

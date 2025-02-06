@@ -1,40 +1,50 @@
 <h4 class="text-center mb-4">Documentos</h4>
 <div class="list-group mb-4">
     {% for documento in documentos %}
-    <a href="#" class="list-group-item list-group-item-action">
-        <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1">{{ documento.Vehiculo.patente }}</h5>
-            <small class="text-muted">
-                {% if documento.Revision_Tecnica %}
-                    <strong>Revisión Técnica:</strong> 
-                    <a href="{{ documento.Revision_Tecnica.url }}" target="_blank" class="btn btn-link">Ver Documento</a> 
-                    (Vencimiento: {{ documento.fecha_vencimiento_revision|date:"d/m/Y" }})<br>
-                {% endif %}
-                {% if documento.Mantencion_Preventiva %}
-                    <strong>Mantención Preventiva:</strong> 
-                    <a href="{{ documento.Mantencion_Preventiva.url }}" target="_blank" class="btn btn-link">Ver Documento</a> 
-                    (Vencimiento: {{ documento.fecha_vencimiento_mantencion|date:"d/m/Y" }})<br>
-                {% endif %}
-                {% if documento.Permiso_Circulacion %}
-                    <strong>Permiso Circulación:</strong> 
-                    <a href="{{ documento.Permiso_Circulacion.url }}" target="_blank" class="btn btn-link">Ver Documento</a> 
-                    (Vencimiento: {{ documento.fecha_vencimiento_permiso|date:"d/m/Y" }})<br>
-                {% endif %}
-                {% if documento.SOAP %}
-                    <strong>SOAP:</strong> 
-                    <a href="{{ documento.SOAP.url }}" target="_blank" class="btn btn-link">Ver Documento</a> 
-                    (Vencimiento: {{ documento.fecha_vencimiento_soap|date:"d/m/Y" }})<br>
-                {% endif %}
-                {% if documento.Padron %}
-                    <strong>Padrón:</strong> 
-                    <a href="{{ documento.Padron.url }}" target="_blank" class="btn btn-link">Ver Documento</a> 
-                    (Vencimiento: {{ documento.fecha_vencimiento_padron|date:"d/m/Y" }})<br>
-                {% endif %}
-            </small>
+    <div class="list-group-item p-3 shadow-sm rounded">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="mb-0">{{ documento.Vehiculo.patente }}</h5>
         </div>
-    </a>
+        <div class="document-details">
+            {% if documento.Revision_Tecnica %}
+            <div class="mb-2">
+                <strong>Revisión Técnica:</strong> 
+                <a href="{{ documento.Revision_Tecnica.url }}" target="_blank" class="btn btn-sm btn-outline-primary">Ver Documento</a>
+                <span class="text-muted">(Vencimiento: {{ documento.fecha_vencimiento_revision|date:"d/m/Y" }})</span>
+            </div>
+            {% endif %}
+            {% if documento.Mantencion_Preventiva %}
+            <div class="mb-2">
+                <strong>Mantención Preventiva:</strong> 
+                <a href="{{ documento.Mantencion_Preventiva.url }}" target="_blank" class="btn btn-sm btn-outline-primary">Ver Documento</a>
+                <span class="text-muted">(Fecha Mantencion: {{ documento.fecha_vencimiento_mantencion|date:"d/m/Y" }})</span>
+            </div>
+            {% endif %}
+            {% if documento.Permiso_Circulacion %}
+            <div class="mb-2">
+                <strong>Permiso Circulación:</strong> 
+                <a href="{{ documento.Permiso_Circulacion.url }}" target="_blank" class="btn btn-sm btn-outline-primary">Ver Documento</a>
+                <span class="text-muted">(Vencimiento: {{ documento.fecha_vencimiento_permiso|date:"d/m/Y" }})</span>
+            </div>
+            {% endif %}
+            {% if documento.SOAP %}
+            <div class="mb-2">
+                <strong>SOAP:</strong> 
+                <a href="{{ documento.SOAP.url }}" target="_blank" class="btn btn-sm btn-outline-primary">Ver Documento</a>
+                <span class="text-muted">(Vencimiento: {{ documento.fecha_vencimiento_soap|date:"d/m/Y" }})</span>
+            </div>
+            {% endif %}
+            {% if documento.Padron %}
+            <div class="mb-2">
+                <strong>Padrón:</strong> 
+                <a href="{{ documento.Padron.url }}" target="_blank" class="btn btn-sm btn-outline-primary">Ver Documento</a>
+                <span class="text-muted">(Vencimiento: {{ documento.fecha_vencimiento_padron|date:"d/m/Y" }})</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
     {% empty %}
-    <div class="alert alert-info" role="alert">
+    <div class="alert alert-info text-center" role="alert">
         No hay documentos disponibles.
     </div>
     {% endfor %}

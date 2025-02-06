@@ -1,0 +1,51 @@
+{% extends "empresa/baseempresa.html" %}
+
+{% block content %}
+<h2>Actualizar Licencias de Conductor: {{ conductor.nombre }}</h2>
+
+<!-- Mensaje de éxito o error -->
+{% if messages %}
+    <div class="alert alert-info">
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <div class="mb-3">
+        <label for="id_archivo_licencia" class="form-label">Licencia (por ambas caras)</label>
+        <input type="file" name="archivo_licencia" class="form-control" multiple id="id_archivo_licencia" required>
+    </div>
+
+    <div class="form-check mb-3">
+        <!-- Opción para mantener las licencias previas -->
+        <input type="checkbox" class="form-check-input" id="mantener_licencias" name="mantener_licencias">
+        <label class="form-check-label" for="mantener_licencias">Mantener las licencias anteriores</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Actualizar Licencias</button>
+</form>
+
+<h3 class="mt-4">Licencias Existentes:</h3>
+<ul class="list-group">
+    {% for licencia in licencias %}
+        <li class="list-group-item">
+            {% if licencia.archivo.url|lower|slice:"-4:" == ".pdf" %}
+                <a href="{{ licencia.archivo.url }}" target="_blank" class="btn btn-link">
+                    {{ licencia.archivo.name }} (PDF)
+                </a>
+            {% else %}
+                <img src="{{ licencia.archivo.url }}" alt="Licencia" class="img-thumbnail" style="max-width: 150px;">
+            {% endif %}
+        </li>
+    {% empty %}
+        <li class="list-group-item">No hay licencias subidas aún.</li>
+    {% endfor %}
+</ul>
+
+<a href="{% url 'list' %}" class="btn btn-secondary mt-3">Volver a la lista de conductores</a>
+
+{% endblock %}

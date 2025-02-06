@@ -10,9 +10,8 @@
             <h1 class="display-4" style="color: #0b3356;">Gestión de Taller</h1>
         </div>
     </div>
-
+    {% if request.user.role.name == "Administrador" %}
     <div class="row mt-5">
-        {% if request.user.role.name == "Administrador" %}
         <!-- Asignar Unidades Taller Card (ocupa todo el ancho) -->
         <div class="col-md-12 mb-4">
             <div class="card shadow-sm">
@@ -25,9 +24,8 @@
                 </div>
             </div>
         </div>
-        {% endif %}
     </div>
-
+    {% endif %}
     <div class="row mt-5">
         <!-- Ver Asignaciones Card (mitad de la página) -->
         <div class="col-md-4 text-center mb-4">
@@ -36,7 +34,7 @@
                     <h4 class="card-title">Ver Asignaciones taller</h4>
                     <p class="card-text">Consulta el estado actual de las asignaciones.</p>
                     <a href="{% url 'listar_mantencion_reparacion' %}" class="btn btn-outline-custom mt-auto" style="height: 50px; display: flex; justify-content: center; align-items: center;">
-                        Ver Unidades en Taller
+                        Ver Unidades
                     </a>
                 </div>
             </div>
@@ -47,7 +45,7 @@
                     <h4 class="card-title">Ver Asignaciones empresa</h4>
                     <p class="card-text">Consulta el estado actual de las asignaciones.</p>
                     <a href="{% url 'listar_asignaciones_empresa' %}" class="btn btn-outline-custom mt-auto" style="height: 50px; display: flex; justify-content: center; align-items: center;">
-                        Ver Unidades en Taller
+                        Ver Unidades
                     </a>
                 </div>
             </div>

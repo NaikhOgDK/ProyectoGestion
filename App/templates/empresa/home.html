@@ -29,18 +29,7 @@
     </div>
 
     <div class="row mt-5 justify-content-center">
-        <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-body text-center">
-                    <h4 class="card-title">Hallazgos de Mi Empresa</h4>
-                    <p class="card-text">Accede a la gestión de los hallazgos de tu empresa y resuelve los pendientes.</p>
-                    <a href="{% url 'listar_hallazgo' %}" class="btn btn-outline-custom mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
-                        Gestionar Hallazgos
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
+        <div class="col-md-6">
             <div class="card shadow-sm">
                 <div class="card-body text-center">
                     <h4 class="card-title">Mis Vehiculos</h4>
@@ -51,17 +40,41 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-6">
             <div class="card shadow-sm">
                 <div class="card-body text-center">
-                    <h4 class="card-title">Estado Docuemntos</h4>
-                    <p class="card-text">Ver el estado de los Docuemntos</p>
+                    <h4 class="card-title">Mis Conductores</h4>
+                    <p class="card-text">Accede a la gestión de los Conductores</p>
+                    <a href="{% url 'lista_conductores' %}" class="btn btn-outline-custom mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                        Ver vehiculos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5 justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h4 class="card-title">Hallazgos de Mi Empresa</h4>
+                    <p class="card-text">Accede a la gestión de los hallazgos de tu empresa y resuelve los pendientes.</p>
+                    <a href="{% url 'listar_hallazgo' %}" class="btn btn-outline-custom mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                        Gestionar Hallazgos
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h4 class="card-title">Estado Documentos</h4>
+                    <p class="card-text">Ver el estado de los Documentos</p>
                     <a href="{% url 'lista_documentos' %}" class="btn btn-outline-custom mt-3" style="height: 50px; display: flex; justify-content: center; align-items: center;">
                         Ver estados
                     </a>
                 </div>
             </div>
         </div>
-    </div>
 </div>
 {% endblock %}

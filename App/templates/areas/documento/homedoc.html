@@ -10,7 +10,7 @@
             <h1 class="display-4" style="color: #0b3356 ;">Gestión de Documentación</h1>
         </div>
     </div>
-
+    {% if request.user.role.name == "Administrador" %}
     <div class="row mt-5">
         <!-- Cargar Documentos Card (ocupa todo el ancho) -->
         <div class="col-md-6 mb-4">
@@ -36,9 +36,38 @@
             </div>
         </div>
     </div>
+    {% endif %}
 
+    {% if request.user.role.name == "Visualizador" %}
     <div class="row mt-5">
-        {% if request.user.role.name == "Administrador" %}
+        <!-- Cargar Documentos Card (ocupa todo el ancho) -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-between text-center">
+                    <h4 class="card-title">Consultar Documentos Vehiculo</h4>
+                    <p class="card-text">Accede a la documentacion de las unidades.</p>
+                    <a href="Documentos" class="btn btn-outline-custom mt-auto" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                        Consultar Documentos
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-between text-center">
+                    <h4 class="card-title">Consultar Documentos Conductores</h4>
+                    <p class="card-text">Accede a la documentacion de los conductores.</p>
+                    <a href="conductores" class="btn btn-outline-custom mt-auto" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                        Consultar Documentos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if request.user.role.name == "Administrador" %}
+    <div class="row mt-5">
         <!-- Registrar Mantenciones Card (mitad de la página) -->
         <div class="col-md-6 text-center mb-4">
             <div class="card shadow-sm h-100">
@@ -51,8 +80,6 @@
                 </div>
             </div>
         </div>
-        {% endif %}
-
         <!-- Histórico de Mantenciones Card (mitad de la página) -->
         <div class="col-md-6 text-center mb-4">
             <div class="card shadow-sm h-100">
@@ -66,6 +93,25 @@
             </div>
         </div>
     </div>
+    {% endif %}
+
+    {% if request.user.role.name == "Visualizador" %}
+    <div class="row mt-5">
+        <!-- Histórico de Mantenciones Card (mitad de la página) -->
+        <div class="col-md-12 text-center mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex flex-column justify-content-between text-center">
+                    <h4 class="card-title">Historial de Mantenimiento</h4>
+                    <p class="card-text">Registro historico de mantenciones de las unidades.</p>
+                    <a href="listado_vehiculos" class="btn btn-outline-custom mt-auto" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                        Ver Histórico
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
 </div>
 
 {% endblock %}

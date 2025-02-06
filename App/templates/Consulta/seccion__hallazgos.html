@@ -3,8 +3,12 @@
     {% for hallazgo in hallazgos %}
     <a href="#" class="list-group-item list-group-item-action">
         <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1">{{ hallazgo.descripcion }}</h5>
-            <small class="text-warning">{{ hallazgo.riesgo }}</small>
+            <h5 class="mb-1">{{ hallazgo.hallazgo }}</h5>
+            <small class="text-warning">{{ hallazgo.posicion_neumatico }}</small>
+            <small class="text-warning">{{ hallazgo.fecha_inspeccion }}</small>
+            <small class="text-warning">{{ hallazgo.tipo_hallazgo }}</small>
+            <small class="text-warning">{{ hallazgo.nivel_riesgo }}</small>
+            <small class="text-warning">{{ hallazgo.fecha_cierre }}</small>
         </div>
     </a>
     {% empty %}

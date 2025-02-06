@@ -25,6 +25,7 @@
     </form>
 
     <!-- Formulario para actualización masiva -->
+    {% if request.user.role.name == "Administrador" %}
     <form method="post">
         {% csrf_token %}
         <div class="mb-4">
@@ -35,23 +36,28 @@
                 <option value="Instalado">Instalado</option>
             </select>
         </div>
+    {% endif %}
 
         <!-- Tabla de resultados -->
         <table class="table table-striped">
             <thead>
                 <tr>
+                    {% if request.user.role.name == "Administrador" %}
                     <th><input type="checkbox" id="seleccionar_todos"></th>
+                    {% endif %}
                     <th>Vehículo</th>
                     <th>Estado</th>
-                    <th>Actualizado En</th>
+                    <th>Fecha Registro</th>
                 </tr>
             </thead>
             <tbody>
                 {% for estado in page_obj %}
                     <tr>
+                        {% if request.user.role.name == "Administrador" %}
                         <td>
                             <input type="checkbox" name="vehiculos_seleccionados" value="{{ estado.id }}" class="seleccionar_vehiculo">
                         </td>
+                        {% endif %}
                         <td>{{ estado.vehiculo.patente }}</td>
                         <td>{{ estado.estado }}</td>
                         <td>{{ estado.actualizado_en }}</td>
@@ -64,9 +70,11 @@
             </tbody>
         </table>
 
+        {% if request.user.role.name == "Administrador" %}
         <div class="d-flex justify-content-between">
             <button type="submit" class="btn btn-success">Guardar cambios</button>
         </div>
+        {% endif %}
     </form>
 
     <!-- Paginación -->

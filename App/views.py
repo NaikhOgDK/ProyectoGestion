@@ -28,11 +28,9 @@ from django.urls import reverse
 import boto3
 from django.conf import settings
 import uuid
-
+from django.utils.timezone import now
+"""
 def subir_a_s3(archivo, carpeta="licencias"):
-    """
-    Sube un archivo a AWS S3 y retorna la ruta del archivo.
-    """
     try:
         s3_client = boto3.client(
             's3',
@@ -53,7 +51,7 @@ def subir_a_s3(archivo, carpeta="licencias"):
     except Exception as e:
         print(f"Error al subir archivo a S3: {e}")
         return None
-
+"""
 @role_required(['Administrador'])
 def register(request):
     if request.method == 'POST':
@@ -258,6 +256,7 @@ def vehiculo_hallazgos(request, vehiculo_id):
     vehiculo = Vehiculo.objects.get(id=vehiculo_id)
     hallazgos = HallazgoEmpresa.objects.filter(vehiculo=vehiculo)
     return render(request, 'Consulta/seccion__hallazgos.html', {'vehiculo': vehiculo, 'hallazgos': hallazgos})
+
 
 # Vista para cargar los mantenimientos del vehículo
 def vehiculo_mantenimientos(request, vehiculo_id):
@@ -489,6 +488,7 @@ def crear_conductor(request):
         form = ConductorForm()
     return render(request, 'areas/documento/conductores/form.html', {'form': form})
 
+"""
 @role_required(['Administrador'])
 def subir_licencia(request, conductor_id):
     conductor = get_object_or_404(Conductor, id=conductor_id)
@@ -515,6 +515,34 @@ def subir_licencia(request, conductor_id):
             messages.error(request, "Por favor, sube al menos un archivo de licencia.")
     
     return render(request, 'areas/documento/conductores/subir_licencia.html', {'conductor': conductor})
+"""
+@role_required(['Administrador'])
+def subir_licencia(request, conductor_id):
+    conductor = get_object_or_404(Conductor, id=conductor_id)
+    
+    if request.method == 'POST':
+        # Obtener todos los archivos subidos
+        archivos = request.FILES.getlist('archivo_licencia')
+        
+        if archivos:
+            # Si ya existen archivos de licencia para este conductor, no los borramos, solo agregamos los nuevos
+            for archivo in archivos:
+                LicenciaConductor.objects.create(
+                    conductor=conductor,
+                    archivo=archivo
+                )
+            messages.success(request, "Licencias subidas exitosamente.")
+            return redirect('list')  # Redirige a la lista de conductores
+        else:
+            messages.error(request, "Por favor, sube al menos un archivo de licencia.")
+    
+    # Obtener todas las licencias existentes de este conductor (si las hay)
+    licencias = LicenciaConductor.objects.filter(conductor=conductor)
+    
+    return render(request, 'areas/documento/conductores/subir_licencia.html', {
+        'conductor': conductor,
+        'licencias': licencias  # Mostrar licencias existentes si las hay
+    })
 
 @role_required(['Administrador'])
 def editar_licencia(request, conductor_id):
@@ -620,6 +648,7 @@ def importar_conductores(request):
 
     return render(request, 'areas/documento/conductores/importar.html')  # Renderiza el formulario
 
+"""
 def licencia_detalle(request, licencia_id):
     licencia = get_object_or_404(LicenciaConductor, id=licencia_id)
 
@@ -649,7 +678,10 @@ def licencia_detalle(request, licencia_id):
         url_temporal = None
 
     return render(request, 'areas/documento/conductores/licencia_detalle.html', {'licencia': licencia, 'url_temporal': url_temporal})
-
+"""
+def licencia_detalle(request, licencia_id):
+    licencia = get_object_or_404(LicenciaConductor, id=licencia_id)
+    return render(request, 'areas/documento/conductores/licencia_detalle.html', {'licencia': licencia})
 
 
 #Fin Conductores
@@ -922,21 +954,21 @@ def crear_asignacion(request):
         form = AsignacionVehiculoForm()
     return render(request, 'areas/taller/crear_asignacion.html', {'form': form})
 
-@role_required(['Administrador'])
+@role_required(['Administrador', 'Visualizador'])
 def listar_asignaciones(request):
     # Obtener todas las asignaciones sin aplicar filtros
     asignaciones = Asignacion_taller.objects.all()
 
     return render(request, 'areas/taller/listar_asignaciones.html', {'asignaciones': asignaciones})
 
-@role_required(['Administrador'])
+@role_required(['Administrador', 'Visualizador'])
 def listar_mantencion_reparacion(request):
     # Filtrar asignaciones de tipo 'Mantención Preventiva', 'Mantención Correctiva', y 'Reparación'
     asignaciones = Asignacion_taller.objects.filter(tipo__in=['mantencion_preventiva', 'mantencion_correctiva', 'reparacion'])
 
     return render(request, 'areas/taller/listar_asignaciones.html', {'asignaciones': asignaciones})
 
-@role_required(['Administrador'])
+@role_required(['Administrador', 'Visualizador'])
 def listar_asignaciones_empresa(request):
     # Filtrar asignaciones de tipo 'Asignación Empresa'
     asignaciones = Asignacion_taller.objects.filter(tipo='asignacion_empresa')
@@ -1524,6 +1556,7 @@ def listar_hallazgo(request):
 
     return render(request, 'empresa/hallazgos_list.html', {'hallazgos': hallazgos})
 
+"""
 @role_required(['Empresa'])
 def detalle_hallazgo(request, hallazgo_id):
     # Obtener el hallazgo correspondiente
@@ -1562,6 +1595,21 @@ def detalle_hallazgo(request, hallazgo_id):
     })
 
 #FIN EMPRESA
+"""
+
+@role_required(['Empresa'])
+def detalle_hallazgo(request, hallazgo_id):
+    # Obtener el hallazgo correspondiente
+    hallazgo = get_object_or_404(HallazgoEmpresa, id=hallazgo_id)
+
+    # Verificar si existe un cierre relacionado con este hallazgo
+    cierre = Cierre.objects.filter(hallazgo=hallazgo).first()  # Devuelve el primer cierre o None
+
+    return render(request, 'empresa/detalle_hallazgo.html', {
+        'hallazgo': hallazgo,
+        'cierre': cierre
+    })
+#FIN EMPRESA
 
 def custom_404_view(request, exception):
     return render(request, '404.html', status=404)
@@ -1573,3 +1621,76 @@ def permission_denied_view(request):
 
 def homeACComercial(request):
     return render(request,'ACComercial/homeac.html')
+
+
+def lista_conductores(request):
+    user_group = request.user.group
+    conductores = Conductor.objects.filter(empresa=user_group) if user_group else Conductor.objects.none()
+    
+    today = now().date()
+    limite_por_vencer = today + timedelta(days=15)
+
+    # Agregar estado de licencia y color dinámicamente
+    for conductor in conductores:
+        if conductor.FechaVencimientoLicencia < today:
+            conductor.estado_licencia = "Vencida"
+            conductor.color_estado = "#e6263c"  # Rojo
+        elif today <= conductor.FechaVencimientoLicencia <= limite_por_vencer:
+            conductor.estado_licencia = "Por vencer"
+            conductor.color_estado = "bg-warning text-dark"  # Amarillo
+        else:
+            conductor.estado_licencia = "Vigente"
+            conductor.color_estado = "bg-success"  # Verde
+
+    # Filtrar por estado de la licencia
+    filtro_estado = request.GET.get('estado', '')
+    if filtro_estado:
+        conductores = [c for c in conductores if c.estado_licencia == filtro_estado]
+
+    # Paginación (10 conductores por página)
+    paginator = Paginator(conductores, 10)
+    page_number = request.GET.get('page')
+    conductores_page = paginator.get_page(page_number)
+
+    return render(request, 'empresa/conductores/lista_conductores.html', {
+        'conductores': conductores_page,
+        'today': today,
+        'filtro_estado': filtro_estado
+    })
+
+
+def editar_licencia_empresa(request, conductor_id):
+    # Obtener el conductor que corresponde al grupo del usuario (empresa)
+    conductor = get_object_or_404(Conductor, id=conductor_id, empresa=request.user.group)
+
+    # Obtener las licencias actuales del conductor
+    licencias = LicenciaConductor.objects.filter(conductor=conductor)
+
+    if request.method == "POST":
+        archivos = request.FILES.getlist('archivo_licencia')  # Obtener todos los archivos subidos
+
+        # Validar si se ha subido al menos un archivo
+        if archivos:
+            # Eliminar las licencias anteriores si no se selecciona mantener
+            if not request.POST.get('mantener_licencias'):
+                licencias.delete()  # Borramos las licencias anteriores
+
+            # Subir los nuevos archivos
+            for archivo in archivos:
+                LicenciaConductor.objects.create(
+                    conductor=conductor,
+                    archivo=archivo
+                )
+            messages.success(request, "Licencias actualizadas exitosamente.")
+            return redirect('lista_conductores')  # Redirigir a la lista de conductores
+        else:
+            messages.error(request, "Por favor, sube al menos un archivo de licencia.")
+    else:
+        # Si no es POST, mostrar el formulario para editar la licencia
+        form = LicenciaConductorForm()
+
+    return render(request, 'empresa/conductores/editar_licencia.html', {
+        'form': form,
+        'conductor': conductor,
+        'licencias': licencias  # Pasar las licencias existentes al template
+    })
