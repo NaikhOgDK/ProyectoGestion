@@ -25,7 +25,7 @@ from django.template.loader import render_to_string
 from django.core.files.storage import FileSystemStorage
 from openpyxl import load_workbook
 from django.urls import reverse
-import boto3
+#import boto3
 from django.conf import settings
 import uuid
 from django.utils.timezone import now
@@ -1641,10 +1641,10 @@ def lista_conductores(request):
             conductor.color_estado = "#e6263c"  # Rojo
         elif today <= conductor.FechaVencimientoLicencia <= limite_por_vencer:
             conductor.estado_licencia = "Por vencer"
-            conductor.color_estado = "bg-warning text-dark"  # Amarillo
+            conductor.color_estado = "#E4EB1C"  # Amarillo
         else:
             conductor.estado_licencia = "Vigente"
-            conductor.color_estado = "bg-success"  # Verde
+            conductor.color_estado = "#262d5e"  # Verde
 
     # Filtrar por estado de la licencia
     filtro_estado = request.GET.get('estado', '')

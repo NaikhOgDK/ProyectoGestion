@@ -2,8 +2,8 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import *
 import re
-import boto3
-import uuid
+#import boto3
+#import uuid
 from django.conf import settings
 
 class UserRegisterForm(UserCreationForm):
