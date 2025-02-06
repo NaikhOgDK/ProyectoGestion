@@ -18,13 +18,14 @@
     <p><strong>Clasificación de Cierre:</strong> {{ hallazgo.clasificacion_tiempo_cierre }}</p>
     
     <h3>Evidence</h3>
-    {% if url_temporal %}
-    <a href="{{ url_temporal }}" target="_blank">
-        <img src="{{ url_temporal }}" style="max-width: 100%; height: auto;">
+    {% if hallazgo.evidencia %}
+    <a href="{{ hallazgo.evidencia.url }}" target="_blank">
+        <img src="{{ hallazgo.evidencia.url }}" style="max-width: 100%; height: auto;">
     </a>
     {% else %}
-        <p>No se pudo generar la URL temporal.</p>
+        <p>No hay evidencia disponible.</p>
     {% endif %}
+
     
     <hr>
 

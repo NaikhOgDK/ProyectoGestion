@@ -38,20 +38,21 @@
     </div>
 
     <!-- Información del Cierre -->
-    {% if hallazgo.estado_cierre == 'Cerrado' %}
+    {% if hallazgo.estado == 'Cerrado' %}
     <div class="card mb-4">
         <div class="card-header div-outline-custom btn-lg text-center">
             <h5 class="mb-0">Información del Cierre</h5>
         </div>
         <div class="card-body">
-            <p><strong>Descripción del Cierre:</strong> {{ hallazgo.descripcion_cierre }}</p>
+            <p><strong>Responsable del Cierre:</strong> {{ cierre.responsable_cierre }}</p>
+            <p><strong>Descripción del cierre:</strong> {{ cierre.descripcion_cierre }}</p>
 
-            {% if hallazgo.evidencia_cierre %}
-            <p><strong>Evidencia del Cierre:</strong> <a href="{{ hallazgo.evidencia_cierre.url }}" target="_blank">Ver Evidencia</a></p>
+            {% if cierre.evidencia_cierre %}
+            <p><strong>Evidencia:</strong> <a href="{{ cierre.evidencia_cierre.url }}" target="_blank">Ver archivo</a></p>
             {% endif %}
 
-            {% if hallazgo.documento_cierre %}
-            <p><strong>Documento de Cierre:</strong> <a href="{{ hallazgo.documento_cierre.url }}" target="_blank">Ver Documento</a></p>
+            {% if cierre.documento_cierre %}
+            <p><strong>Documento de cierre:</strong> <a href="{{ cierre.documento_cierre.url }}" target="_blank">Ver documento</a></p>
             {% endif %}
         </div>
     </div>

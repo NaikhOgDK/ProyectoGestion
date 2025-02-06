@@ -706,7 +706,6 @@ def crear_hallazgo(request):
 
             # Redirigir a la misma vista (a la lista de hallazgos)
             return redirect('listar_hallazgoemp')  # Cambié la URL por el nombre de la vista
-
     else:
         form = HallazgoForm()
 
@@ -722,7 +721,12 @@ def listar_hallazgoemp(request):
 @role_required(['Administrador', 'Visualizador'])
 def detalle_hallazgoemp(request, hallazgo_id):
     hallazgo = get_object_or_404(HallazgoEmpresa, id=hallazgo_id)
-    return render(request, 'areas/neumatico/detalle_hallazgo.html', {'hallazgo': hallazgo})
+    cierre = Cierre.objects.filter(hallazgo=hallazgo).first()  # Obtiene el cierre si existe
+
+    return render(request, 'areas/neumatico/detalle_hallazgo.html', {
+        'hallazgo': hallazgo,
+        'cierre': cierre  # Pasamos el cierre a la plantilla
+    })
 
 @role_required(['Administrador'])
 def cerrar_hallazgoemp(request, hallazgo_id):
