@@ -25,11 +25,11 @@ from django.template.loader import render_to_string
 from django.core.files.storage import FileSystemStorage
 from openpyxl import load_workbook
 from django.urls import reverse
-#import boto3
+import boto3
 from django.conf import settings
 import uuid
 from django.utils.timezone import now
-"""
+
 def subir_a_s3(archivo, carpeta="licencias"):
     try:
         s3_client = boto3.client(
@@ -51,7 +51,7 @@ def subir_a_s3(archivo, carpeta="licencias"):
     except Exception as e:
         print(f"Error al subir archivo a S3: {e}")
         return None
-"""
+
 @role_required(['Administrador'])
 def register(request):
     if request.method == 'POST':
@@ -488,7 +488,7 @@ def crear_conductor(request):
         form = ConductorForm()
     return render(request, 'areas/documento/conductores/form.html', {'form': form})
 
-"""
+
 @role_required(['Administrador'])
 def subir_licencia(request, conductor_id):
     conductor = get_object_or_404(Conductor, id=conductor_id)
@@ -515,34 +515,6 @@ def subir_licencia(request, conductor_id):
             messages.error(request, "Por favor, sube al menos un archivo de licencia.")
     
     return render(request, 'areas/documento/conductores/subir_licencia.html', {'conductor': conductor})
-"""
-@role_required(['Administrador'])
-def subir_licencia(request, conductor_id):
-    conductor = get_object_or_404(Conductor, id=conductor_id)
-    
-    if request.method == 'POST':
-        # Obtener todos los archivos subidos
-        archivos = request.FILES.getlist('archivo_licencia')
-        
-        if archivos:
-            # Si ya existen archivos de licencia para este conductor, no los borramos, solo agregamos los nuevos
-            for archivo in archivos:
-                LicenciaConductor.objects.create(
-                    conductor=conductor,
-                    archivo=archivo
-                )
-            messages.success(request, "Licencias subidas exitosamente.")
-            return redirect('list')  # Redirige a la lista de conductores
-        else:
-            messages.error(request, "Por favor, sube al menos un archivo de licencia.")
-    
-    # Obtener todas las licencias existentes de este conductor (si las hay)
-    licencias = LicenciaConductor.objects.filter(conductor=conductor)
-    
-    return render(request, 'areas/documento/conductores/subir_licencia.html', {
-        'conductor': conductor,
-        'licencias': licencias  # Mostrar licencias existentes si las hay
-    })
 
 @role_required(['Administrador'])
 def editar_licencia(request, conductor_id):
@@ -648,13 +620,13 @@ def importar_conductores(request):
 
     return render(request, 'areas/documento/conductores/importar.html')  # Renderiza el formulario
 
-"""
+
 def licencia_detalle(request, licencia_id):
     licencia = get_object_or_404(LicenciaConductor, id=licencia_id)
 
     # Obtener el nombre del archivo como cadena
     archivo_s3 = str(licencia.archivo.name)  # Asegurar que es una cadena
-    #print(f"Archivo S3: {archivo_s3}")
+    print(f"Archivo S3: {archivo_s3}")
 
     tiempo_expiracion = 240
 
@@ -678,14 +650,8 @@ def licencia_detalle(request, licencia_id):
         url_temporal = None
 
     return render(request, 'areas/documento/conductores/licencia_detalle.html', {'licencia': licencia, 'url_temporal': url_temporal})
-"""
-def licencia_detalle(request, licencia_id):
-    licencia = get_object_or_404(LicenciaConductor, id=licencia_id)
-    return render(request, 'areas/documento/conductores/licencia_detalle.html', {'licencia': licencia})
-
 
 #Fin Conductores
-
 
 #Inicio Neumatico
 
@@ -1294,94 +1260,6 @@ def decrypt_message(encrypted_message):
 #Fin Encriptar
 
 #API
-"""
-@role_required(['Administrador'])  # Asegúrate de que este decorador esté bien definido
-def make_post_request(request):
-    def normalize_plate(plate):
-        if plate and plate.endswith("I"):
-            return plate[:-1]
-        return plate
-
-    def get_vehicle_status(last_signal_time):
-        if last_signal_time:
-            last_signal_datetime = parser.parse(last_signal_time)
-            now_utc = datetime.now(pytz.utc)
-            time_diff = now_utc - last_signal_datetime
-            if time_diff > timedelta(days=7):
-                return 'offline'
-            else:
-                return 'online'
-        return 'offline'
-
-    # Llamada a la API externa para obtener posiciones de los vehículos
-    url = 'https://www.drivetech.pro/api/v1/get_vehicles_positions/'
-    tokengps = config('API_TOKEN')  # Asegúrate de que la variable de entorno esté configurada
-    headers = {
-        'Authorization': f'Token {tokengps}',
-        'Content-Type': 'application/json'
-    }
-    body = {
-        'client_id': 'coca-cola_andina'
-    }
-
-    response = requests.post(url, headers=headers, json=body)
-    
-    # Imprime el código de estado y el texto de la respuesta para depurar
-    print(f"Status Code: {response.status_code}")
-    print(f"Response Text: {response.text}")
-
-    if response.status_code == 200:
-        data = response.json()
-        results = []
-
-        for position in data.get('positions', []):
-            placa = position.get('plate', 'N/A')
-            placa_normalizada = normalize_plate(placa)
-            last_signal_time = position.get('datetime')
-            estado = get_vehicle_status(last_signal_time)
-            latitud = position.get('latitude')
-            longitud = position.get('longitude')
-
-            # Genera el enlace de Google Maps
-            google_maps_link = f"https://www.google.com/maps?q={latitud},{longitud}"
-
-            # Guarda o actualiza la base de datos
-            VehiculoAPI.objects.update_or_create(
-                placa=placa_normalizada,
-                defaults={
-                    'latitud': latitud,
-                    'longitud': longitud,
-                    'fecha_hora': last_signal_time,
-                    'odometro': position.get('odometer'),
-                    'estado': estado,
-                }
-            )
-
-            # Agrega el resultado para la respuesta
-            results.append({
-                'placa': placa_normalizada,
-                'estado': estado,
-                'google_maps_link': google_maps_link,
-            })
-
-        return JsonResponse({'status': 'success', 'message': 'Datos guardados correctamente.', 'results': results})
-    
-    # En caso de que la API externa falle
-    return JsonResponse({'status': 'error', 'message': response.text}, status=response.status_code)
-
-@role_required(['Administrador', 'Visualizador'])
-def get_vehiculos_con_seguimiento(request):
-    # Obtener todas las placas de los vehículos registrados en el modelo Vehiculo
-    placas_vehiculos = Vehiculo.objects.values_list('patente', flat=True)
-    
-    # Filtrar los vehículos en VehiculoAPI que tengan una placa registrada en Vehiculo
-    vehiculos_con_seguimiento = VehiculoAPI.objects.filter(placa__in=placas_vehiculos)
-    
-    # Pasar los datos al template
-    return render(request, 'areas/gps/vehiculos_seguimiento.html', {'vehiculos': vehiculos_con_seguimiento})
-
-#Fin API
-"""
 @role_required(['Administrador', 'Visualizador'])
 def get_vehiculos_con_seguimiento(request):
     # Obtener todas las placas de los vehículos registrados en el modelo Vehiculo
@@ -1490,6 +1368,7 @@ def listar_estado_gps(request):
 
     return render(request, 'areas/gps/lista_estado_gps.html', {'page_obj': page_obj})
 
+#Fin API
 
 #Desempeño
 

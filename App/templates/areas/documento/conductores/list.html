@@ -53,17 +53,12 @@
                             <a href="{% url 'editar_licencia' conductor.id %}" class="btn btn-info btn-sm">Editar Licencia</a>
 
                             <!-- Agregar el botón para ver la licencia -->
-                            <a href="{{ conductor.licencias.first.archivo.url }}" class="btn btn-primary btn-sm" target="_blank">Ver Licencia</a>
+                             <a href="{% url 'licencia_detalle' conductor.id %}" class="btn btn-info btn-sm">Ver Detalle</a>
                         {% endif %}
                     {% endif %}
                     {% if request.user.role.name == "Visualizador" %}
-                    <a href="{{ conductor.licencias.first.archivo.url }}" class="btn btn-primary btn-sm" target="_blank">Ver Licencia</a>
+                    <a href="{% url 'licencia_detalle' conductor.id %}" class="btn btn-info btn-sm">Ver Detalle</a>
                     {% endif %}
-                    <!--
-                    {% if conductor.licencias.count > 0 %}
-                        <a href="{% url 'licencia_detalle' licencia_id=conductor.licencias.first.id %}" class="btn btn-primary btn-sm">Ver Licencia</a>
-                    {% endif %}
-                    -->
                 </div>
                 
             </td>
