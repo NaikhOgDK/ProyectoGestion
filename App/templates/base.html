@@ -11,22 +11,25 @@
     <title>{% block title %}Page Title{% endblock %}</title>
     <style>
         .floating-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #0b3356;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 24px;
-            text-align: center;
-            line-height: 60px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
-            z-index: 1000;
-        }
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;  /* Ajusta según el tamaño del botón */
+    height: 50px; 
+    background-color: #007bff; /* Color del botón */
+    border-radius: 50%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    text-decoration: none;
+}
+
+.icon-image {
+    width: 24px;  /* Ajusta el tamaño de la imagen */
+    height: 24px;
+}
+
         .floating-button:hover {
             background-color: #0a2a45;
         }
@@ -106,7 +109,10 @@
         {% block content %}{% endblock %}
     </div>
 
-    <a href="{% url 'admin_chat' %}" class="floating-button">+</a>
+    <a href="{% url 'admin_chat' %}" class="floating-button">
+        <img src="{% static 'img/Chat.png' %}" alt="Chat" class="icon-image">
+    </a>
+    
 
     <script src="{% static 'bootstrap/js/bootstrap.bundle.js' %}"></script>
 </body>

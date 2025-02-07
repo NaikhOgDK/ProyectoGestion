@@ -655,23 +655,57 @@ def licencia_detalle(request, licencia_id):
 
 #Inicio Neumatico
 
+def subir_a_s3_hall(archivo, carpeta="evidencias"):
+    try:
+        s3_client = boto3.client(
+            's3',
+            region_name=settings.AWS_S3_REGION_NAME,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+        )
+
+        # Generar un nombre único para el archivo
+        extension = archivo.name.split('.')[-1]  # Obtener la extensión
+        nombre_archivo = f"{carpeta}/{uuid.uuid4()}.{extension}"  # Carpeta + UUID + extensión
+
+        # Subir archivo a S3
+        s3_client.upload_fileobj(archivo, settings.AWS_STORAGE_BUCKET_NAME, nombre_archivo)
+
+        print(f"Archivo subido correctamente: {nombre_archivo}")
+        return nombre_archivo  # Retorna la ruta (key) del archivo en S3
+    except Exception as e:
+        print(f"Error al subir archivo a S3: {e}")
+        return None
+
 @role_required(['Administrador'])
 def crear_hallazgo(request):
     if request.method == 'POST':
         form = HallazgoForm(request.POST, request.FILES)
         if form.is_valid():
             hallazgo = form.save(commit=False)
-            hallazgo.save()  # Guardamos el hallazgo primero para obtener su ID
-
-            # Enviar notificación por correo a los miembros del grupo
+            
+            # Verificar si se envió un archivo en el campo "evidencia"
+            evidencia_file = request.FILES.get('evidencia')
+            if evidencia_file:
+                s3_key = subir_a_s3_hall(evidencia_file, carpeta="evidencias")
+                if s3_key is not None:
+                    # Asignamos la ruta devuelta al campo 'evidencia'.
+                    # De esta forma, en la base de datos se almacenará, por ejemplo:
+                    # "evidencias/7b3f3e2c-1b34-4f70-bf76-xxxxx.jpg"
+                    hallazgo.evidencia = s3_key
+                else:
+                    messages.error(request, "Error al subir la evidencia a S3.")
+                    return redirect('crear_hallazgo')
+            
+            hallazgo.save()  # Guardamos el objeto para tener su ID y demás
+            
+            # Enviar notificación a los miembros del grupo (según tu lógica)
             asunto = f"Nuevo Hallazgo - {hallazgo.hallazgo}"
             mensaje = f"Se ha creado un nuevo hallazgo con ID {hallazgo.id}."
             enviar_notificacion_grupo(hallazgo, asunto, mensaje, tipo='creacion')
 
             messages.success(request, 'Hallazgo creado exitosamente')
-
-            # Redirigir a la misma vista (a la lista de hallazgos)
-            return redirect('listar_hallazgoemp')  # Cambié la URL por el nombre de la vista
+            return redirect('listar_hallazgoemp')
     else:
         form = HallazgoForm()
 
@@ -689,9 +723,36 @@ def detalle_hallazgoemp(request, hallazgo_id):
     hallazgo = get_object_or_404(HallazgoEmpresa, id=hallazgo_id)
     cierre = Cierre.objects.filter(hallazgo=hallazgo).first()  # Obtiene el cierre si existe
 
+    url_temporal = None  # Inicializamos la variable
+
+    # Verificamos si hay evidencia cargada en el hallazgo
+    if hallazgo.evidencia:
+        archivo_s3 = str(hallazgo.evidencia.name)  # Obtener la key del archivo en S3
+        tiempo_expiracion = 240  # Tiempo de expiración en segundos
+
+        # Creamos el cliente de S3
+        s3_client = boto3.client(
+            's3',
+            region_name=settings.AWS_S3_REGION_NAME,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+        )
+
+        # Generamos la URL temporal
+        try:
+            url_temporal = s3_client.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': archivo_s3},
+                ExpiresIn=tiempo_expiracion
+            )
+        except Exception as e:
+            print(f"Error al generar URL temporal para evidencia: {e}")
+            url_temporal = None
+
     return render(request, 'areas/neumatico/detalle_hallazgo.html', {
         'hallazgo': hallazgo,
-        'cierre': cierre  # Pasamos el cierre a la plantilla
+        'cierre': cierre,  # Pasamos el cierre a la plantilla (si existe)
+        'url_temporal': url_temporal  # Pasamos la URL temporal para la evidencia
     })
 
 @role_required(['Administrador'])

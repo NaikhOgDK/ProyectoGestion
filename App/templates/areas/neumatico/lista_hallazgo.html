@@ -18,6 +18,7 @@
         <thead>
             <tr>
                 <th>ID</th>
+                <th>Patente</th>
                 <th>Descripción</th>
                 <th>Tipo</th>
                 <th>Fecha de Inspección</th>
@@ -29,6 +30,7 @@
             {% for hallazgo in hallazgos %}
                 <tr>
                     <td>{{ hallazgo.id }}</td>
+                    <td>{{ hallazgo.vehiculo.patente }}</td>
                     <td>{{ hallazgo.hallazgo }}</td>
                     <td>{{ hallazgo.tipo_hallazgo }}</td>
                     <td>{{ hallazgo.fecha_inspeccion }}</td>

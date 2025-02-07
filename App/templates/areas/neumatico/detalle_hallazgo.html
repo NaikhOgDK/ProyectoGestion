@@ -10,9 +10,20 @@
             <h5 class="mb-0">Detalles del Hallazgo</h5>
         </div>
         <div class="card-body">
+            <p><strong>Patente:</strong> {{ hallazgo.vehiculo.patente }}</p>
             <p><strong>Fecha de Inspección:</strong> {{ hallazgo.fecha_inspeccion }}</p>
             <p><strong>Tipo de Hallazgo:</strong> {{ hallazgo.tipo_hallazgo }}</p>
             <p><strong>Estado:</strong> {{ hallazgo.estado }}</p>
+            {% if url_temporal %}
+            <h3>Evidencia</h3>
+            <!-- Si es una imagen -->
+            <img src="{{ url_temporal }}" alt="Evidencia" style="max-width: 100%;">
+            
+            <!-- O, si deseas que se abra en una nueva pestaña -->
+            <a href="{{ url_temporal }}" target="_blank">Ver Evidencia</a>
+            {% else %}
+            <p>No hay evidencia disponible.</p>
+            {% endif %}
         </div>
     </div>
 
