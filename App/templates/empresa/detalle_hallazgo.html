@@ -19,11 +19,16 @@
     
     <h3>Evidence</h3>
     {% if hallazgo.evidencia %}
-    <a href="{{ hallazgo.evidencia.url }}" target="_blank">
-        <img src="{{ hallazgo.evidencia.url }}" style="max-width: 100%; height: auto;">
-    </a>
-    {% else %}
-        <p>No hay evidencia disponible.</p>
+        {% if url_evidencia_hallazgo %}
+        <p>
+        <strong>Evidencia:</strong>
+        <a href="{{ url_evidencia_hallazgo }}" target="_blank">Ver evidencia</a>
+        </p>
+        <!-- Si deseas mostrar la imagen directamente -->
+        <img src="{{ url_evidencia_hallazgo }}" alt="Evidencia del Cierre" style="max-width: 300px;">
+        {% else %}
+            <p>No se subió evidencia.</p>
+        {% endif %}
     {% endif %}
 
     
@@ -31,14 +36,27 @@
 
     <h3>Cierre del Hallazgo</h3>
     {% if cierre %}
-        <p><strong>Responsable del Cierre:</strong> {{ cierre.responsable_cierre }}</p>
-        <p><strong>Descripción del Cierre:</strong> {{ cierre.descripcion_cierre }}</p>
-        {% if cierre.evidencia_cierre %}
-            <p><a href="{{ cierre.evidencia_cierre.url }}" target="_blank">Ver evidencia del cierre</a></p>
-        {% else %}
-            <p>No hay evidencia del cierre.</p>
-        {% endif %}
+    <h3>Detalles del Cierre</h3>
+    {% if url_evidencia %}
+      <p>
+        <strong>Evidencia:</strong>
+        <a href="{{ url_evidencia }}" target="_blank">Ver evidencia</a>
+      </p>
+      <!-- Si deseas mostrar la imagen directamente -->
+      <img src="{{ url_evidencia }}" alt="Evidencia del Cierre" style="max-width: 300px;">
     {% else %}
-        <p>No hay cierre registrado para este hallazgo.</p>
+      <p>No se subió evidencia.</p>
     {% endif %}
+  
+    {% if url_documento %}
+      <p>
+        <strong>Documento:</strong>
+        <a href="{{ url_documento }}" target="_blank">Ver documento</a>
+      </p>
+    {% else %}
+      <p>No se subió documento.</p>
+    {% endif %}
+  {% else %}
+    <p>No se encontró información del cierre.</p>
+  {% endif %}
 {% endblock %}

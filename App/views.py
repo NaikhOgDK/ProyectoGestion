@@ -879,26 +879,6 @@ def empresa_hallazgos(request):
         'grupo': grupo_usuario
     })
 
-@role_required(['Empresa'])
-def detalle_hallazgo(request, pk):
-    hallazgo = get_object_or_404(Hallazgo, pk=pk)
-
-    if request.method == "POST":
-        # Si se ha enviado el formulario de comunicación
-        form = ComunicacionForm(request.POST, request.FILES)
-        if form.is_valid():
-            comunicacion = form.save(commit=False)
-            comunicacion.hallazgo = hallazgo
-            comunicacion.usuario = request.user
-            comunicacion.save()
-            # Redirigir de nuevo al detalle del hallazgo para que se vea la nueva comunicación
-            return redirect('detalle_hallazgo', pk=hallazgo.pk)
-    else:
-        # Si es una petición GET, solo creamos el formulario vacío
-        form = ComunicacionForm()
-
-    return render(request, 'empresa/detalle_hallazgo.html', {'hallazgo': hallazgo, 'form': form})
-
 #Fin Empresa Hallazgo
 
 #Empresa Vehiculos
@@ -1516,8 +1496,39 @@ def dashboard_view(request):
 
 #EMPRESA
 # Vista para cerrar un hallazgo
+def subir_a_s3_Cierre(archivo, carpeta="cierre"):
+    """
+    Sube un archivo a S3 y retorna la key generada.
+    El parámetro 'carpeta' permite organizar los archivos en subcarpetas.
+    """
+    try:
+        s3_client = boto3.client(
+            's3',
+            region_name=settings.AWS_S3_REGION_NAME,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+        )
+        # Obtener la extensión del archivo
+        extension = archivo.name.split('.')[-1]
+        # Generar un nombre único para el archivo
+        nombre_archivo = f"{carpeta}/{uuid.uuid4()}.{extension}"
+        
+        # Subir el archivo a S3
+        s3_client.upload_fileobj(archivo, settings.AWS_STORAGE_BUCKET_NAME, nombre_archivo)
+        print(f"Archivo subido correctamente: {nombre_archivo}")
+        return nombre_archivo  # Retorna la key del archivo en S3
+    except Exception as e:
+        print(f"Error al subir archivo a S3: {e}")
+        return None
+
 @role_required(['Empresa'])
 def cerrar_hallazgo(request, hallazgo_id):
+    """
+    Vista para cerrar un hallazgo. Se procesa el formulario de cierre,
+    se suben los archivos (si existen) a S3 usando la función subir_a_s3,
+    se asocia el cierre al hallazgo y se actualiza su estado a 'Cerrado'.
+    Luego se redirige a la vista de detalle para visualizar el cierre.
+    """
     hallazgo = get_object_or_404(HallazgoEmpresa, id=hallazgo_id)
 
     # Verificar que el hallazgo esté pendiente antes de permitir el cierre
@@ -1528,9 +1539,31 @@ def cerrar_hallazgo(request, hallazgo_id):
     if request.method == 'POST':
         form = CierreForm(request.POST, request.FILES)
         if form.is_valid():
-            # Crear un cierre asociado al hallazgo
+            # Crear un cierre asociado al hallazgo sin guardar aún
             cierre = form.save(commit=False)
             cierre.hallazgo = hallazgo
+
+            # Subir a S3 la evidencia del cierre, si se envió en el formulario
+            evidencia_file = request.FILES.get('evidencia_cierre')
+            if evidencia_file:
+                s3_key_evidencia = subir_a_s3_Cierre(evidencia_file, carpeta="cierre/evidencia")
+                if s3_key_evidencia:
+                    cierre.evidencia_cierre = s3_key_evidencia
+                else:
+                    messages.error(request, 'Error al subir la evidencia a S3.')
+                    return redirect('cerrar_hallazgo', hallazgo_id=hallazgo.id)
+
+            # Subir a S3 el documento del cierre, si se envió en el formulario
+            documento_file = request.FILES.get('documento_cierre')
+            if documento_file:
+                s3_key_documento = subir_a_s3_Cierre(documento_file, carpeta="cierre/documento")
+                if s3_key_documento:
+                    cierre.documento_cierre = s3_key_documento
+                else:
+                    messages.error(request, 'Error al subir el documento a S3.')
+                    return redirect('cerrar_hallazgo', hallazgo_id=hallazgo.id)
+
+            # Guardar el objeto Cierre
             cierre.save()
 
             # Actualizar el estado del hallazgo a 'Cerrado'
@@ -1541,7 +1574,8 @@ def cerrar_hallazgo(request, hallazgo_id):
             enviar_notificacion_grupo(hallazgo, 'Hallazgo Cerrado', 'El hallazgo ha sido cerrado', tipo='cierre')
 
             messages.success(request, 'Hallazgo cerrado exitosamente.')
-            return redirect('listar_hallazgo')
+            # Redirigir a la vista de detalle para visualizar el cierre y las URL temporales
+            return redirect('detalle_hallazgo', hallazgo_id=hallazgo.id)
     else:
         form = CierreForm()
 
@@ -1600,16 +1634,86 @@ def detalle_hallazgo(request, hallazgo_id):
 
 @role_required(['Empresa'])
 def detalle_hallazgo(request, hallazgo_id):
-    # Obtener el hallazgo correspondiente
     hallazgo = get_object_or_404(HallazgoEmpresa, id=hallazgo_id)
-
-    # Verificar si existe un cierre relacionado con este hallazgo
     cierre = Cierre.objects.filter(hallazgo=hallazgo).first()  # Devuelve el primer cierre o None
+
+    url_evidencia_hallazgo = None
+    url_evidencia = None
+    url_documento = None
+
+    if hallazgo.evidencia:
+        archivo_s3 = str(hallazgo.evidencia.name)  # Obtener la key del archivo en S3
+        print(archivo_s3)
+        tiempo_expiracion = 240  # Tiempo de expiración en segundos
+
+        # Creamos el cliente de S3
+        s3_client = boto3.client(
+            's3',
+            region_name=settings.AWS_S3_REGION_NAME,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+        )
+
+        # Generamos la URL temporal
+        try:
+            url_evidencia_hallazgo = s3_client.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': archivo_s3},
+                ExpiresIn=tiempo_expiracion
+            )
+            print(url_evidencia_hallazgo)
+        except Exception as e:
+            print(f"Error al generar URL temporal para evidencia: {e}")
+            url_evidencia_hallazgo = None
+
+    if cierre:
+        # Crear el cliente de S3
+        s3_client = boto3.client(
+            's3',
+            region_name=settings.AWS_S3_REGION_NAME,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+        )
+        tiempo_expiracion = 240  # Tiempo de expiración en segundos
+
+        # Generar URL temporal para evidencia_cierre si existe
+        if cierre.evidencia_cierre:
+            try:
+                url_evidencia = s3_client.generate_presigned_url(
+                    'get_object',
+                    Params={
+                        'Bucket': settings.AWS_STORAGE_BUCKET_NAME,
+                        'Key': str(cierre.evidencia_cierre.name)
+                    },
+                    ExpiresIn=tiempo_expiracion
+                )
+            except Exception as e:
+                print(f"Error al generar URL temporal para evidencia_cierre: {e}")
+                url_evidencia = None
+
+        # Generar URL temporal para documento_cierre si existe
+        if cierre.documento_cierre:
+            try:
+                url_documento = s3_client.generate_presigned_url(
+                    'get_object',
+                    Params={
+                        'Bucket': settings.AWS_STORAGE_BUCKET_NAME,
+                        'Key': str(cierre.documento_cierre.name)
+                    },
+                    ExpiresIn=tiempo_expiracion
+                )
+            except Exception as e:
+                print(f"Error al generar URL temporal para documento_cierre: {e}")
+                url_documento = None
 
     return render(request, 'empresa/detalle_hallazgo.html', {
         'hallazgo': hallazgo,
-        'cierre': cierre
+        'cierre': cierre,
+        'url_evidencia': url_evidencia,
+        'url_documento': url_documento,
+        'url_evidencia_hallazgo': url_evidencia_hallazgo
     })
+
 #FIN EMPRESA
 
 def custom_404_view(request, exception):
