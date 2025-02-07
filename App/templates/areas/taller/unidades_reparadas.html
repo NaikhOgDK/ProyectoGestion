@@ -15,6 +15,9 @@
                     <p>Fecha Respuesta: {{ unidad.fecha_respuesta }}</p>
                     <p>Fecha Retiro: {{ unidad.fecha_retiro }}</p>
                     <p>Estado: <span class="badge bg-success">{{ unidad.estado }}</span></p>
+                    
+                    <a href="{% url 'detalle_reparacion' unidad.id %}" class="btn btn-info">Ir a Detalle</a>
+                    
                     <form method="POST" action="{% url 'marcar_como_reparada' unidad.id %}" class="d-inline">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-success" id="btn-reparada-{{ unidad.id }}" onclick="ocultarUnidad({{ unidad.id }})">
@@ -32,7 +35,6 @@
 
 <script>
     function ocultarUnidad(id) {
-        // Oculta el div de la unidad cuando se marque como reparada
         document.getElementById('unidad-' + id).style.display = 'none';
     }
 </script>

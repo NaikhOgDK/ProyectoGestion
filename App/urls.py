@@ -106,6 +106,7 @@ urlpatterns = [
     path('unidad-aceptada/', views.unidad_aceptada_list, name='unidad_aceptada_list'),
     path('listar/mantencion-reparacion/', views.listar_mantencion_reparacion, name='listar_mantencion_reparacion'),
     path('listar/asignaciones-empresa/', views.listar_asignaciones_empresa, name='listar_asignaciones_empresa'),
+    path('detalle-reparacion/<int:id>/', views.detalle_reparacion, name='detalle_reparacion'),
     #Fin Taller Admin
 
     #Taller Usuario

@@ -16,7 +16,6 @@
                     <th>Fecha Inicio</th>
                     <th>Fecha Término</th>
                     <th>Kilometraje</th>
-                    <th>Registro</th>
                     <th>Costo Total</th>
                     <th>Editar</th>
                 </tr>
@@ -31,13 +30,6 @@
                         <td>{{ unidad.fecha_inicio }}</td>
                         <td>{{ unidad.fecha_termino }}</td>
                         <td>{{ unidad.kilometraje }}</td>
-                        <td>
-                            {% if unidad.registro %}
-                                <a href="{{ unidad.registro.url }}" target="_blank">Ver OT</a>
-                            {% else %}
-                                No disponible
-                            {% endif %}
-                        </td>
                         <td>{{ unidad.costo_total }}</td>
                         <td><a href="{% url 'editar_unidad' unidad.id %}" class="btn btn-outline-custom">Editar</a></td>
                     </tr>

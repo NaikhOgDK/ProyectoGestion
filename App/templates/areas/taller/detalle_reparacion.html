@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle de Reparación{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2>Detalle de Reparación - Unidad {{ unidad.patente }}</h2>
+        
+        <table class="table table-bordered">
+            <tr>
+                <th>Patente</th>
+                <td>{{ unidad.patente }}</td>
+            </tr>
+            <tr>
+                <th>Fecha Respuesta</th>
+                <td>{{ unidad.fecha_respuesta }}</td>
+            </tr>
+            <tr>
+                <th>Estado</th>
+                <td>{{ unidad.estado }}</td>
+            </tr>
+            <tr>
+                <th>Fecha Retiro</th>
+                <td>{{ unidad.fecha_retiro }}</td>
+            </tr>
+            <tr>
+                <th>Fecha Inicio</th>
+                <td>{{ unidad.fecha_inicio }}</td>
+            </tr>
+            <tr>
+                <th>Fecha Término</th>
+                <td>{{ unidad.fecha_termino }}</td>
+            </tr>
+            <tr>
+                <th>Kilometraje</th>
+                <td>{{ unidad.kilometraje }}</td>
+            </tr>
+            <tr>
+                <th>Costo Total</th>
+                <td>{{ unidad.costo_total }}</td>
+            </tr>
+            <tr>
+                <th>Registro de Evidencia</th>
+                <td>
+                    {% if url_temporal %}
+                        <a href="{{ url_temporal }}" target="_blank">Ver Evidencia</a>
+                        <br>
+                        <img src="{{ url_temporal }}" alt="Evidencia" style="max-width: 300px; max-height: 300px; margin-top: 10px;">
+                    {% else %}
+                        No hay evidencia disponible.
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+        
+        <a href="javascript:history.back()" class="btn btn-secondary">Volver</a>
+    </div>
+{% endblock %}

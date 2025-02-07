@@ -353,18 +353,67 @@ def Documentos(request):
         'tipos': tipos,  # Opciones dinámicas desde la BD
     })
 
+def subir_a_s3admin(archivo, carpeta):
+    """
+    Sube un archivo a S3 dentro de la carpeta especificada y devuelve la ruta S3.
+    """
+    try:
+        s3_client = boto3.client(
+            's3',
+            region_name=settings.AWS_S3_REGION_NAME,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+        )
+        
+        bucket_name = settings.AWS_STORAGE_BUCKET_NAME
+        ruta_s3 = f"documento/{carpeta}/{archivo.name}"
+        
+        # Subir archivo
+        s3_client.upload_fileobj(archivo, bucket_name, ruta_s3)
+        print(f"Archivo subido correctamente: {ruta_s3}")
+        return ruta_s3
+    except Exception as e:
+        print(f"Error al subir {archivo.name} a S3: {e}")
+        return None
+
 @role_required(['Administrador'])
 def cargar_documentos(request, id):
+    """
+    Vista para cargar documentos de un vehículo y subirlos a S3 en subcarpetas específicas.
+    """
     vehiculo = get_object_or_404(Vehiculo, id=id)
-    
+
     if request.method == 'POST':
         form = DocumentoForm(request.POST, request.FILES)
         if form.is_valid():
-            # Asignar el vehículo actual al formulario
             documento = form.save(commit=False)
             documento.vehiculo = vehiculo
+
+            # Mapeo de documentos a subcarpetas dentro de 'documento/'
+            subcarpetas = {
+                'Mantencion_Preventiva': 'mantenciones',
+                'Revision_Tecnica': 'revision_tecnica',
+                'Permiso_Circulacion': 'permiso_circulacion',
+                'SOAP': 'soap',
+                'Padron': 'padron'
+            }
+
+            # Subir archivos a S3
+            for campo, carpeta in subcarpetas.items():
+                archivo = request.FILES.get(campo)
+                if archivo:
+                    s3_key = subir_a_s3admin(archivo, carpeta)
+                    if s3_key:
+                        setattr(documento, campo, s3_key)  # Guardar la ruta en el modelo
+                    else:
+                        messages.error(request, f"Error al subir {campo} a S3.")
+                        return redirect('cargar_documentos', id=vehiculo.id)
+
+            # Guardar el documento con las rutas S3
             documento.save()
-            return redirect('Documentos')  # Redirige después de guardar el documento
+            messages.success(request, "Documentos subidos correctamente.")
+            return redirect('Documentos')
+
     else:
         form = DocumentoForm()
 
@@ -555,7 +604,7 @@ def subir_licencia(request, conductor_id):
 
         if archivos:
             for archivo in archivos:
-                url_archivo = subir_a_s3(archivo, "Licencias")
+                url_archivo = subir_a_s3(archivo, "licencias")
 
                 if url_archivo:
                     # Guardar en la base de datos
@@ -1066,6 +1115,39 @@ def unidades_reparadas(request):
     return render(request, 'areas/taller/unidades_reparadas.html', {'unidades': unidades})
 
 @role_required(['Administrador', 'Visualizador'])
+def detalle_reparacion(request, id):
+    unidad = get_object_or_404(UnidadAceptada, id=id)
+
+    url_temporal = None  # Inicializamos la variable
+
+    # Verificamos si hay evidencia cargada en el hallazgo
+    if unidad.registro:
+        archivo_s3 = str(unidad.registro.name)  # Obtener la key del archivo en S3
+        tiempo_expiracion = 240  # Tiempo de expiración en segundos
+
+        # Creamos el cliente de S3
+        s3_client = boto3.client(
+            's3',
+            region_name=settings.AWS_S3_REGION_NAME,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+        )
+
+        # Generamos la URL temporal
+        try:
+            url_temporal = s3_client.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': archivo_s3},
+                ExpiresIn=tiempo_expiracion
+            )
+            print(url_temporal)
+        except Exception as e:
+            print(f"Error al generar URL temporal para evidencia: {e}")
+            url_temporal = None
+
+    return render(request, 'areas/taller/detalle_reparacion.html', {'unidad': unidad, 'url_temporal': url_temporal})
+
+@role_required(['Administrador', 'Visualizador'])
 def marcar_como_reparada(request, unidad_id):
     # Asegúrate de que la unidad existe
     unidad = UnidadAceptada.objects.get(id=unidad_id)
@@ -1097,6 +1179,8 @@ def chat_view(request):
             return redirect('chat')  # Redirigir para evitar reenvío de formulario
 
     return render(request, 'chat/chat.html', {'groups': groups, 'messages': messages, 'selected_group': selected_group})
+
+
 
 #Fin Taller Admin
 
@@ -1242,31 +1326,70 @@ def gestionar_asignaciones(request):
 
 @role_required(['Taller'])
 def lista_unidades_aceptadas(request):
-    # Obtener el grupo (taller) del usuario actual
     grupo_usuario = request.user.group
-    
-    # Filtrar las unidades aceptadas por el taller asignado al usuario
+
     if grupo_usuario:
         unidades_aceptadas = UnidadAceptada.objects.filter(taller=grupo_usuario)
     else:
         unidades_aceptadas = UnidadAceptada.objects.none()
 
-    return render(request, 'taller/lista_unidades.html', {'unidades_aceptadas': unidades_aceptadas})
+    return render(request, 'taller/lista_unidades.html', {
+        'unidades_aceptadas': unidades_aceptadas  # Pasa el diccionario a la plantilla
+    })
+
+
+def subir_a_s3_Unidad(archivo, carpeta="ot_reparacion"):
+    """
+    Sube un archivo a S3 y retorna la key generada.
+    El parámetro 'carpeta' permite organizar los archivos en subcarpetas.
+    """
+    try:
+        s3_client = boto3.client(
+            's3',
+            region_name=settings.AWS_S3_REGION_NAME,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+        )
+        # Obtener la extensión del archivo
+        extension = archivo.name.split('.')[-1]
+        # Generar un nombre único para el archivo
+        nombre_archivo = f"{carpeta}/{uuid.uuid4()}.{extension}"
+        
+        # Subir el archivo a S3
+        s3_client.upload_fileobj(archivo, settings.AWS_STORAGE_BUCKET_NAME, nombre_archivo)
+        print(f"Archivo subido correctamente: {nombre_archivo}")
+        return nombre_archivo  # Retorna la key del archivo en S3
+    except Exception as e:
+        print(f"Error al subir archivo a S3: {e}")
+        return None
 
 @role_required(['Taller'])
 def editar_unidad_aceptada(request, unidad_id):
-    # Obtener la unidad aceptada específica
+    """
+    Vista para editar una Unidad Aceptada. Se procesa el formulario y si se sube un nuevo archivo
+    en el campo `registro`, se almacena en S3 antes de guardar los cambios.
+    """
     unidad = get_object_or_404(UnidadAceptada, id=unidad_id)
 
     # Verificar que el usuario pertenece al taller (grupo) de la unidad
     if request.user.group != unidad.taller:
         return redirect('unauthorized_access')  # Redirigir si no pertenece al grupo
 
-    # Crear el formulario con los datos actuales de la unidad
     if request.method == 'POST':
         form = UnidadAceptadaForm(request.POST, request.FILES, instance=unidad)
         if form.is_valid():
+            # Obtener el archivo del campo 'registro'
+            registro_file = request.FILES.get('registro')
+            if registro_file:
+                s3_key_registro = subir_a_s3_Unidad(registro_file, carpeta="ot_reparacion")
+                if s3_key_registro:
+                    unidad.registro = s3_key_registro
+                else:
+                    messages.error(request, 'Error al subir el documento a S3.')
+                    return redirect('editar_unidad_aceptada', unidad_id=unidad.id)
+
             form.save()
+            messages.success(request, 'Unidad aceptada actualizada correctamente.')
             return redirect('lista_unidades_aceptadas')  # Redirigir a la lista de unidades aceptadas
     else:
         form = UnidadAceptadaForm(instance=unidad)
@@ -1643,7 +1766,7 @@ def detalle_hallazgo(request, hallazgo_id):
 
     if hallazgo.evidencia:
         archivo_s3 = str(hallazgo.evidencia.name)  # Obtener la key del archivo en S3
-        print(archivo_s3)
+
         tiempo_expiracion = 240  # Tiempo de expiración en segundos
 
         # Creamos el cliente de S3
@@ -1661,7 +1784,6 @@ def detalle_hallazgo(request, hallazgo_id):
                 Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': archivo_s3},
                 ExpiresIn=tiempo_expiracion
             )
-            print(url_evidencia_hallazgo)
         except Exception as e:
             print(f"Error al generar URL temporal para evidencia: {e}")
             url_evidencia_hallazgo = None
