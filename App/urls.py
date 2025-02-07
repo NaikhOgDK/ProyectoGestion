@@ -53,7 +53,7 @@ urlpatterns = [
     path('editar_documentos/<int:id>/', views.editar_documentos, name='editar_documentos'),
     path('crear_mantenimiento/', views.crear_mantenimiento, name='crear_mantenimiento'),
     path('listado_vehiculos/', views.listado_vehiculos, name='listado_vehiculos'),
-    path('vehiculos/historial/<int:vehiculo_id>/', views.historial_vehiculo, name='historial_mantenimiento'),
+    path('historial-mantenimiento/<int:vehiculo_id>/', historial_mantenimiento, name='historial_mantenimiento'),
     # Fin Urls Documentos
 
     #Conductores

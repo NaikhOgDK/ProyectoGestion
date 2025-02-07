@@ -400,16 +400,52 @@ def editar_documentos(request, id):
     }
     return render(request, 'areas/documento/editar_documentos.html', context)
 
+def subir_a_s3MTTO(archivo, carpeta="mantenimientos"):
+    try:
+        s3_client = boto3.client(
+            's3',
+            region_name=settings.AWS_S3_REGION_NAME,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+        )
+        # Generar un nombre único para el archivo usando UUID
+        extension = archivo.name.split('.')[-1]  # Obtiene la extensión
+        nombre_archivo = f"{carpeta}/{uuid.uuid4()}.{extension}"
+        
+        # Subir el archivo a S3
+        s3_client.upload_fileobj(archivo, settings.AWS_STORAGE_BUCKET_NAME, nombre_archivo)
+        print(f"Archivo subido correctamente: {nombre_archivo}")
+        return nombre_archivo  # Retorna la key (ruta) del archivo en S3
+    except Exception as e:
+        print(f"Error al subir archivo a S3: {e}")
+        return None
+
+@role_required(['Administrador'])
 def crear_mantenimiento(request):
     if request.method == 'POST':
         form = MantenimientoForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
-            return redirect('homeDocumentacion')  # Redirige a una lista de mantenimientos o cualquier otra vista
+            # Creamos el objeto sin guardarlo inmediatamente
+            mantenimiento = form.save(commit=False)
+            
+            # Verificamos si se envió un archivo para el campo respaldo_mtto
+            respaldo_file = request.FILES.get('respaldo_mtto')
+            if respaldo_file:
+                s3_key = subir_a_s3MTTO(respaldo_file, carpeta="mantenimientos")
+                if s3_key:
+                    # Asignamos la key retornada al campo respaldo_mtto
+                    mantenimiento.respaldo_mtto = s3_key
+                else:
+                    messages.error(request, "Error al subir el respaldo a S3")
+                    return redirect('crear_mantenimiento')  # O renderiza el formulario con error
+            
+            # Guardamos el objeto Mantenimiento
+            mantenimiento.save()
+            messages.success(request, "Mantenimiento creado exitosamente")
+            return redirect('homeDocumentacion')
     else:
         search = request.GET.get('search', '')
         form = MantenimientoForm()
-
         if search:
             form.fields['vehiculo'].queryset = Vehiculo.objects.filter(patente__icontains=search)
     
@@ -432,18 +468,39 @@ def listado_vehiculos(request):
     })
 
 @role_required(['Administrador', 'Visualizador'])
-def historial_vehiculo(request, vehiculo_id):
-    # Obtener el vehículo seleccionado
+def historial_mantenimiento(request, vehiculo_id):
     vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
+    mantenimientos = Mantenimiento.objects.filter(vehiculo=vehiculo).order_by('-fecha_mtto')
+    
+    # Crear el cliente de S3 una sola vez para mayor eficiencia
+    s3_client = boto3.client(
+        's3',
+        region_name=settings.AWS_S3_REGION_NAME,
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+    )
+    tiempo_expiracion = 240  # Tiempo de expiración en segundos
 
-    # Obtener el historial de mantenimientos asociados a ese vehículo
-    historial = HistorialMantenimiento.objects.filter(mantenimiento__vehiculo=vehiculo).order_by('-fecha_registro')
+    # Iteramos sobre cada mantenimiento para generar la URL temporal si existe respaldo_mtto
+    for mantenimiento in mantenimientos:
+        if mantenimiento.respaldo_mtto:
+            archivo_s3 = str(mantenimiento.respaldo_mtto.name)
+            try:
+                mantenimiento.url_temporal = s3_client.generate_presigned_url(
+                    'get_object',
+                    Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': archivo_s3},
+                    ExpiresIn=tiempo_expiracion
+                )
+            except Exception as e:
+                print(f"Error al generar URL temporal para mantenimiento {mantenimiento.id}: {e}")
+                mantenimiento.url_temporal = None
+        else:
+            mantenimiento.url_temporal = None
 
     return render(request, 'areas/documento/historial_vehiculo.html', {
         'vehiculo': vehiculo,
-        'historial': historial,
+        'mantenimientos': mantenimientos,
     })
-
 #Fin Documentacion
 
 #Conductores
