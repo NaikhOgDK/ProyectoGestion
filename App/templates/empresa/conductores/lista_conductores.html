@@ -49,6 +49,13 @@
                         </td>
                         <td>
                             <a href="{% url 'editar_licencia_empresa' conductor.id %}" class="btn btn-warning btn-sm">Editar Licencia</a>
+                            {% with licencia=conductor.licencias.all|first %}
+                                {% if licencia %}
+                                    <a href="{% url 'licencia_detalle_empresa' licencia.id %}" class="btn btn-info btn-sm">Ver Detalle</a>
+                                {% else %}
+                                    <span class="badge bg-secondary">Sin Licencia</span>
+                                {% endif %}
+                            {% endwith %}
                         </td>
                     </tr>
                 {% empty %}

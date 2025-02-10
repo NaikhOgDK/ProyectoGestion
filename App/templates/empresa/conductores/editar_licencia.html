@@ -33,13 +33,9 @@
 <ul class="list-group">
     {% for licencia in licencias %}
         <li class="list-group-item">
-            {% if licencia.archivo.url|lower|slice:"-4:" == ".pdf" %}
-                <a href="{{ licencia.archivo.url }}" target="_blank" class="btn btn-link">
-                    {{ licencia.archivo.name }} (PDF)
-                </a>
-            {% else %}
-                <img src="{{ licencia.archivo.url }}" alt="Licencia" class="img-thumbnail" style="max-width: 150px;">
-            {% endif %}
+            <a href="{{ licencia.archivo.url }}" target="_blank" class="btn btn-link">
+                {{ licencia.archivo.name }}
+            </a>
         </li>
     {% empty %}
         <li class="list-group-item">No hay licencias subidas aún.</li>

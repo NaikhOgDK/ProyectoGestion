@@ -54,6 +54,8 @@ urlpatterns = [
     path('crear_mantenimiento/', views.crear_mantenimiento, name='crear_mantenimiento'),
     path('listado_vehiculos/', views.listado_vehiculos, name='listado_vehiculos'),
     path('historial-mantenimiento/<int:vehiculo_id>/', historial_mantenimiento, name='historial_mantenimiento'),
+    path('eliminar_documentosadm/<int:vehiculo_id>/', views.eliminar_documentosadm, name='eliminar_documentosadm'),
+    path('vehiculos/<int:vehiculo_id>/lista_eliminarADM/', views.lista_eliminarADM, name='lista_eliminarADM'),
     # Fin Urls Documentos
 
     #Conductores
@@ -65,7 +67,7 @@ urlpatterns = [
     path('conductores/<int:conductor_id>/subir-licencia/', views.subir_licencia, name='subir_licencia'),
     path('editar_licencia/<int:conductor_id>/', views.editar_licencia, name='editar_licencia'),
     path('licencia/<int:licencia_id>/detalle/', views.licencia_detalle, name='licencia_detalle'),
-
+    path('licencia/detalle/<int:licencia_id>/', views.licencia_detalle_empresa, name='licencia_detalle_empresa'),
     #Fin Conductores
 
     # URLS Neumaticos
@@ -86,9 +88,11 @@ urlpatterns = [
     path('Mis_Vehiculos', views.vehiculos_del_grupo, name="vehiculos_del_grupo"),
     path('vehiculos/<int:vehiculo_id>/cargar_documentos/', views.cargar_documentosemp, name='cargar_documentosemp'),
     path('vehiculos/<int:vehiculo_id>/editar_documentos/', views.editar_documentosemp, name='editar_documentosemp'),
+    path('vehiculos/<int:vehiculo_id>/lista_eliminar/', views.lista_eliminar, name='lista_eliminar'),
     path('lista_vehiculosdoc', views.lista_documentos, name='lista_documentos'),
     path('conductores_empresa/', views.lista_conductores, name='lista_conductores'),
     path('editar-licencia-empresa/<int:conductor_id>/', views.editar_licencia_empresa, name='editar_licencia_empresa'),
+    path('eliminar_documentos/<int:vehiculo_id>/', views.eliminar_documentosemp, name='eliminar_documentosemp'),
     #Fin Empresa
 
     #Servicio Chat

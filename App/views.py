@@ -424,30 +424,119 @@ def cargar_documentos(request, id):
 
 @role_required(['Administrador', 'Visualizador'])
 def editar_documentos(request, id):
-    # Obtén el vehículo específico por su ID
     vehiculo = get_object_or_404(Vehiculo, id=id)
-
-    # Obtén los documentos asociados al vehículo
     documentos = Documento.objects.filter(vehiculo=vehiculo)
 
-    # Si no existe ningún documento, redirigir o mostrar un mensaje
     if not documentos:
-        return redirect('cargar_documentos', id=id)  # Redirigir a cargar documentos
+        return redirect('cargar_documentos', id=id)
 
-    # Si el formulario se ha enviado
     if request.method == 'POST':
+        subcarpetas = {
+            'Mantencion_Preventiva': 'mantenciones',
+            'Revision_Tecnica': 'revision_tecnica',
+            'Permiso_Circulacion': 'permiso_circulacion',
+            'SOAP': 'soap',
+            'Padron': 'padron'
+        }
+
+        s3_client = boto3.client(
+            's3',
+            region_name=settings.AWS_S3_REGION_NAME,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+        )
+
         for documento in documentos:
             form = DocumentoForm(request.POST, request.FILES, instance=documento)
             if form.is_valid():
-                form.save()  # Guarda los cambios del documento
-        return redirect('Documentos')  # Redirige a la lista de vehículos (ajusta la ruta según tu proyecto)
+                for campo, carpeta in subcarpetas.items():
+                    if campo in request.FILES:  # Solo si el usuario subió un nuevo archivo en este campo
+                        archivo_nuevo = request.FILES[campo]
 
-    # Si no se ha enviado el formulario, mostrar el formulario de edición
+                        s3_key = subir_a_s3admin(archivo_nuevo, carpeta)
+                        if s3_key:
+                            setattr(documento, campo, s3_key)
+                        else:
+                            messages.error(request, f"Error al subir {campo} a S3.")
+                            return redirect('editar_documentos', id=vehiculo.id)
+
+                documento.save()
+            else:
+                messages.error(request, "Error en el formulario de edición.")
+                return redirect('editar_documentos', id=vehiculo.id)
+
+        messages.success(request, "Documentos actualizados correctamente.")
+        return redirect('Documentos')
+
     context = {
         'vehiculo': vehiculo,
         'documentos': documentos,
     }
     return render(request, 'areas/documento/editar_documentos.html', context)
+
+@role_required(['Administrador'])
+def eliminar_documentosadm(request, vehiculo_id):
+    vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
+    documentos = Documento.objects.filter(vehiculo=vehiculo)
+
+    if not documentos:
+        messages.error(request, "No hay documentos asociados a este vehículo.")
+        return redirect('cargar_documentos', vehiculo_id=vehiculo.id)
+
+    if request.method == 'POST':
+        # Conexión a S3
+        s3_client = boto3.client(
+            's3',
+            region_name=settings.AWS_S3_REGION_NAME,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+        )
+
+        # Iterar sobre los documentos
+        for documento in documentos:
+            for campo in ['Mantencion_Preventiva', 'Revision_Tecnica', 'Permiso_Circulacion', 'SOAP', 'Padron']:
+                checkbox_name = f"{campo}_{documento.id}"
+                if request.POST.get(checkbox_name) == "delete":  # Si el checkbox fue marcado
+                    archivo = getattr(documento, campo)
+                    if archivo:  # Verifica que el archivo exista
+                        try:
+                            # Eliminar archivo de S3
+                            s3_key = str(archivo)  # La URL del archivo en S3
+                            s3_client.delete_object(
+                                Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+                                Key=s3_key
+                            )
+                            print(f"Archivo eliminado de S3: {s3_key}")
+                            # Actualiza el campo en la base de datos a None
+                            setattr(documento, campo, None)
+                            documento.save()
+
+                            # Si deseas eliminar completamente el documento de la base de datos
+                            # documento.delete()
+
+                        except Exception as e:
+                            messages.error(request, f"Error al eliminar el archivo {campo} de S3: {e}")
+
+        messages.success(request, "Documentos seleccionados eliminados correctamente.")
+        return redirect('editar_documentos', vehiculo_id=vehiculo.id)
+
+    context = {
+        'vehiculo': vehiculo,
+        'documentos': documentos,
+    }
+    return render(request, 'areas/documento/eliminar_documentosadm.html', context)
+
+@role_required(['Administrador'])
+def lista_eliminarADM(request, vehiculo_id):
+    vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
+    documentos = Documento.objects.filter(vehiculo=vehiculo)
+
+    context = {
+        'vehiculo': vehiculo,
+        'documentos': documentos,
+    }
+
+    return render(request, 'areas/documento/lista_eliminar.html',context)
 
 def subir_a_s3MTTO(archivo, carpeta="mantenimientos"):
     try:
@@ -633,11 +722,33 @@ def editar_licencia(request, conductor_id):
         archivos = request.FILES.getlist('archivo_licencia')
         
         if archivos:
-    # Si no se marca la opción de mantener las licencias, eliminamos las existentes
+            # Si no se marca la opción de mantener las licencias, eliminamos las existentes
             if not request.POST.get('mantener_licencias'):
-                # Convertimos el QuerySet a una lista de diccionarios para poder imprimir sus datos
+                # Convertir el QuerySet a una lista de diccionarios para imprimir los datos (para depuración)
                 licencias_eliminadas = list(licencias.values())
                 print("Licencias que se eliminarán:", licencias_eliminadas)
+                
+                # Instanciar el cliente de S3
+                s3_client = boto3.client(
+                    's3',
+                    region_name=settings.AWS_S3_REGION_NAME,
+                    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+                )
+                
+                # Recorrer cada licencia y eliminar su archivo de S3
+                for licencia in licencias:
+                    s3_key = licencia.archivo.name  # Obtiene la clave (key) del archivo en S3
+                    try:
+                        s3_client.delete_object(
+                            Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+                            Key=s3_key
+                        )
+                        print(f"Archivo eliminado de S3: {s3_key}")
+                    except Exception as e:
+                        print(f"Error al eliminar {s3_key} de S3: {e}")
+                
+                # Luego, eliminar los registros de la base de datos
                 licencias.delete()
             
             # Para cada archivo nuevo, lo subimos a S3 y guardamos su ruta en la base de datos
@@ -648,7 +759,6 @@ def editar_licencia(request, conductor_id):
                         conductor=conductor,
                         archivo=url_archivo
                     )
-                    print(f"Archivo subido correctamente: {url_archivo}")
                 else:
                     messages.error(request, "Hubo un error al subir uno de los archivos a S3.")
                     return redirect('editar_licencia', conductor_id=conductor.id)
@@ -662,6 +772,7 @@ def editar_licencia(request, conductor_id):
         'conductor': conductor,
         'licencias': licencias,  # Se pasan las licencias existentes al template
     })
+
 
 @role_required(['Administrador'])
 def editar_conductor(request, pk):
@@ -974,18 +1085,39 @@ def vehiculos_del_grupo(request):
     })
 
 
+
 @role_required(['Empresa'])
 def cargar_documentosemp(request, vehiculo_id):
     vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
     
     if request.method == 'POST':
         form = DocumentoForm(request.POST, request.FILES)
-        
         if form.is_valid():
             documento = form.save(commit=False)
-            documento.vehiculo = vehiculo  # Asocia el documento con el vehículo
-            documento.save()  # Guarda el documento
-            return redirect('vehiculos_del_grupo')  # Redirige a la lista de vehículos
+            documento.vehiculo = vehiculo
+
+            # Mapeo de documentos a subcarpetas dentro de 'documento/'
+            subcarpetas = {
+                'Mantencion_Preventiva': 'mantenciones',
+                'Revision_Tecnica': 'revision_tecnica',
+                'Permiso_Circulacion': 'permiso_circulacion',
+                'SOAP': 'soap',
+                'Padron': 'padron'
+            }
+
+            # Subir archivos a S3
+            for campo, carpeta in subcarpetas.items():
+                archivo = request.FILES.get(campo)
+                if archivo:
+                    s3_key = subir_a_s3admin(archivo, carpeta)
+                    if s3_key:
+                        setattr(documento, campo, s3_key)  # Guardar la ruta en el modelo
+                    else:
+                        messages.error(request, f"Error al subir {campo} a S3.")
+                        return redirect('vehiculos_del_grupo')  # Redirige a la lista de vehículos
+            documento.save()
+            messages.success(request, "Documentos subidos correctamente.")
+            return redirect('vehiculos_del_grupo')
     else:
         form = DocumentoForm()
     
@@ -994,31 +1126,122 @@ def cargar_documentosemp(request, vehiculo_id):
 @role_required(['Empresa'])
 def editar_documentosemp(request, vehiculo_id):
     vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
-
-    # Obtener los documentos asociados al vehículo
     documentos = Documento.objects.filter(vehiculo=vehiculo)
 
-    # Si no hay documentos asociados, redirigir a cargar documentos
     if not documentos:
         return redirect('cargar_documentosemp', vehiculo_id=vehiculo.id)
 
-    # Si el formulario se ha enviado
+    # Inicializamos el formulario con los datos del primer documento asociado
+    form = DocumentoForm(instance=documentos.first())
+
+    # Definimos las subcarpetas
+    subcarpetas = {
+        'Mantencion_Preventiva': 'mantenciones',
+        'Revision_Tecnica': 'revision_tecnica',
+        'Permiso_Circulacion': 'permiso_circulacion',
+        'SOAP': 'soap',
+        'Padron': 'padron'
+    }
+
     if request.method == 'POST':
+        s3_client = boto3.client(
+            's3',
+            region_name=settings.AWS_S3_REGION_NAME,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+        )
+
         for documento in documentos:
             form = DocumentoForm(request.POST, request.FILES, instance=documento)
             if form.is_valid():
-                form.save()  # Guarda los cambios del documento
-        return redirect('vehiculos_del_grupo')  # Redirige a la lista de vehículos
+                for campo, carpeta in subcarpetas.items():
+                    if campo in request.FILES:  # Si se subió un nuevo archivo
+                        nuevo_archivo = request.FILES[campo]
 
-    # Si no se ha enviado el formulario, mostrar el formulario de edición
-    form = DocumentoForm(instance=documentos.first())  # Agregar el formulario aquí si estás editando el primer documento
+                        s3_key = subir_a_s3admin(nuevo_archivo, carpeta)
+                        if s3_key:
+                            setattr(documento, campo, s3_key)  # Asignar la nueva URL del archivo en S3 al modelo
+                        else:
+                            messages.error(request, f"Error al subir {campo} a S3.")
+                            return redirect('editar_documentosemp', vehiculo_id=vehiculo.id)
+
+                # 🔹 Guardar el documento después de agregar el nuevo archivo
+                documento.save()
+
+        messages.success(request, "Documentos actualizados correctamente.")
+        return redirect('vehiculos_del_grupo')
 
     context = {
         'vehiculo': vehiculo,
         'documentos': documentos,
-        'form': form,  # Asegúrate de pasar el formulario al contexto
+        'form': form,
     }
+
     return render(request, 'empresa/editar_documentosemp.html', context)
+
+@role_required(['Empresa'])
+def lista_eliminar(request, vehiculo_id):
+    vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
+    documentos = Documento.objects.filter(vehiculo=vehiculo)
+
+    context = {
+        'vehiculo': vehiculo,
+        'documentos': documentos,
+    }
+
+    return render(request, 'empresa/lista_eliminar.html',context)
+
+def eliminar_documentosemp(request, vehiculo_id):
+    vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
+    documentos = Documento.objects.filter(vehiculo=vehiculo)
+
+    if not documentos:
+        messages.error(request, "No hay documentos asociados a este vehículo.")
+        return redirect('cargar_documentosemp', vehiculo_id=vehiculo.id)
+
+    if request.method == 'POST':
+        # Conexión a S3
+        s3_client = boto3.client(
+            's3',
+            region_name=settings.AWS_S3_REGION_NAME,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+        )
+
+        # Iterar sobre los documentos
+        for documento in documentos:
+            for campo in ['Mantencion_Preventiva', 'Revision_Tecnica', 'Permiso_Circulacion', 'SOAP', 'Padron']:
+                checkbox_name = f"{campo}_{documento.id}"
+                if request.POST.get(checkbox_name) == "delete":  # Si el checkbox fue marcado
+                    archivo = getattr(documento, campo)
+                    if archivo:  # Verifica que el archivo exista
+                        try:
+                            # Eliminar archivo de S3
+                            s3_key = str(archivo)  # La URL del archivo en S3
+                            s3_client.delete_object(
+                                Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+                                Key=s3_key
+                            )
+                            print(f"Archivo eliminado de S3: {s3_key}")
+                            # Actualiza el campo en la base de datos a None
+                            setattr(documento, campo, None)
+                            documento.save()
+
+                            # Si deseas eliminar completamente el documento de la base de datos
+                            # documento.delete()
+
+                        except Exception as e:
+                            messages.error(request, f"Error al eliminar el archivo {campo} de S3: {e}")
+
+        messages.success(request, "Documentos seleccionados eliminados correctamente.")
+        return redirect('editar_documentosemp', vehiculo_id=vehiculo.id)
+
+    context = {
+        'vehiculo': vehiculo,
+        'documentos': documentos,
+    }
+    return render(request, 'empresa/eliminar_documentosemp.html', context)
+
 
 
 @role_required(['Empresa'])
@@ -1895,7 +2118,7 @@ def lista_conductores(request):
         'filtro_estado': filtro_estado
     })
 
-
+@role_required(['Empresa'])
 def editar_licencia_empresa(request, conductor_id):
     # Obtener el conductor que corresponde al grupo del usuario (empresa)
     conductor = get_object_or_404(Conductor, id=conductor_id, empresa=request.user.group)
@@ -1910,24 +2133,91 @@ def editar_licencia_empresa(request, conductor_id):
         if archivos:
             # Eliminar las licencias anteriores si no se selecciona mantener
             if not request.POST.get('mantener_licencias'):
-                licencias.delete()  # Borramos las licencias anteriores
+                # Imprimir para depurar cuáles licencias se van a eliminar
+                licencias_eliminadas = list(licencias.values())
+                print("Licencias a eliminar:", licencias_eliminadas)
 
-            # Subir los nuevos archivos
-            for archivo in archivos:
-                LicenciaConductor.objects.create(
-                    conductor=conductor,
-                    archivo=archivo
+                # Instanciar el cliente de S3 para poder eliminar los archivos
+                s3_client = boto3.client(
+                    's3',
+                    region_name=settings.AWS_S3_REGION_NAME,
+                    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
                 )
+
+                # Recorrer cada licencia y eliminar su archivo en S3
+                for licencia in licencias:
+                    s3_key = licencia.archivo.name  # La clave (key) en S3
+                    try:
+                        s3_client.delete_object(
+                            Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+                            Key=s3_key
+                        )
+                        print(f"Archivo eliminado de S3: {s3_key}")
+                    except Exception as e:
+                        print(f"Error al eliminar {s3_key} de S3: {e}")
+
+                # Eliminar los registros de la base de datos
+                licencias.delete()
+
+            # Subir los nuevos archivos a S3 y guardarlos en la BD
+            for archivo in archivos:
+                # Utilizamos la función que se encarga de subir a S3 y retornar la URL
+                url_archivo = subir_a_s3(archivo, "licencias")
+                if url_archivo:
+                    LicenciaConductor.objects.create(
+                        conductor=conductor,
+                        archivo=url_archivo  # Guardamos la URL en el campo correspondiente
+                    )
+                else:
+                    messages.error(request, "Hubo un error al subir uno de los archivos a S3.")
+                    return redirect('editar_licencia_empresa', conductor_id=conductor.id)
+                    
             messages.success(request, "Licencias actualizadas exitosamente.")
             return redirect('lista_conductores')  # Redirigir a la lista de conductores
         else:
             messages.error(request, "Por favor, sube al menos un archivo de licencia.")
-    else:
-        # Si no es POST, mostrar el formulario para editar la licencia
-        form = LicenciaConductorForm()
+
 
     return render(request, 'empresa/conductores/editar_licencia.html', {
-        'form': form,
         'conductor': conductor,
         'licencias': licencias  # Pasar las licencias existentes al template
     })
+
+
+def licencia_detalle_empresa(request, licencia_id):
+    # Se asegura que el registro consultado pertenezca a un conductor de la empresa del usuario.
+    licencia = get_object_or_404(LicenciaConductor, id=licencia_id, conductor__empresa=request.user.group)
+
+    # Se obtiene el nombre del archivo almacenado en S3.
+    archivo_s3 = str(licencia.archivo.name)
+    print(f"Archivo S3: {archivo_s3}")
+
+    # Tiempo de expiración para el URL temporal (en segundos)
+    tiempo_expiracion = 240
+
+    # Instanciar el cliente S3 con las credenciales y configuración de settings
+    s3_client = boto3.client(
+        's3',
+        region_name=settings.AWS_S3_REGION_NAME,
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+    )
+
+    # Generar un URL temporal para acceder al archivo en S3
+    try:
+        url_temporal = s3_client.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': archivo_s3},
+            ExpiresIn=tiempo_expiracion
+        )
+    except Exception as e:
+        print(f"Error al generar URL temporal: {e}")
+        url_temporal = None
+
+    # Renderiza el template de detalle (por ejemplo, en 'empresa/conductores/licencia_detalle.html')
+    return render(request, 'empresa/conductores/licencia_detalle_empresa.html', {
+        'licencia': licencia,
+        'url_temporal': url_temporal
+    })
+

@@ -1,0 +1,64 @@
+{% extends 'empresa/baseempresa.html' %}
+
+{% block content %}
+  <div class="container mt-4">
+    <h2>Eliminar Documentos</h2>
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <h4>Mantención Preventiva</h4>
+            {% if documentos.first().Mantencion_Preventiva %}
+              <p>Archivo actual: <a href="{{ documentos.first().Mantencion_Preventiva.url }}" target="_blank">Ver archivo</a></p>
+              <input type="checkbox" name="Mantencion_Preventiva" value="delete"> Eliminar este archivo
+            {% else %}
+              <p>No hay archivo para eliminar.</p>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <h4>Revisión Técnica</h4>
+            {% if documentos.first().Revision_Tecnica %}
+              <p>Archivo actual: <a href="{{ documentos.first().Revision_Tecnica.url }}" target="_blank">Ver archivo</a></p>
+              <input type="checkbox" name="Revision_Tecnica" value="delete"> Eliminar este archivo
+            {% else %}
+              <p>No hay archivo para eliminar.</p>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <h4>Permiso de Circulación</h4>
+            {% if documentos.first().Permiso_Circulacion %}
+              <p>Archivo actual: <a href="{{ documentos.first().Permiso_Circulacion.url }}" target="_blank">Ver archivo</a></p>
+              <input type="checkbox" name="Permiso_Circulacion" value="delete"> Eliminar este archivo
+            {% else %}
+              <p>No hay archivo para eliminar.</p>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <h4>SOAP</h4>
+            {% if documentos.first().SOAP %}
+              <p>Archivo actual: <a href="{{ documentos.first().SOAP.url }}" target="_blank">Ver archivo</a></p>
+              <input type="checkbox" name="SOAP" value="delete"> Eliminar este archivo
+            {% else %}
+              <p>No hay archivo para eliminar.</p>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <h4>Padrón</h4>
+            {% if documentos.first().Padron %}
+              <p>Archivo actual: <a href="{{ documentos.first().Padron.url }}" target="_blank">Ver archivo</a></p>
+              <input type="checkbox" name="Padron" value="delete"> Eliminar este archivo
+            {% else %}
+              <p>No hay archivo para eliminar.</p>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-danger mt-3" onclick="return confirm('¿Estás seguro de que deseas eliminar los documentos seleccionados?');">
+          Eliminar Documentos Seleccionados
+        </button>
+    </form>
+  </div>
+{% endblock %}

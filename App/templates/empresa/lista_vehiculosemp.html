@@ -45,6 +45,9 @@
                             <a href="{% url 'editar_documentosemp' vehiculo.id %}" class="btn btn-outline-custom btn-sm">
                                 Cargar Documentos
                             </a>
+                            <a href="{% url 'lista_eliminar' vehiculo.id %}" class="btn btn-outline-custom btn-sm">
+                                Eliminar Documentos
+                            </a>
                     </td>
                 </tr>
                 {% empty %}
