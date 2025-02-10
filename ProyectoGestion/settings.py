@@ -95,6 +95,7 @@ WSGI_APPLICATION = 'ProyectoGestion.wsgi.application'
 import pymysql
 pymysql.install_as_MySQLdb()
 
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -105,6 +106,19 @@ DATABASES = {
         'PORT' : config('DB_PORT')
     }
 }
+
+"""
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'KoandinaPrueba',  
+        'USER': 'root',  # Cambia esto según tu usuario de MySQL
+        'PASSWORD': '12345678AB',
+        'HOST': 'localhost',
+        'PORT': '3306',
+    }
+}
+"""
 
 
 # Password validation

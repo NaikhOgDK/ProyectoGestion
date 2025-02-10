@@ -633,16 +633,26 @@ def editar_licencia(request, conductor_id):
         archivos = request.FILES.getlist('archivo_licencia')
         
         if archivos:
-            # Eliminar las licencias anteriores si el conductor las tiene
+    # Si no se marca la opción de mantener las licencias, eliminamos las existentes
             if not request.POST.get('mantener_licencias'):
-                licencias.delete()  # Borramos las licencias anteriores
+                # Convertimos el QuerySet a una lista de diccionarios para poder imprimir sus datos
+                licencias_eliminadas = list(licencias.values())
+                print("Licencias que se eliminarán:", licencias_eliminadas)
+                licencias.delete()
             
-            # Subir los nuevos archivos
+            # Para cada archivo nuevo, lo subimos a S3 y guardamos su ruta en la base de datos
             for archivo in archivos:
-                LicenciaConductor.objects.create(
-                    conductor=conductor,
-                    archivo=archivo
-                )
+                url_archivo = subir_a_s3(archivo, "licencias")
+                if url_archivo:
+                    LicenciaConductor.objects.create(
+                        conductor=conductor,
+                        archivo=url_archivo
+                    )
+                    print(f"Archivo subido correctamente: {url_archivo}")
+                else:
+                    messages.error(request, "Hubo un error al subir uno de los archivos a S3.")
+                    return redirect('editar_licencia', conductor_id=conductor.id)
+            
             messages.success(request, "Licencias actualizadas exitosamente.")
             return redirect('list')  # Redirige a la lista de conductores
         else:
@@ -650,7 +660,7 @@ def editar_licencia(request, conductor_id):
     
     return render(request, 'areas/documento/conductores/editar_licencia.html', {
         'conductor': conductor,
-        'licencias': licencias  # Pasar las licencias existentes al template
+        'licencias': licencias,  # Se pasan las licencias existentes al template
     })
 
 @role_required(['Administrador'])
