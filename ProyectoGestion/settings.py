@@ -104,22 +104,23 @@ DATABASES = {
         'PASSWORD' : config('DB_PASSWORD'),
         'HOST' : config('DB_HOST'),
         'PORT' : config('DB_PORT')
-    }
-}
-
-"""
-DATABASES = {
-    'default': {
+    },
+    'test': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'KoandinaPrueba',  
-        'USER': 'root',  # Cambia esto según tu usuario de MySQL
+        'NAME': 'KoandinaPrueba',
+        'USER': 'root',
         'PASSWORD': '12345678AB',
         'HOST': 'localhost',
         'PORT': '3306',
     }
 }
-"""
 
+# Seleccionar la base de datos según el entorno
+DB_ENV = config('DB_ENV', default='default')
+
+DATABASES['default'] = DATABASES[DB_ENV]
+
+print(f"Usando base de datos: {DB_ENV}")
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
