@@ -285,14 +285,23 @@ class UnidadAceptadaForm(forms.ModelForm):
         }
 
 class HallazgoForm(forms.ModelForm):
-    # Usar el widget de tipo 'date' sin especificar el formato
     fecha_inspeccion = forms.DateField(
-        widget=forms.TextInput(attrs={'type': 'date'})  # Usar el widget de tipo "date" en HTML
+        widget=forms.TextInput(attrs={'type': 'date', 'class': 'form-control'})
     )
 
     class Meta:
         model = HallazgoEmpresa
         fields = ['hallazgo', 'vehiculo', 'posicion_neumatico', 'fecha_inspeccion', 'tipo_hallazgo', 'nivel_riesgo', 'responsable', 'grupo', 'evidencia']
+        widgets = {
+            'hallazgo': forms.TextInput(attrs={'class': 'form-control'}),
+            'vehiculo': forms.Select(attrs={'class': 'form-select'}),
+            'posicion_neumatico': forms.TextInput(attrs={'class': 'form-control'}),
+            'tipo_hallazgo': forms.Select(attrs={'class': 'form-select'}),
+            'nivel_riesgo': forms.Select(attrs={'class': 'form-select'}),
+            'responsable': forms.Select(attrs={'class': 'form-select'}),
+            'grupo': forms.Select(attrs={'class': 'form-select'}),
+            'evidencia': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+        }
 """
     def save(self, commit=True):
         # Guardamos primero el objeto
