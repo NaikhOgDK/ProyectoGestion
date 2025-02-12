@@ -365,6 +365,7 @@ class Cierre(models.Model):
 
     def __str__(self):
         return f"Cierre del Hallazgo {self.hallazgo.id} - {self.hallazgo.estado}"
+        
 
 class ComunicacionHallazgo(models.Model):
     hallazgo = models.ForeignKey(HallazgoEmpresa, on_delete=models.SET_NULL, null=True)  # Relación con el hallazgo
@@ -496,6 +497,8 @@ class VehiculoAPI(models.Model):
     odometro = models.FloatField(null=True, blank=True)
     estado = models.CharField(max_length=10, choices=[('online', 'Online'), ('offline', 'Offline')], default='offline')
 
+    #vehiculo = models.ForeignKey(Vehiculo, on_delete=models.CASCADE)
+
     def __str__(self):
         return f"{self.placa} - {self.estado}"
 
@@ -522,3 +525,10 @@ def crear_estado_gps(sender, instance, created, **kwargs):
         EstadoGPS.objects.create(vehiculo=instance)
 
 #Fin GPS
+
+
+#Mantenimiento
+
+
+
+#Fin Mantenimiento

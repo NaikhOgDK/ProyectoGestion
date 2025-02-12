@@ -19,6 +19,10 @@
                     <p class="card-text">
                         {% if desempeño_promedio > 0 %}
                             Desempeño promedio: {{ desempeño_promedio }}%
+                            <br>
+                            <span class="badge" style="background-color: {{ color }}; color: white; padding: 10px;">
+                                {{ estado }}
+                            </span>
                         {% else %}
                             No hay hallazgos cerrados aún.
                         {% endif %}

@@ -295,7 +295,7 @@ class HallazgoForm(forms.ModelForm):
         widgets = {
             'hallazgo': forms.TextInput(attrs={'class': 'form-control'}),
             'vehiculo': forms.Select(attrs={'class': 'form-select'}),
-            'posicion_neumatico': forms.TextInput(attrs={'class': 'form-control'}),
+            'posicion_neumatico': forms.Select(choices=[(f'P{i}', f'P{i}') for i in range(1, 11)], attrs={'class': 'form-select'}),
             'tipo_hallazgo': forms.Select(attrs={'class': 'form-select'}),
             'nivel_riesgo': forms.Select(attrs={'class': 'form-select'}),
             'responsable': forms.Select(attrs={'class': 'form-select'}),

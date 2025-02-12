@@ -1655,10 +1655,26 @@ def homeEmpresa(request):
         desempeño_promedio = total_desempeno / total_hallazgos
     else:
         desempeño_promedio = 0  # Si no hay hallazgos cerrados, el desempeño es 0
-    
+
+    # Determinar el estado del desempeño
+    if desempeño_promedio >= 94:
+        estado = 'Excelencia'
+        color = 'green'  # Verde
+    elif 85 <= desempeño_promedio < 94:
+        estado = 'Revisar Procesos'
+        color = 'yellow'  # Amarillo
+    elif 61 <= desempeño_promedio < 85:
+        estado = 'Mala Gestión'
+        color = 'red'  # Rojo
+    else:
+        estado = 'Evaluar Continuidad'
+        color = 'darkred'  # Rojo más intenso
+
     # Pasar los datos a la plantilla
     return render(request, 'empresa/home.html', {
         'desempeño_promedio': desempeño_promedio,
+        'estado': estado,
+        'color': color,
     })
 #Fin Vista Empresa
 
