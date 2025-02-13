@@ -1,19 +1,91 @@
-<h4 class="text-center mb-4">Hallazgos</h4>
-<div class="list-group">
-    {% for hallazgo in hallazgos %}
-    <a href="#" class="list-group-item list-group-item-action">
-        <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1">{{ hallazgo.hallazgo }}</h5>
-            <small class="text-warning">{{ hallazgo.posicion_neumatico }}</small>
-            <small class="text-warning">{{ hallazgo.fecha_inspeccion }}</small>
-            <small class="text-warning">{{ hallazgo.tipo_hallazgo }}</small>
-            <small class="text-warning">{{ hallazgo.nivel_riesgo }}</small>
-            <small class="text-warning">{{ hallazgo.fecha_cierre }}</small>
+<div class="row">
+    <h4 class="text-center mb-4">Hallazgos para el Vehículo: {{ vehiculo.patente }}</h4>
+    
+    {% if hallazgos %}
+        {% for hallazgo in hallazgos %}
+            <div class="col-md-12">
+                <div class="card" style="width: auto">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">
+                            Hallazgo #{{ hallazgo.id }}
+                            <span class="ml-3"><strong>Responsable:</strong> {{ hallazgo.responsable }}</span>
+                        </h5>                        
+                        <table class="table">
+                            <tr>
+                                <td><strong>Hallazgo:</strong> {{ hallazgo.hallazgo }}</td>
+                                <td><strong>Fecha Inspección:</strong> {{ hallazgo.fecha_inspeccion }}</td>
+                                <td><strong>Estado:</strong> 
+                                    {% if hallazgo.estado == 'Cerrado' %}
+                                        <span style="color: green;">Cerrado</span>
+                                    {% else %}
+                                        <span style="color: red;">Abierto</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Posición Neumático:</strong> {{ hallazgo.posicion_neumatico }}</td>
+                                <td><strong>Tipo:</strong> {{ hallazgo.tipo_hallazgo }}</td>
+                                <td><strong>Riesgo:</strong> {{ hallazgo.nivel_riesgo }}</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Evidencia:</strong> 
+                                    {% if hallazgo.presigned_urls.evidencia %}
+                                        <a href="{{ hallazgo.presigned_urls.evidencia }}" target="_blank">Ver evidencia</a>
+                                    {% else %}
+                                        No disponible
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>Evidencia de Cierre:</strong> 
+                                    {% if hallazgo.presigned_urls.evidencia_cierre %}
+                                        <a href="{{ hallazgo.presigned_urls.evidencia_cierre }}" target="_blank">Ver evidencia de cierre</a>
+                                    {% else %}
+                                        No disponible
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>Documento de Cierre:</strong> 
+                                    {% if hallazgo.presigned_urls.documento_cierre %}
+                                        <a href="{{ hallazgo.presigned_urls.documento_cierre }}" target="_blank">Ver documento de cierre</a>
+                                    {% else %}
+                                        No disponible
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="alert alert-info text-center" role="alert">
+                No hay hallazgos registrados para este vehículo.
+            </div>
         </div>
-    </a>
-    {% empty %}
-    <div class="alert alert-info" role="alert">
-        No hay hallazgos disponibles.
-    </div>
-    {% endfor %}
+    {% endif %}
 </div>
+
+<style>
+    .alert {
+        padding: 20px;
+        background-color: #f8d7da;
+        color: #e6263c;
+        border-radius: 5px;
+        margin-top: 20px;
+    }
+
+    .table td, .table th {
+        vertical-align: middle;
+    }
+
+    .table td {
+        padding: 8px;
+    }
+
+    .table {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+</style>

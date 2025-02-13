@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+  <h1 class="text-center mb-4" style="color: #0b3356">Lista de Disponibilidad de Vehículos</h1>
+  <div class="text-right mb-3">
+    <a href="{% url 'exportar_excel' %}" class="btn btn-primary">
+      <i class="fas fa-file-excel"></i> Descargar Excel
+    </a>
+  </div>
+  <div class="row">
+    <!-- Sección de Unidades con Problemas -->
+    <div class="col-md-6">
+      <h2 class="text-danger">Unidades con Riesgos Operaciones.</h2>
+      {% if unidades_problemas %}
+        <div class="list-group">
+          {% for unidad in unidades_problemas %}
+            <div class="list-group-item mb-2">
+              <h4>
+                <strong>{{ unidad.vehiculo.patente }} - {{ unidad.vehiculo.empresa }}</strong>
+              </h4>
+              <ul class="list-unstyled ml-3">
+                {% for problema in unidad.problemas %}
+                  <li>
+                    <span class="badge badge-warning mr-2">Incumplimiento</span> {{ problema }}
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endfor %}
+        </div>
+        <!-- Controles de paginación para Unidades con Problemas -->
+        {% if unidades_problemas.has_other_pages %}
+        <nav aria-label="Paginación Unidades con Problemas">
+          <ul class="pagination justify-content-center">
+            {% if unidades_problemas.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page_problemas={{ unidades_problemas.previous_page_number }}{% if request.GET.page_ok %}&page_ok={{ request.GET.page_ok }}{% endif %}" aria-label="Anterior">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item disabled">
+                <span class="page-link">&laquo;</span>
+              </li>
+            {% endif %}
+            {% for num in unidades_problemas.paginator.page_range %}
+              {% if unidades_problemas.number == num %}
+                <li class="page-item active">
+                  <span class="page-link">{{ num }}</span>
+                </li>
+              {% else %}
+                <li class="page-item">
+                  <a class="page-link" href="?page_problemas={{ num }}{% if request.GET.page_ok %}&page_ok={{ request.GET.page_ok }}{% endif %}">{{ num }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+            {% if unidades_problemas.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page_problemas={{ unidades_problemas.next_page_number }}{% if request.GET.page_ok %}&page_ok={{ request.GET.page_ok }}{% endif %}" aria-label="Siguiente">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item disabled">
+                <span class="page-link">&raquo;</span>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+        {% endif %}
+      {% else %}
+        <div class="alert alert-success" role="alert">
+          No hay unidades con problemas.
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Sección de Unidades OK -->
+    <div class="col-md-6">
+      <h2 class="text-success">Unidades Óptimas para Operar.</h2>
+      {% if unidades_ok %}
+        <div class="list-group">
+          {% for unidad in unidades_ok %}
+            <div class="list-group-item mb-2">
+              <h4>
+                <strong>{{ unidad.vehiculo.patente }}</strong>
+              </h4>
+              <!-- Agrega otros detalles del vehículo si es necesario -->
+            </div>
+          {% endfor %}
+        </div>
+        <!-- Controles de paginación para Unidades OK -->
+        {% if unidades_ok.has_other_pages %}
+        <nav aria-label="Paginación Unidades Óptimas">
+          <ul class="pagination justify-content-center">
+            {% if unidades_ok.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page_ok={{ unidades_ok.previous_page_number }}{% if request.GET.page_problemas %}&page_problemas={{ request.GET.page_problemas }}{% endif %}" aria-label="Anterior">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item disabled">
+                <span class="page-link">&laquo;</span>
+              </li>
+            {% endif %}
+            {% for num in unidades_ok.paginator.page_range %}
+              {% if unidades_ok.number == num %}
+                <li class="page-item active">
+                  <span class="page-link">{{ num }}</span>
+                </li>
+              {% else %}
+                <li class="page-item">
+                  <a class="page-link" href="?page_ok={{ num }}{% if request.GET.page_problemas %}&page_problemas={{ request.GET.page_problemas }}{% endif %}">{{ num }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+            {% if unidades_ok.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page_ok={{ unidades_ok.next_page_number }}{% if request.GET.page_problemas %}&page_problemas={{ request.GET.page_problemas }}{% endif %}" aria-label="Siguiente">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item disabled">
+                <span class="page-link">&raquo;</span>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+        {% endif %}
+      {% else %}
+        <div class="alert alert-info" role="alert">
+          No hay unidades en condiciones óptimas.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

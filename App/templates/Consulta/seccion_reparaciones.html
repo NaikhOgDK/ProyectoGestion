@@ -1,18 +1,51 @@
-<h4 class="text-center mb-4">Reparaciones</h4>
-<div class="list-group mb-4">
-    {% for reparacion in reparaciones %}
-    <a href="#" class="list-group-item list-group-item-action">
-        <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1">{{ reparacion.taller }}</h5>
-            <small class="text-muted">Fecha: {{ reparacion.kilometraje }}</small>
-            <small class="text-muted">Fecha: {{ reparacion.fecha_inicio }}</small>
-            <small class="text-muted">Fecha: {{ reparacion.fecha_termino }}</small>
-            <small class="text-muted">Fecha: {{ reparacion.costo_total }}</small>
-        </div>
-    </a>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Documentos del Vehículo</title>
+</head>
+<body>
+    {% for documento in documentos %}
+      <div class="documento">
+        <h3>Documento: {{ documento }}</h3>
+        {% if documento.presigned_urls.Mantencion_Preventiva %}
+          <p>
+            <a href="{{ documento.presigned_urls.Mantencion_Preventiva }}" target="_blank">
+              Descargar Mantención Preventiva
+            </a>
+          </p>
+        {% endif %}
+        {% if documento.presigned_urls.Revision_Tecnica %}
+          <p>
+            <a href="{{ documento.presigned_urls.Revision_Tecnica }}" target="_blank">
+              Descargar Revisión Técnica
+            </a>
+          </p>
+        {% endif %}
+        {% if documento.presigned_urls.Permiso_Circulacion %}
+          <p>
+            <a href="{{ documento.presigned_urls.Permiso_Circulacion }}" target="_blank">
+              Descargar Permiso de Circulación
+            </a>
+          </p>
+        {% endif %}
+        {% if documento.presigned_urls.SOAP %}
+          <p>
+            <a href="{{ documento.presigned_urls.SOAP }}" target="_blank">
+              Descargar SOAP
+            </a>
+          </p>
+        {% endif %}
+        {% if documento.presigned_urls.Padron %}
+          <p>
+            <a href="{{ documento.presigned_urls.Padron }}" target="_blank">
+              Descargar Padrón
+            </a>
+          </p>
+        {% endif %}
+      </div>
     {% empty %}
-    <div class="alert alert-info" role="alert">
-        No hay reparaciones disponibles.
-    </div>
+      <p class="text-center">No se encontraron documentos.</p>
     {% endfor %}
-</div>
+</body>
+</html>

@@ -29,6 +29,8 @@ import boto3
 from django.conf import settings
 import uuid
 from django.utils.timezone import now
+import openpyxl
+from openpyxl.utils import get_column_letter
 
 def subir_a_s3(archivo, carpeta="licencias"):
     try:
@@ -300,23 +302,331 @@ def vehiculo_documentos(request, vehiculo_id):
 
 # Vista para cargar los hallazgos del vehículo
 def vehiculo_hallazgos(request, vehiculo_id):
-    vehiculo = Vehiculo.objects.get(id=vehiculo_id)
+    vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
     hallazgos = HallazgoEmpresa.objects.filter(vehiculo=vehiculo)
-    return render(request, 'Consulta/seccion__hallazgos.html', {'vehiculo': vehiculo, 'hallazgos': hallazgos})
+    
+    # Tiempo de expiración para el URL temporal (en segundos)
+    tiempo_expiracion = 240
+    
+    # Instanciar el cliente S3
+    s3_client = boto3.client(
+        's3',
+        region_name=settings.AWS_S3_REGION_NAME,
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+    )
+    
+    # Lista de los campos de archivo que queremos procesar
+    file_fields = ['evidencia']
+    
+    # Generar los URLs temporales para los hallazgos
+    hallazgos_con_urls = []
+    for hallazgo in hallazgos:
+        urls = {}
+        
+        # Procesar evidencia del hallazgo
+        for field in file_fields:
+            file_field = getattr(hallazgo, field)
+            if file_field:  # Si el campo no está vacío
+                try:
+                    url_temporal = s3_client.generate_presigned_url(
+                        'get_object',
+                        Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': file_field.name},
+                        ExpiresIn=tiempo_expiracion
+                    )
+                    urls[field] = url_temporal
+                except Exception as e:
+                    print(f"Error al generar URL temporal para {file_field.name}: {e}")
+                    urls[field] = None
+            else:
+                urls[field] = None
+
+        # Procesar los cierres relacionados con el hallazgo
+        if hasattr(hallazgo, 'cierre'):
+            cierre = hallazgo.cierre
+            if cierre:
+                for field in ['evidencia_cierre', 'documento_cierre']:
+                    file_field = getattr(cierre, field)
+                    if file_field:  # Si el campo no está vacío
+                        try:
+                            url_temporal = s3_client.generate_presigned_url(
+                                'get_object',
+                                Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': file_field.name},
+                                ExpiresIn=tiempo_expiracion
+                            )
+                            urls[field] = url_temporal
+                        except Exception as e:
+                            print(f"Error al generar URL temporal para {file_field.name}: {e}")
+                            urls[field] = None
+                    else:
+                        urls[field] = None
+
+        # Se agrega un atributo al hallazgo para pasarle los URLs al template
+        hallazgo.presigned_urls = urls
+        hallazgos_con_urls.append(hallazgo)
+    
+    return render(request, 'Consulta/seccion__hallazgos.html', {
+        'vehiculo': vehiculo,
+        'hallazgos': hallazgos_con_urls
+    })
 
 
 # Vista para cargar los mantenimientos del vehículo
 def vehiculo_mantenimientos(request, vehiculo_id):
-    vehiculo = Vehiculo.objects.get(id=vehiculo_id)
+    vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
     mantenimientos = Mantenimiento.objects.filter(vehiculo=vehiculo)
-    return render(request, 'Consulta/seccion_mantenimientos.html', {'vehiculo': vehiculo, 'mantenimientos': mantenimientos})
+    
+    # Tiempo de expiración para el URL temporal (en segundos)
+    tiempo_expiracion = 240
+    
+    # Instanciar el cliente S3
+    s3_client = boto3.client(
+        's3',
+        region_name=settings.AWS_S3_REGION_NAME,
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+    )
+    
+    # Lista para almacenar los mantenimientos con sus URLs temporales
+    mantenimientos_con_urls = []
+    
+    # Para cada mantenimiento, generamos los URLs temporales para el archivo de respaldo
+    for mantenimiento in mantenimientos:
+        urls = {}
+        respaldo_mtto = mantenimiento.respaldo_mtto
+        
+        if respaldo_mtto:  # Si el archivo de respaldo existe
+            try:
+                url_temporal = s3_client.generate_presigned_url(
+                    'get_object',
+                    Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': respaldo_mtto.name},
+                    ExpiresIn=tiempo_expiracion
+                )
+                urls['respaldo_mtto'] = url_temporal
+            except Exception as e:
+                print(f"Error al generar URL temporal para {respaldo_mtto.name}: {e}")
+                urls['respaldo_mtto'] = None
+        else:
+            urls['respaldo_mtto'] = None
+        
+        # Se agrega un atributo al objeto para pasarle los URLs al template
+        mantenimiento.presigned_urls = urls
+        mantenimientos_con_urls.append(mantenimiento)
+    
+    return render(request, 'Consulta/seccion_mantenimientos.html', {
+        'vehiculo': vehiculo,
+        'mantenimientos': mantenimientos_con_urls
+    })
 
 # Vista para cargar las reparaciones del vehículo
 def vehiculo_reparaciones(request, vehiculo_id):
-    vehiculo = Vehiculo.objects.get(id=vehiculo_id)
+    # Obtener el vehículo y las reparaciones relacionadas
+    vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
     reparaciones = Reparacion.objects.filter(vehiculo=vehiculo)
-    return render(request, 'Consulta/seccion_reparaciones.html', {'vehiculo': vehiculo, 'reparaciones': reparaciones})
+
+    # Tiempo de expiración para el URL temporal (en segundos)
+    tiempo_expiracion = 240
+    
+    # Instanciar el cliente S3
+    s3_client = boto3.client(
+        's3',
+        region_name=settings.AWS_S3_REGION_NAME,
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+    )
+    
+    # Lista de los nombres de los campos FileField que queremos procesar
+    file_fields = [
+        'registro'  # Campo de archivo para la reparación
+    ]
+    
+    # Para cada reparación, generamos los URLs temporales para cada archivo disponible
+    reparaciones_con_urls = []
+    for reparacion in reparaciones:
+        urls = {}
+        for field in file_fields:
+            file_field = getattr(reparacion, field)
+            if file_field:  # Si el campo no está vacío
+                try:
+                    url_temporal = s3_client.generate_presigned_url(
+                        'get_object',
+                        Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': file_field.name},
+                        ExpiresIn=tiempo_expiracion
+                    )
+                    urls[field] = url_temporal
+                except Exception as e:
+                    print(f"Error al generar URL temporal para {file_field.name}: {e}")
+                    urls[field] = None
+            else:
+                urls[field] = None
+        # Se agrega un atributo al objeto para pasarle los URLs al template
+        reparacion.presigned_urls = urls
+        reparaciones_con_urls.append(reparacion)
+    
+    return render(request, 'Consulta/seccion_reparaciones.html', {
+        'vehiculo': vehiculo,
+        'reparaciones': reparaciones_con_urls
+    })
 #Fin Consulta
+
+#Operacion
+
+def lista_operacion(request):
+    # Obtenemos todos los vehículos
+    vehiculos = Vehiculo.objects.all()
+    
+    unidades_ok = []
+    unidades_problemas = []
+    hoy = date.today()
+
+    for vehiculo in vehiculos:
+        tiene_problema = False
+        problemas = []
+
+        # 1. Verificar documentos vencidos
+        documentos = Documento.objects.filter(vehiculo=vehiculo)
+        for doc in documentos:
+            if doc.fecha_vencimiento_mantencion and doc.fecha_vencimiento_mantencion < hoy:
+                tiene_problema = True
+                problemas.append("Mantención Preventiva vencida")
+            if doc.fecha_vencimiento_revision and doc.fecha_vencimiento_revision < hoy:
+                tiene_problema = True
+                problemas.append("Revisión Técnica vencida")
+            if doc.fecha_vencimiento_permiso and doc.fecha_vencimiento_permiso < hoy:
+                tiene_problema = True
+                problemas.append("Permiso de Circulación vencido")
+            if doc.fecha_vencimiento_soap and doc.fecha_vencimiento_soap < hoy:
+                tiene_problema = True
+                problemas.append("SOAP vencido")
+            if doc.fecha_vencimiento_padron and doc.fecha_vencimiento_padron < hoy:
+                tiene_problema = True
+                problemas.append("Padrón Ausente")
+
+        # 2. Verificar hallazgos de alto riesgo pendientes
+        hallazgos = HallazgoEmpresa.objects.filter(
+            vehiculo=vehiculo, 
+            nivel_riesgo="Alto", 
+            estado="Pendiente"
+        )
+        if hallazgos.exists():
+            tiene_problema = True
+            problemas.append("Hallazgo de alto riesgo pendiente")
+
+        # 3. Verificar mantenimiento
+        mantenimiento = Mantenimiento.objects.filter(vehiculo=vehiculo).order_by('-fecha_mtto').first()
+        if mantenimiento and hasattr(vehiculo, 'odometro'):
+            odometro_actual = vehiculo.odometro
+            proximo_km = mantenimiento.proximo_mantenimiento_km
+            diferencia_km = proximo_km - odometro_actual
+
+            if diferencia_km <= 3000:
+                estado_mtto = "Por Vencer" if diferencia_km > 0 else "Vencida"
+                tiene_problema = True
+                problemas.append(f"Mantenimiento {estado_mtto}")
+
+        # Preparar la información del vehículo
+        data = {
+            'vehiculo': vehiculo,
+            'problemas': problemas,
+        }
+
+        if tiene_problema:
+            unidades_problemas.append(data)
+        else:
+            unidades_ok.append(data)
+
+    # Paginación: usamos parámetros GET independientes para cada módulo
+    page_ok = request.GET.get('page_ok', 1)
+    page_problemas = request.GET.get('page_problemas', 1)
+
+    paginator_ok = Paginator(unidades_ok, 10)  # 5 unidades óptimas por página
+    paginator_problemas = Paginator(unidades_problemas, 10)  # 5 unidades con problemas por página
+
+    unidades_ok_pag = paginator_ok.get_page(page_ok)
+    unidades_problemas_pag = paginator_problemas.get_page(page_problemas)
+
+    context = {
+        'unidades_ok': unidades_ok_pag,
+        'unidades_problemas': unidades_problemas_pag,
+    }
+    return render(request, 'disponibilidad/lista_disponibilidad.html', context)
+
+def exportar_excel(request):
+    # Crear un libro de Excel y seleccionar la hoja activa
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Unidades con Problemas"
+
+    # Definir encabezados para el Excel
+    headers = ["Patente", "Empresa", "Problemas"]
+    ws.append(headers)
+
+    # Obtener todos los vehículos
+    vehiculos = Vehiculo.objects.all()
+    hoy = date.today()
+
+    for vehiculo in vehiculos:
+        problemas = []
+
+        # 1. Verificar documentos vencidos
+        documentos = Documento.objects.filter(vehiculo=vehiculo)
+        for doc in documentos:
+            if doc.fecha_vencimiento_mantencion and doc.fecha_vencimiento_mantencion < hoy:
+                problemas.append("Mantención Preventiva vencida")
+            if doc.fecha_vencimiento_revision and doc.fecha_vencimiento_revision < hoy:
+                problemas.append("Revisión Técnica vencida")
+            if doc.fecha_vencimiento_permiso and doc.fecha_vencimiento_permiso < hoy:
+                problemas.append("Permiso de Circulación vencido")
+            if doc.fecha_vencimiento_soap and doc.fecha_vencimiento_soap < hoy:
+                problemas.append("SOAP vencido")
+            if doc.fecha_vencimiento_padron and doc.fecha_vencimiento_padron < hoy:
+                problemas.append("Padrón vencido")
+
+        # 2. Verificar hallazgos de alto riesgo pendientes
+        hallazgos = HallazgoEmpresa.objects.filter(
+            vehiculo=vehiculo,
+            nivel_riesgo="Alto",
+            estado="Pendiente"
+        )
+        if hallazgos.exists():
+            problemas.append("Hallazgo de alto riesgo pendiente")
+
+        # 3. Verificar mantenimiento
+        mantenimiento = Mantenimiento.objects.filter(vehiculo=vehiculo).order_by('-fecha_mtto').first()
+        if mantenimiento and hasattr(vehiculo, 'odometro'):
+            odometro_actual = vehiculo.odometro
+            proximo_km = mantenimiento.proximo_mantenimiento_km
+            diferencia_km = proximo_km - odometro_actual
+            if diferencia_km <= 3000:
+                estado_mtto = "Por Vencer" if diferencia_km > 0 else "Vencida"
+                problemas.append(f"Mantenimiento {estado_mtto}")
+
+        # Preparar los datos para la fila
+        if problemas:
+            problemas_str = ", ".join(problemas)
+            row = [vehiculo.patente, str(vehiculo.empresa), problemas_str]
+            ws.append(row)
+
+    # Ajustar el ancho de las columnas
+    for col in ws.columns:
+        max_length = 0
+        col_letter = get_column_letter(col[0].column)
+        for cell in col:
+            try:
+                if cell.value:
+                    max_length = max(max_length, len(str(cell.value)))
+            except:
+                pass
+        adjusted_width = max_length + 2
+        ws.column_dimensions[col_letter].width = adjusted_width
+
+    # Preparar la respuesta HTTP con el archivo Excel
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="disponibilidad_vehiculos.xlsx"'
+    wb.save(response)
+    return response
+
+#Operacion
 
 #Asiganciones
 
@@ -2373,3 +2683,166 @@ def licencia_detalle_empresa(request, licencia_id):
         'url_temporal': url_temporal
     })
 
+def lista_operacionEmpresa(request):
+    # Filtrar vehículos según el grupo del usuario logueado
+    if request.user.is_authenticated and request.user.group:
+        vehiculos = Vehiculo.objects.filter(empresa=request.user.group)
+    else:
+        vehiculos = Vehiculo.objects.none()  # O bien, Vehiculo.objects.all() si se quiere mostrar algo
+
+    unidades_ok = []
+    unidades_problemas = []
+    hoy = date.today()
+
+    for vehiculo in vehiculos:
+        tiene_problema = False
+        problemas = []
+
+        # 1. Verificar documentos vencidos
+        documentos = Documento.objects.filter(vehiculo=vehiculo)
+        for doc in documentos:
+            if doc.fecha_vencimiento_mantencion and doc.fecha_vencimiento_mantencion < hoy:
+                tiene_problema = True
+                problemas.append("Mantención Preventiva vencida")
+            if doc.fecha_vencimiento_revision and doc.fecha_vencimiento_revision < hoy:
+                tiene_problema = True
+                problemas.append("Revisión Técnica vencida")
+            if doc.fecha_vencimiento_permiso and doc.fecha_vencimiento_permiso < hoy:
+                tiene_problema = True
+                problemas.append("Permiso de Circulación vencido")
+            if doc.fecha_vencimiento_soap and doc.fecha_vencimiento_soap < hoy:
+                tiene_problema = True
+                problemas.append("SOAP vencido")
+            if doc.fecha_vencimiento_padron and doc.fecha_vencimiento_padron < hoy:
+                tiene_problema = True
+                problemas.append("Padrón Ausente")
+
+        # 2. Verificar hallazgos de alto riesgo pendientes
+        hallazgos = HallazgoEmpresa.objects.filter(
+            vehiculo=vehiculo, 
+            nivel_riesgo="Alto", 
+            estado="Pendiente"
+        )
+        if hallazgos.exists():
+            tiene_problema = True
+            problemas.append("Hallazgo de alto riesgo pendiente")
+
+        # 3. Verificar mantenimiento
+        mantenimiento = Mantenimiento.objects.filter(vehiculo=vehiculo).order_by('-fecha_mtto').first()
+        if mantenimiento and hasattr(vehiculo, 'odometro'):
+            odometro_actual = vehiculo.odometro
+            proximo_km = mantenimiento.proximo_mantenimiento_km
+            diferencia_km = proximo_km - odometro_actual
+
+            if diferencia_km <= 3000:
+                estado_mtto = "Por Vencer" if diferencia_km > 0 else "Vencida"
+                tiene_problema = True
+                problemas.append(f"Mantenimiento {estado_mtto}")
+
+        # Preparar la información del vehículo
+        data = {
+            'vehiculo': vehiculo,
+            'problemas': problemas,
+        }
+
+        if tiene_problema:
+            unidades_problemas.append(data)
+        else:
+            unidades_ok.append(data)
+
+    # Paginación: usamos parámetros GET independientes para cada módulo
+    page_ok = request.GET.get('page_ok', 1)
+    page_problemas = request.GET.get('page_problemas', 1)
+
+    paginator_ok = Paginator(unidades_ok, 10)  # 10 unidades óptimas por página
+    paginator_problemas = Paginator(unidades_problemas, 10)  # 10 unidades con problemas por página
+
+    unidades_ok_pag = paginator_ok.get_page(page_ok)
+    unidades_problemas_pag = paginator_problemas.get_page(page_problemas)
+
+    context = {
+        'unidades_ok': unidades_ok_pag,
+        'unidades_problemas': unidades_problemas_pag,
+    }
+    return render(request, 'empresa/lista_operacion.html', context)
+
+def exportar_excelEmpresa(request):
+    # Filtrar vehículos por el grupo del usuario autenticado
+    if request.user.is_authenticated and request.user.group:
+        vehiculos = Vehiculo.objects.filter(empresa=request.user.group)
+    else:
+        vehiculos = Vehiculo.objects.none()
+
+    # Crear un libro de Excel y seleccionar la hoja activa
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Disponibilidad Vehículos"
+
+    # Definir encabezados para el Excel
+    headers = ["Patente", "Empresa", "Problemas"]
+    ws.append(headers)
+
+    hoy = date.today()
+
+    for vehiculo in vehiculos:
+        problemas = []
+
+        # 1. Verificar documentos vencidos
+        documentos = Documento.objects.filter(vehiculo=vehiculo)
+        for doc in documentos:
+            if doc.fecha_vencimiento_mantencion and doc.fecha_vencimiento_mantencion < hoy:
+                problemas.append("Mantención Preventiva vencida")
+            if doc.fecha_vencimiento_revision and doc.fecha_vencimiento_revision < hoy:
+                problemas.append("Revisión Técnica vencida")
+            if doc.fecha_vencimiento_permiso and doc.fecha_vencimiento_permiso < hoy:
+                problemas.append("Permiso de Circulación vencido")
+            if doc.fecha_vencimiento_soap and doc.fecha_vencimiento_soap < hoy:
+                problemas.append("SOAP vencido")
+            if doc.fecha_vencimiento_padron and doc.fecha_vencimiento_padron < hoy:
+                problemas.append("Padrón Ausente")
+
+        # 2. Verificar hallazgos de alto riesgo pendientes
+        hallazgos = HallazgoEmpresa.objects.filter(
+            vehiculo=vehiculo,
+            nivel_riesgo="Alto",
+            estado="Pendiente"
+        )
+        if hallazgos.exists():
+            problemas.append("Hallazgo de alto riesgo pendiente")
+
+        # 3. Verificar mantenimiento
+        mantenimiento = Mantenimiento.objects.filter(vehiculo=vehiculo).order_by('-fecha_mtto').first()
+        if mantenimiento and hasattr(vehiculo, 'odometro'):
+            odometro_actual = vehiculo.odometro
+            proximo_km = mantenimiento.proximo_mantenimiento_km
+            diferencia_km = proximo_km - odometro_actual
+
+            if diferencia_km <= 3000:
+                estado_mtto = "Por Vencer" if diferencia_km > 0 else "Vencida"
+                problemas.append(f"Mantenimiento {estado_mtto}")
+
+        # Solo se agregan al Excel los vehículos (puedes optar por incluir siempre la fila)
+        problemas_str = ", ".join(problemas) if problemas else "Sin problemas"
+        row = [vehiculo.patente, str(vehiculo.empresa), problemas_str]
+        ws.append(row)
+
+    # Ajustar el ancho de las columnas
+    for col in ws.columns:
+        max_length = 0
+        col_letter = get_column_letter(col[0].column)
+        for cell in col:
+            try:
+                if cell.value:
+                    max_length = max(max_length, len(str(cell.value)))
+            except Exception:
+                pass
+        adjusted_width = max_length + 2
+        ws.column_dimensions[col_letter].width = adjusted_width
+
+    # Preparar la respuesta HTTP con el archivo Excel
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="disponibilidad_vehiculos.xlsx"'
+    wb.save(response)
+    return response

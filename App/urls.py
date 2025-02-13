@@ -31,6 +31,13 @@ urlpatterns = [
     path('vehiculo/<int:vehiculo_id>/reparaciones/', views.vehiculo_reparaciones, name='vehiculo_reparaciones'),
     #Fin Consulta
 
+    #Disponibilidad
+
+    path('disponibilidad/', lista_operacion, name='lista_disponibilidad'),
+    path('exportar/excel/', exportar_excel, name='exportar_excel'),
+
+    #Fin Disponibilidad
+
     #Asigancion
     path('asignar-empresa/', asignar_empresa, name='asignar_empresa'),
     #Fin Asignacion
@@ -95,6 +102,8 @@ urlpatterns = [
     path('editar-licencia-empresa/<int:conductor_id>/', views.editar_licencia_empresa, name='editar_licencia_empresa'),
     path('eliminar_documentos/<int:vehiculo_id>/', views.eliminar_documentosemp, name='eliminar_documentosemp'),
     path('cargar-fechas/', cargar_fechas_documentos, name='cargar_fechas'),
+    path('lista-operacion/', views.lista_operacionEmpresa, name='lista_operacionEmpresa'),
+    path('exportar/excel/empresa', exportar_excelEmpresa, name='exportar_excelEmpresa'),
     #Fin Empresa
 
     #Servicio Chat

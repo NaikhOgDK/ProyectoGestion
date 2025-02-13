@@ -1,24 +1,42 @@
-<h4 class="text-center mb-4">Mantenimientos</h4>
-<div class="list-group mb-4">
-    {% for mantenimiento in mantenimientos %}
-    <a href="#" class="list-group-item list-group-item-action">
-        <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1">{{ mantenimiento.descripcion }}</h5>
-            <small class="text-muted">
-                Fecha: {{ mantenimiento.fecha_mtto|date:"d/m/Y" }}<br>
-                Kilometraje: {{ mantenimiento.kilometraje_mtto }} km<br>
-                Servicio Realizado: {{ mantenimiento.get_servicio_realizado_display }}<br>
-                Próximo Servicio: {{ mantenimiento.get_proximo_servicio_display }}<br>
-                Próximo Mantenimiento a los: {{ mantenimiento.proximo_mantenimiento_km }} km<br>
-                {% if mantenimiento.respaldo_mtto %}
-                    <a href="{{ mantenimiento.respaldo_mtto.url }}" target="_blank" class="btn btn-link">Ver Respaldo</a>
-                {% endif %}
-            </small>
-        </div>
-    </a>
-    {% empty %}
-    <div class="alert alert-info" role="alert">
-        No hay mantenimientos disponibles.
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mantenimientos de Vehículo</title>
+    <!-- Agregar el enlace a Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <!-- Mostrar cada mantenimiento -->
+        {% for mantenimiento in mantenimientos %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="card-title">Mantenimiento: {{ mantenimiento.servicio_realizado }}</h4>
+                </div>
+                <div class="card-body">
+                    <p><strong>Fecha:</strong> {{ mantenimiento.fecha_mtto }}</p>
+                    <p><strong>Kilometraje:</strong> {{ mantenimiento.kilometraje_mtto }} km</p>
+                    <p><strong>Próximo Servicio:</strong> {{ mantenimiento.proximo_servicio }}</p>
+                    <p><strong>Próximo Mantenimiento a los:</strong> {{ mantenimiento.proximo_mantenimiento_km }} km</p>
+                    
+                    <!-- Alineación del botón a la derecha -->
+                    <div class="text-end">
+                        <!-- Si el archivo de respaldo existe, mostrar el enlace -->
+                        {% if mantenimiento.presigned_urls.respaldo_mtto %}
+                            <a href="{{ mantenimiento.presigned_urls.respaldo_mtto }}" target="_blank" class="btn btn-primary">Ver Respaldo</a>
+                        {% else %}
+                            <p>No hay archivo disponible para este mantenimiento.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
+
+    <!-- Agregar el script de Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+</body>
+</html>
