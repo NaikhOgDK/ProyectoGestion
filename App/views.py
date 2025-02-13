@@ -6,7 +6,7 @@ from .forms import *
 from .models import *
 import pandas as pd
 from django.http import HttpResponse
-from django.db.models import Count, Q, OuterRef, Subquery
+from django.db.models import Count, Q, OuterRef, Subquery, Max
 from django.core.paginator import Paginator,  EmptyPage, PageNotAnInteger
 from django.views.generic import ListView
 from django.utils import timezone
@@ -526,6 +526,51 @@ def eliminar_documentosadm(request, vehiculo_id):
     }
     return render(request, 'areas/documento/eliminar_documentosadm.html', context)
 
+def cargar_fechas_documentos(request):
+    usuario = request.user  # Usuario autenticado
+    grupo_usuario = usuario.group  # Obtener el grupo del usuario
+
+    if not grupo_usuario:
+        return JsonResponse({"error": "El usuario no pertenece a ningún grupo."}, status=403)
+
+    if request.method == 'POST' and 'archivo' in request.FILES:
+        archivo_excel = request.FILES['archivo']
+        df = pd.read_excel(archivo_excel, engine='openpyxl')  # Leer el archivo Excel
+
+        documentos_actualizados = 0
+        errores = []
+
+        for index, row in df.iterrows():
+            try:
+                # Buscar el vehículo por patente, filtrando solo los que pertenecen al grupo del usuario
+                vehiculo = Vehiculo.objects.filter(patente=row['Patente'], empresa=grupo_usuario).first()
+                if not vehiculo:
+                    errores.append(f"Vehículo con patente {row['Patente']} no encontrado o no pertenece a su empresa.")
+                    continue
+
+                # Buscar el documento asociado al vehículo o crearlo si no existe
+                doc, _ = Documento.objects.get_or_create(vehiculo=vehiculo)
+
+                # Actualizar fechas si están presentes en el Excel
+                doc.fecha_vencimiento_mantencion = row.get('Fecha Mantención', doc.fecha_vencimiento_mantencion)
+                doc.fecha_vencimiento_revision = row.get('Fecha Revisión', doc.fecha_vencimiento_revision)
+                doc.fecha_vencimiento_permiso = row.get('Fecha Permiso Circulación', doc.fecha_vencimiento_permiso)
+                doc.fecha_vencimiento_soap = row.get('Fecha SOAP', doc.fecha_vencimiento_soap)
+                doc.fecha_vencimiento_padron = row.get('Fecha Padrón', doc.fecha_vencimiento_padron)
+
+                doc.save()
+                documentos_actualizados += 1
+
+            except Exception as e:
+                errores.append(f"Error en fila {index + 1}: {str(e)}")
+
+        return JsonResponse({
+            "mensaje": f"Se actualizaron {documentos_actualizados} documentos.",
+            "errores": errores
+        })
+
+    return render(request, 'empresa/cargar_fechas.html')
+
 @role_required(['Administrador'])
 def lista_eliminarADM(request, vehiculo_id):
     vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
@@ -639,6 +684,42 @@ def historial_mantenimiento(request, vehiculo_id):
         'vehiculo': vehiculo,
         'mantenimientos': mantenimientos,
     })
+
+def mantenimiento_view(request):
+    # Obtener todos los vehículos y sus mantenimientos
+    vehiculos = VehiculoAPI.objects.all()
+    mantenimiento_data = []
+
+    for vehiculo in vehiculos:
+        # Buscar el último mantenimiento del vehículo
+        mantenimiento = Mantenimiento.objects.filter(vehiculo=vehiculo.vehiculo).order_by('-fecha_mtto').first()
+
+        if mantenimiento:
+            # Calcular la diferencia entre el odómetro y el próximo mantenimiento
+            odometro_actual = vehiculo.odometro
+            proximo_mantenimiento_km = mantenimiento.proximo_mantenimiento_km
+            diferencia_km = proximo_mantenimiento_km - odometro_actual
+
+            # Determinar el estado según la diferencia de kilómetros
+            if diferencia_km > 3000:
+                estado = 'Vigente'
+            elif diferencia_km <= 3000 and diferencia_km > 0:
+                estado = 'Por Vencer'
+            else:
+                estado = 'Vencida'
+
+            mantenimiento_data.append({
+                'patente': vehiculo.placa,
+                'kilometraje_mtto': mantenimiento.kilometraje_mtto,
+                'fecha_mtto': mantenimiento.fecha_mtto,
+                'servicio_realizado': mantenimiento.servicio_realizado,
+                'odometro_actual': odometro_actual,
+                'proximo_mantenimiento_km': proximo_mantenimiento_km,
+                'proximo_servicio': mantenimiento.proximo_servicio,
+                'estado': estado,
+            })
+
+    return render(request, 'areas/documento/mantenimiento.html', {'mantenimiento_data': mantenimiento_data})
 #Fin Documentacion
 
 #Conductores
@@ -1744,18 +1825,26 @@ def get_vehiculos_con_seguimiento(request):
 @role_required(['Administrador'])
 def make_post_request(request):
     def normalize_plate(plate):
-        return plate[:-1] if plate and plate.endswith("I") else plate
+        """Normaliza la placa eliminando espacios, convirtiéndola a mayúsculas y eliminando la 'I' final."""
+        if plate:
+            plate = plate.strip().upper()
+            if plate.endswith("I"):
+                plate = plate[:-1]
+        return plate
 
     def get_vehicle_status(last_signal_time):
+        """Determina si el vehículo está online u offline según la última señal recibida."""
         if last_signal_time:
             last_signal_datetime = parser.parse(last_signal_time)
             now_utc = datetime.now(pytz.utc)
             return 'offline' if (now_utc - last_signal_datetime) > timedelta(days=7) else 'online'
         return 'offline'
 
-    # Obtener los vehículos registrados en el modelo Vehiculo y VehiculoAPI
-    registered_vehicles = Vehiculo.objects.values_list('patente', flat=True)
-    existing_vehicles = {v.placa: v for v in VehiculoAPI.objects.all()}  # Diccionario con vehículos existentes
+    # **1. Obtener los vehículos registrados en `Vehiculo` y normalizar sus placas**
+    vehiculos_dict = {normalize_plate(v.patente): v for v in Vehiculo.objects.all()}
+
+    # **2. Obtener los vehículos ya guardados en `VehiculoAPI`**
+    existing_vehicles = {normalize_plate(v.placa): v for v in VehiculoAPI.objects.all()}
 
     url = 'https://www.drivetech.pro/api/v1/get_vehicles_positions/'
     tokengps = config('API_TOKEN')
@@ -1766,22 +1855,22 @@ def make_post_request(request):
 
     if response.status_code == 200:
         data = response.json()
-        new_vehicles = []  # Para vehículos nuevos
-        updated_vehicles = []  # Para vehículos existentes
+        new_vehicles = []  # Lista de nuevos vehículos a insertar
+        updated_vehicles = []  # Lista de vehículos a actualizar
 
         for position in data.get('positions', []):
             placa = normalize_plate(position.get('plate', 'N/A'))
 
-            # Solo actualizar si el vehículo está registrado en el modelo Vehiculo
-            if placa in registered_vehicles:
+            # **3. Filtrar solo los vehículos registrados**
+            if placa in vehiculos_dict:
+                vehiculo = vehiculos_dict[placa]  # Obtener el objeto Vehiculo asociado
                 estado = get_vehicle_status(position.get('datetime'))
                 latitud = position.get('latitude')
                 longitud = position.get('longitude')
 
-                # Verificar si el vehículo ya existe en VehiculoAPI (usando el diccionario)
+                # **4. Actualizar o crear en `VehiculoAPI`**
                 if placa in existing_vehicles:
                     existing_vehicle = existing_vehicles[placa]
-                    # Si el vehículo existe, actualizamos los campos
                     existing_vehicle.latitud = latitud
                     existing_vehicle.longitud = longitud
                     existing_vehicle.fecha_hora = position.get('datetime')
@@ -1789,8 +1878,8 @@ def make_post_request(request):
                     existing_vehicle.estado = estado
                     updated_vehicles.append(existing_vehicle)
                 else:
-                    # Si el vehículo no existe, agregamos para insertar
                     vehiculo_api = VehiculoAPI(
+                        vehiculo=vehiculo,  # Relación con el modelo Vehiculo
                         placa=placa,
                         latitud=latitud,
                         longitud=longitud,
@@ -1800,7 +1889,7 @@ def make_post_request(request):
                     )
                     new_vehicles.append(vehiculo_api)
 
-        # Realizamos las inserciones masivas y actualizaciones
+        # **5. Guardar cambios en la base de datos**
         if new_vehicles:
             VehiculoAPI.objects.bulk_create(new_vehicles)
 

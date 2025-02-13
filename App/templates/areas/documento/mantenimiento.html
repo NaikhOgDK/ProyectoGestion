@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h3 class="text-center">Tabla de Mantenimientos</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Patente</th>
+                <th>Kilometraje Mantenimiento</th>
+                <th>Fecha Mantenimiento</th>
+                <th>Servicio Realizado</th>
+                <th>Odómetro Actual</th>
+                <th>Próximo Mantenimiento (KM)</th>
+                <th>Próximo Servicio</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mantenimiento in mantenimiento_data %}
+                <tr>
+                    <td>{{ mantenimiento.patente }}</td>
+                    <td>{{ mantenimiento.kilometraje_mtto }}</td>
+                    <td>{{ mantenimiento.fecha_mtto }}</td>
+                    <td>{{ mantenimiento.servicio_realizado }}</td>
+                    <td>{{ mantenimiento.odometro_actual }}</td>
+                    <td>{{ mantenimiento.proximo_mantenimiento_km }}</td>
+                    <td>{{ mantenimiento.proximo_servicio }}</td>
+                    <td>
+                        {% if mantenimiento.estado == 'Vigente' %}
+                            <span class="badge bg-success">Vigente</span>
+                        {% elif mantenimiento.estado == 'Por Vencer' %}
+                            <span class="badge bg-warning">Por Vencer</span>
+                        {% else %}
+                            <span class="badge bg-danger">Vencida</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center">No hay mantenimientos registrados</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

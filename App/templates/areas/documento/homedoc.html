@@ -93,6 +93,19 @@
             </div>
         </div>
     </div>
+    <div class="row mt-5">
+        <div class="col-md-12 text-center mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex flex-column justify-content-between text-center">
+                    <h4 class="card-title">Tabla Mantenciones</h4>
+                    <p class="card-text">Ve el estado de los proximos mantenimientos de las unidades.</p>
+                    <a href="{% url 'mantenimiento_view' %}" class="btn btn-outline-custom mt-auto" style="height: 50px; display: flex; justify-content: center; align-items: center;">
+                        Ver Mantenciones
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
     {% endif %}
 
     {% if request.user.role.name == "Visualizador" %}

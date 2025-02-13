@@ -497,7 +497,7 @@ class VehiculoAPI(models.Model):
     odometro = models.FloatField(null=True, blank=True)
     estado = models.CharField(max_length=10, choices=[('online', 'Online'), ('offline', 'Offline')], default='offline')
 
-    #vehiculo = models.ForeignKey(Vehiculo, on_delete=models.CASCADE)
+    vehiculo = models.ForeignKey(Vehiculo, on_delete=models.CASCADE, related_name='api_data',null=True, blank=True)
 
     def __str__(self):
         return f"{self.placa} - {self.estado}"

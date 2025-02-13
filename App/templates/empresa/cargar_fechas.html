@@ -1,0 +1,23 @@
+{% extends 'empresa/baseempresa.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2 class="text-center mb-4">Cargar Fechas de Documentos</h2>
+                    <form action="{% url 'cargar_fechas' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="archivo" class="form-label">Selecciona un archivo Excel:</label>
+                            <input type="file" name="archivo" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Subir</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
