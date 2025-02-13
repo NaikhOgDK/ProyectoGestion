@@ -247,9 +247,56 @@ def vehiculo_detalle(request, vehiculo_id):
 
 # Vista para cargar los documentos del vehículo
 def vehiculo_documentos(request, vehiculo_id):
-    vehiculo = Vehiculo.objects.get(id=vehiculo_id)
+    vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
     documentos = Documento.objects.filter(vehiculo=vehiculo)
-    return render(request, 'Consulta/seccion__documentos.html', {'vehiculo': vehiculo, 'documentos': documentos})
+    
+    # Tiempo de expiración para el URL temporal (en segundos)
+    tiempo_expiracion = 240
+    
+    # Instanciar el cliente S3
+    s3_client = boto3.client(
+        's3',
+        region_name=settings.AWS_S3_REGION_NAME,
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+    )
+    
+    # Lista de los nombres de los campos FileField que queremos procesar
+    file_fields = [
+        'Mantencion_Preventiva',
+        'Revision_Tecnica',
+        'Permiso_Circulacion',
+        'SOAP',
+        'Padron'
+    ]
+    
+    # Para cada documento, generamos los URLs temporales para cada archivo disponible
+    documentos_con_urls = []
+    for documento in documentos:
+        urls = {}
+        for field in file_fields:
+            file_field = getattr(documento, field)
+            if file_field:  # Si el campo no está vacío
+                try:
+                    url_temporal = s3_client.generate_presigned_url(
+                        'get_object',
+                        Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': file_field.name},
+                        ExpiresIn=tiempo_expiracion
+                    )
+                    urls[field] = url_temporal
+                except Exception as e:
+                    print(f"Error al generar URL temporal para {file_field.name}: {e}")
+                    urls[field] = None
+            else:
+                urls[field] = None
+        # Se agrega un atributo al objeto para pasarle los URLs al template
+        documento.presigned_urls = urls
+        documentos_con_urls.append(documento)
+    
+    return render(request, 'Consulta/seccion__documentos.html', {
+        'vehiculo': vehiculo,
+        'documentos': documentos_con_urls
+    })
 
 # Vista para cargar los hallazgos del vehículo
 def vehiculo_hallazgos(request, vehiculo_id):
