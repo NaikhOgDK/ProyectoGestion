@@ -11,21 +11,18 @@
     <title>{% block title %}Home Empresa{% endblock %}</title>
     <style>
         .floating-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;  /* Ajusta según el tamaño del botón */
+            height: 50px; 
+            background-color: #007bff; /* Color del botón */
+            border-radius: 50%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background-color: #0b3356;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 24px;
-            text-align: center;
-            line-height: 60px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
-            z-index: 1000;
+            text-decoration: none;
         }
         .floating-button:hover {
             background-color: #0a2a45;
@@ -40,6 +37,20 @@
             padding: 5px;
             font-size: 12px;
         }
+        .icon-image {
+            width: 24px;  /* Ajusta el tamaño de la imagen */
+            height: 24px;
+        }
+
+                .floating-button:hover {
+                    background-color: #0a2a45;
+                }
+                nav{
+                    font-family: sans-serif;
+                }
+                div{
+                    font-family: sans-serif;
+                }
     </style>
 </head>
 <body>
@@ -96,7 +107,7 @@
 
     <!-- Floating button para abrir el chat -->
     <a href="{% url 'user_chat' %}" class="floating-button">
-        +
+        <img src="{% static 'img/Chat.png' %}" alt="Chat" class="icon-image">
         {% if unread_count > 0 %}
             <span class="badge">{{ unread_count }}</span>
         {% endif %}
